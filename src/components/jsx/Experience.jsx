@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import educationData from '../../data/education.json';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/Experience.css';
@@ -8,41 +8,48 @@ function Experience() {
   const translatedExp = t('experience.experiences');
   const translatedEdu = t('experience.education');
 
-  const [experiences, setExperiences] = useState([]);
+  const [apiExperiences, setApiExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const sectionRef = useRef(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchExperiences = async () => {
       setLoading(true);
 
       try {
-        const response = await fetch('/api/experiences');
+        const response = await fetch('/api/experiences', {
+          signal: controller.signal,
+        });
         const data = await response.json();
 
         if (!response.ok) {
           console.error('API error:', data);
-          setExperiences([]);
+          setApiExperiences([]);
         } else {
-          const merged = data.map((exp, i) => ({
-            ...exp,
-            ...(translatedExp[i] || {}),
-          }));
-
-          console.log('Experiences from API:', data);
-          setExperiences(merged);
+          setApiExperiences(data);
         }
       } catch (error) {
-        console.error('Fetch error:', error);
-        setExperiences([]);
+        if (error.name !== 'AbortError') {
+          console.error('Fetch error:', error);
+          setApiExperiences([]);
+        }
       }
 
       setLoading(false);
     };
 
     fetchExperiences();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [t]);
+    return () => controller.abort();
+  }, []);
+
+  const experiences = useMemo(() => {
+    return apiExperiences.map((exp, i) => ({
+      ...exp,
+      ...(translatedExp[i] || {}),
+    }));
+  }, [apiExperiences, translatedExp]);
 
   useEffect(() => {
     if (loading) return;
@@ -55,6 +62,7 @@ function Experience() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
           }
         });
       },
@@ -66,14 +74,14 @@ function Experience() {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [loading, experiences, translatedEdu, t]);
+  }, [loading, experiences.length, translatedEdu.length]);
 
-  const education = educationData.map((edu, i) => ({
-    ...edu,
-    ...(translatedEdu[i] || {}),
-  }));
-
-  console.log('Experience render:', { loading, experiences });
+  const education = useMemo(() => {
+    return educationData.map((edu, i) => ({
+      ...edu,
+      ...(translatedEdu[i] || {}),
+    }));
+  }, [translatedEdu]);
 
   return (
     <section id="experience" className="experience" ref={sectionRef}>
@@ -96,10 +104,7 @@ function Experience() {
             experiences.map((exp, index) => (
               <div
                 key={exp.id || index}
-                className={`timeline-item reveal reveal-delay-${Math.min(
-                  index + 1,
-                  4
-                )}`}
+                className="timeline-item reveal"
               >
                 <div className="timeline-dot"></div>
 
@@ -117,7 +122,7 @@ function Experience() {
                         }
                       >
                         {exp.logo ? (
-                          <img src={exp.logo} alt={exp.role} />
+                          <img src={exp.logo} alt={exp.role} loading="lazy" />
                         ) : (
                           exp.icon
                         )}
@@ -150,10 +155,7 @@ function Experience() {
           {education.map((edu, index) => (
             <div
               key={index}
-              className={`timeline-item reveal reveal-delay-${Math.min(
-                index + 1,
-                4
-              )}`}
+              className="timeline-item reveal"
             >
               <div className="timeline-dot"></div>
 
@@ -162,7 +164,7 @@ function Experience() {
                   <div className="timeline-header-left">
                     <span className="timeline-icon">
                       {edu.logo ? (
-                        <img src={edu.logo} alt={edu.degree} />
+                        <img src={edu.logo} alt={edu.degree} loading="lazy" />
                       ) : (
                         edu.icon
                       )}

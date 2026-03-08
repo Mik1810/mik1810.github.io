@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { supabase } from '../../supabaseClient';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -12,14 +11,29 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      setError(error.message);
+
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Login fallito');
+        setUser(null);
+      } else {
+        setUser(data.user || null);
+      }
+    } catch (err) {
+      setError('Errore di rete durante il login');
       setUser(null);
-    } else {
-      setUser(data.user);
     }
+
+    setLoading(false);
   };
 
   return (

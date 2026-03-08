@@ -3,6 +3,11 @@
   background: linear-gradient(135deg, var(--color-bg-gradient-start) 0%, var(--color-bg-gradient-end) 100%);
 }
 
+.experience .reveal {
+  transform: translateY(16px);
+  transition-duration: 0.35s;
+}
+
 .timeline {
   position: relative;
   max-width: 750px;
