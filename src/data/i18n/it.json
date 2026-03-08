@@ -23,7 +23,7 @@
   "about": {
     "title": "Chi Sono",
     "subtitle": "Un po' su di me",
-    "bio": "Sono uno studente magistrale in Informatica presso l'Università degli Studi dell'Aquila, nel curriculum AICONDA (AI, Computing and Data Analytics). Ho conseguito la laurea triennale con il massimo dei voti, con una tesi sulla complessità computazionale di Nine Men's Morris. Sono appassionato di intelligenza artificiale, cybersecurity e sviluppo web, e mi piace mettermi alla prova partecipando a competizioni nazionali.",
+    "bio": "Sono uno studente magistrale in Informatica presso l'Università degli Studi dell'Aquila, nel curriculum AICONDA (AI, Computing and Data Analytics). Ho conseguito la laurea triennale con il massimo dei voti, con una tesi sulla complessità computazionale di Nine Men's Morris. Sono appassionato di intelligenza artificiale, cybersecurity e sviluppo web, e mi piace mettermi alla prova risolvendo problemi di algoritmi.",
     "interests": ["Intelligenza Artificiale", "Cybersecurity", "Web Development", "Algoritmi e Strutture Dati"]
   },
   "projects": {
