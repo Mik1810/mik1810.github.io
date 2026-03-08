@@ -28,31 +28,27 @@ export default async function handler(req, res) {
     ] = await Promise.all([
       supabaseAdmin
         .from('tech_categories')
-        .select('id, order_index')
-        .order('order_index', { ascending: true }),
+        .select('*'),
       supabaseAdmin
         .from('tech_categories_i18n')
-        .select('tech_category_id, name')
+        .select('*')
         .eq('locale', lang),
       supabaseAdmin
         .from('tech_items')
-        .select('id, tech_category_id, order_index, name, devicon, color')
-        .order('order_index', { ascending: true }),
+        .select('*'),
       supabaseAdmin
         .from('skill_categories')
-        .select('id, order_index')
-        .order('order_index', { ascending: true }),
+        .select('*'),
       supabaseAdmin
         .from('skill_categories_i18n')
-        .select('skill_category_id, category_name')
+        .select('*')
         .eq('locale', lang),
       supabaseAdmin
         .from('skill_items')
-        .select('id, skill_category_id, order_index')
-        .order('order_index', { ascending: true }),
+        .select('*'),
       supabaseAdmin
         .from('skill_items_i18n')
-        .select('skill_item_id, label')
+        .select('*')
         .eq('locale', lang),
     ]);
 
@@ -78,48 +74,73 @@ export default async function handler(req, res) {
     }
 
     const techNameById = new Map(
-      (techI18nRows || []).map((row) => [row.tech_category_id, row.name])
+      (techI18nRows || []).map((row) => [
+        row.tech_category_id ?? row.category_id ?? row.techCategoryId,
+        row.name ?? row.category_name ?? row.category,
+      ])
     );
     const techItemsByCategoryId = new Map();
-    for (const row of techItemRows || []) {
-      if (!techItemsByCategoryId.has(row.tech_category_id)) {
-        techItemsByCategoryId.set(row.tech_category_id, []);
+    const sortedTechItems = (techItemRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
+    for (const row of sortedTechItems) {
+      const categoryId =
+        row.tech_category_id ?? row.category_id ?? row.techCategoryId;
+      if (!categoryId) continue;
+      if (!techItemsByCategoryId.has(categoryId)) {
+        techItemsByCategoryId.set(categoryId, []);
       }
-      techItemsByCategoryId.get(row.tech_category_id).push({
+      techItemsByCategoryId.get(categoryId).push({
         name: row.name,
         devicon: row.devicon,
         color: row.color,
       });
     }
 
-    const techStack = (techBaseRows || []).map((row) => ({
-      category: techNameById.get(row.id) || '',
-      items: techItemsByCategoryId.get(row.id) || [],
-    }));
+    const techStack = (techBaseRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0))
+      .map((row) => ({
+        category: techNameById.get(row.id) || row.name || '',
+        items: techItemsByCategoryId.get(row.id) || [],
+      }))
+      .filter((row) => row.category);
 
     const skillCategoryNameById = new Map(
       (skillCategoryI18nRows || []).map((row) => [
-        row.skill_category_id,
-        row.category_name,
+        row.skill_category_id ?? row.category_id ?? row.skillCategoryId,
+        row.category_name ?? row.category ?? row.name,
       ])
     );
     const skillItemLabelById = new Map(
-      (skillItemI18nRows || []).map((row) => [row.skill_item_id, row.label])
+      (skillItemI18nRows || []).map((row) => [
+        row.skill_item_id ?? row.item_id ?? row.skillItemId,
+        row.label ?? row.name,
+      ])
     );
     const skillItemsByCategoryId = new Map();
-    for (const row of skillItemBaseRows || []) {
+    const sortedSkillItems = (skillItemBaseRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
+    for (const row of sortedSkillItems) {
+      const categoryId =
+        row.skill_category_id ?? row.category_id ?? row.skillCategoryId;
       const label = skillItemLabelById.get(row.id);
-      if (!label) continue;
-      if (!skillItemsByCategoryId.has(row.skill_category_id)) {
-        skillItemsByCategoryId.set(row.skill_category_id, []);
+      if (!categoryId || !label) continue;
+      if (!skillItemsByCategoryId.has(categoryId)) {
+        skillItemsByCategoryId.set(categoryId, []);
       }
-      skillItemsByCategoryId.get(row.skill_category_id).push(label);
+      skillItemsByCategoryId.get(categoryId).push(label);
     }
 
-    const categories = (skillCategoryBaseRows || []).map((row) => ({
-      category: skillCategoryNameById.get(row.id) || '',
-      skills: skillItemsByCategoryId.get(row.id) || [],
-    }));
+    const categories = (skillCategoryBaseRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0))
+      .map((row) => ({
+        category: skillCategoryNameById.get(row.id) || row.name || '',
+        skills: skillItemsByCategoryId.get(row.id) || [],
+      }))
+      .filter((row) => row.category);
 
     const payload = {
       techStack,

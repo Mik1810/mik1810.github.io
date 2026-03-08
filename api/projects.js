@@ -24,16 +24,14 @@ export default async function handler(req, res) {
     ] = await Promise.all([
       supabaseAdmin
         .from('projects')
-        .select('id, slug, order_index, live_url')
-        .order('order_index', { ascending: true }),
+        .select('*'),
       supabaseAdmin
         .from('projects_i18n')
-        .select('project_id, title, description')
+        .select('*')
         .eq('locale', lang),
       supabaseAdmin
         .from('project_tags')
-        .select('project_id, order_index, tag')
-        .order('order_index', { ascending: true }),
+        .select('*'),
     ]);
 
     if (projectError || i18nError || tagError) {
@@ -45,25 +43,34 @@ export default async function handler(req, res) {
       (i18nRows || []).map((row) => [row.project_id, row])
     );
     const tagsByProjectId = new Map();
-    for (const row of tagRows || []) {
-      if (!tagsByProjectId.has(row.project_id)) tagsByProjectId.set(row.project_id, []);
-      tagsByProjectId.get(row.project_id).push(row.tag);
+    const sortedTags = (tagRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
+    for (const row of sortedTags) {
+      const projectId = row.project_id ?? row.projects_id ?? row.projectId;
+      if (!projectId) continue;
+      if (!tagsByProjectId.has(projectId)) tagsByProjectId.set(projectId, []);
+      tagsByProjectId.get(projectId).push(row.tag ?? row.name ?? '');
     }
 
-    const payload = (projectRows || [])
+    const sortedProjects = (projectRows || [])
+      .slice()
+      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
+
+    const payload = sortedProjects
       .map((row) => {
         const i18n = textByProjectId.get(row.id);
-        if (!i18n) return null;
         return {
           id: row.id,
-          slug: row.slug,
-          title: i18n.title,
-          description: i18n.description,
+          slug: row.slug ?? `project-${row.id}`,
+          title: i18n?.title ?? row.title ?? '',
+          description: i18n?.description ?? row.description ?? '',
           tags: tagsByProjectId.get(row.id) || [],
-          live: row.live_url,
+          live: row.live_url ?? row.live ?? null,
+          github: row.github_url ?? row.github ?? null,
         };
       })
-      .filter(Boolean);
+      .filter((row) => row.title);
 
     cache.set(cacheKey, { at: Date.now(), value: payload });
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');

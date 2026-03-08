@@ -22,11 +22,13 @@ function Skills() {
           setTechStack(data?.techStack || []);
           setSkillCategories(data?.categories || []);
         } else {
+          console.error('Skills API error:', data);
           setTechStack([]);
           setSkillCategories([]);
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
+          console.error('Skills fetch error:', error);
           setTechStack([]);
           setSkillCategories([]);
         }

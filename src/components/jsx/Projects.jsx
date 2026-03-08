@@ -32,8 +32,15 @@ function Projects() {
         });
         const data = await response.json();
         if (response.ok) setProjects(data || []);
+        else {
+          console.error('Projects API error:', data);
+          setProjects([]);
+        }
       } catch (error) {
-        if (error.name !== 'AbortError') setProjects([]);
+        if (error.name !== 'AbortError') {
+          console.error('Projects fetch error:', error);
+          setProjects([]);
+        }
       }
     };
 
