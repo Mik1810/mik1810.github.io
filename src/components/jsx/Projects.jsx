@@ -1,4 +1,4 @@
-import projectsData from '../../data/projects.json';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/Projects.css';
 
@@ -19,14 +19,27 @@ const handleTiltReset = (e) => {
 };
 
 function Projects() {
-  const { t } = useLanguage();
-  const translatedItems = t('projects.items');
+  const { t, lang } = useLanguage();
+  const [projects, setProjects] = useState([]);
 
-  // Merge translated text with static data (tags, links)
-  const projects = projectsData.map((proj, i) => ({
-    ...proj,
-    ...(translatedItems[i] || {}),
-  }));
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadProjects = async () => {
+      try {
+        const response = await fetch(`/api/projects?lang=${lang}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (response.ok) setProjects(data || []);
+      } catch (error) {
+        if (error.name !== 'AbortError') setProjects([]);
+      }
+    };
+
+    loadProjects();
+    return () => controller.abort();
+  }, [lang]);
 
   return (
     <section id="projects" className="projects">

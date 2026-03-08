@@ -1,12 +1,14 @@
-import personal from '../../data/personal.json';
 import { useLanguage } from '../../context/LanguageContext';
+import { useProfile } from '../../context/ProfileContext';
 import icons from '../../data/icons';
 import '../css/Footer.css';
 
 function Footer() {
   const year = new Date().getFullYear();
-  const { name, socials } = personal;
   const { t } = useLanguage();
+  const { profile } = useProfile();
+  const name = profile?.name || '';
+  const socials = profile?.socials || [];
 
   return (
     <footer className="footer">

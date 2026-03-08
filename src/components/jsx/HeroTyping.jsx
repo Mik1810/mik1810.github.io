@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
-import personal from '../../data/personal.json';
 import { useLanguage } from '../../context/LanguageContext';
+import { useProfile } from '../../context/ProfileContext';
 import icons from '../../data/icons';
 import '../css/HeroTyping.css';
 
 function HeroTyping() {
   const { t, lang } = useLanguage();
-  const { name: nameText, photo, university, socials } = personal;
-  const roles = t('hero.roles');
-  const greeting = t('hero.greeting');
-  const uniName = t('hero.university');
+  const { profile } = useProfile();
+  const nameText = profile?.name || '';
+  const photo = profile?.photo || '';
+  const university = profile?.university || { logo: '', name: '' };
+  const socials = profile?.socials || [];
+  const roles = profile?.roles || [];
+  const greeting = profile?.greeting || t('hero.greeting');
+  const uniName = university.name || '';
 
   // Phase 1: type the name
   const [nameCharIndex, setNameCharIndex] = useState(0);
@@ -20,14 +24,17 @@ function HeroTyping() {
   const [roleCharIndex, setRoleCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Reset typing on language change
   useEffect(() => {
+    setNameCharIndex(0);
+    setNameFinished(false);
+    setRoleIndex(0);
     setRoleCharIndex(0);
     setIsDeleting(false);
-  }, [lang]);
+  }, [nameText, lang]);
 
   // Type the name first
   useEffect(() => {
+    if (!nameText) return;
     if (nameFinished) return;
     if (nameCharIndex < nameText.length) {
       const timeout = setTimeout(() => setNameCharIndex(nameCharIndex + 1), 100);
@@ -36,7 +43,7 @@ function HeroTyping() {
       const timeout = setTimeout(() => setNameFinished(true), 600);
       return () => clearTimeout(timeout);
     }
-  }, [nameCharIndex, nameFinished]);
+  }, [nameCharIndex, nameFinished, nameText.length]);
 
   // Then cycle through roles
   useEffect(() => {

@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import personal from '../../data/personal.json';
 import { useLanguage } from '../../context/LanguageContext';
+import { useProfile } from '../../context/ProfileContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import '../css/Navbar.css';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { name, cv } = personal;
   const { t } = useLanguage();
+  const { profile } = useProfile();
+  const name = profile?.name || 'Portfolio';
+  const cv = profile?.cv || '#';
 
   const navLinks = [
     { href: '#hero', label: t('nav.home') },

@@ -27,3 +27,4 @@ claude.md
 chatgpt.md
 .env
 .vercel
+*.sql

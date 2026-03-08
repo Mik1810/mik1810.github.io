@@ -1,13 +1,41 @@
-import techStack from '../../data/techstack.json';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/Skills.css';
 
 const DEVICON_BASE = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons';
 
 function Skills() {
-  const { t } = useLanguage();
-  const techCategoryNames = t('skills.techCategories');
-  const skillCategories = t('skills.categories');
+  const { t, lang } = useLanguage();
+  const [techStack, setTechStack] = useState([]);
+  const [skillCategories, setSkillCategories] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadSkills = async () => {
+      try {
+        const response = await fetch(`/api/skills?lang=${lang}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setTechStack(data?.techStack || []);
+          setSkillCategories(data?.categories || []);
+        } else {
+          setTechStack([]);
+          setSkillCategories([]);
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setTechStack([]);
+          setSkillCategories([]);
+        }
+      }
+    };
+
+    loadSkills();
+    return () => controller.abort();
+  }, [lang]);
 
   return (
     <section id="skills" className="skills">
@@ -19,9 +47,9 @@ function Skills() {
 
         {/* Tech Stack visuale */}
         <div className="tech-stack reveal reveal-delay-2">
-          {techStack.map((cat, catIndex) => (
+          {techStack.map((cat) => (
             <div key={cat.category} className="tech-category">
-              <h3 className="tech-category-title">{techCategoryNames[catIndex] || cat.category}</h3>
+              <h3 className="tech-category-title">{cat.category}</h3>
               <div className="tech-items">
                 {cat.items.map((item) => (
                   <div key={item.name} className="tech-item" style={{ '--tech-color': item.color }}>

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import personal from '../../data/personal.json';
 import { useLanguage } from '../../context/LanguageContext';
+import { useProfile } from '../../context/ProfileContext';
 import '../css/Contact.css';
 
 function Contact() {
-  const { email } = personal;
   const { t } = useLanguage();
+  const { profile } = useProfile();
+  const email = profile?.email || '';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -45,7 +46,7 @@ function Contact() {
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
                 <circle cx="12" cy="10" r="3"/>
               </svg>
-              <span>{t('contact.location')}</span>
+              <span>{profile?.location || t('contact.location')}</span>
             </div>
           </div>
           <form className="contact-form" onSubmit={handleSubmit}>

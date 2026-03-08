@@ -1,9 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-import it from '../data/i18n/it.json';
-import en from '../data/i18n/en.json';
-
-const translations = { it, en };
 const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
@@ -16,6 +11,33 @@ export function LanguageProvider({ children }) {
     document.documentElement.setAttribute('lang', lang);
   }, [lang]);
 
+  const [translations, setTranslations] = useState({});
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadTranslations = async () => {
+      try {
+        const response = await fetch(`/api/ui?lang=${lang}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setTranslations(data || {});
+        } else {
+          setTranslations({});
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          setTranslations({});
+        }
+      }
+    };
+
+    loadTranslations();
+    return () => controller.abort();
+  }, [lang]);
+
   const toggleLang = useCallback(() => {
     setLang((prev) => (prev === 'it' ? 'en' : 'it'));
   }, []);
@@ -23,13 +45,13 @@ export function LanguageProvider({ children }) {
   const t = useCallback(
     (key) => {
       const keys = key.split('.');
-      let val = translations[lang];
+      let val = translations;
       for (const k of keys) {
         val = val?.[k];
       }
       return val ?? key;
     },
-    [lang]
+    [translations]
   );
 
   return (

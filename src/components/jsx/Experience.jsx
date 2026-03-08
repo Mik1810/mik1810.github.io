@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import educationData from '../../data/education.json';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/Experience.css';
 
 function Experience() {
-  const { t } = useLanguage();
-  const translatedExp = t('experience.experiences');
-  const translatedEdu = t('experience.education');
+  const { t, lang } = useLanguage();
 
-  const [apiExperiences, setApiExperiences] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [education, setEducation] = useState([]);
   const [loading, setLoading] = useState(true);
   const sectionRef = useRef(null);
 
@@ -19,21 +17,24 @@ function Experience() {
       setLoading(true);
 
       try {
-        const response = await fetch('/api/experiences', {
+        const response = await fetch(`/api/experiences?lang=${lang}`, {
           signal: controller.signal,
         });
         const data = await response.json();
 
         if (!response.ok) {
           console.error('API error:', data);
-          setApiExperiences([]);
+          setExperiences([]);
+          setEducation([]);
         } else {
-          setApiExperiences(data);
+          setExperiences(data?.experiences || []);
+          setEducation(data?.education || []);
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('Fetch error:', error);
-          setApiExperiences([]);
+          setExperiences([]);
+          setEducation([]);
         }
       }
 
@@ -42,14 +43,7 @@ function Experience() {
 
     fetchExperiences();
     return () => controller.abort();
-  }, []);
-
-  const experiences = useMemo(() => {
-    return apiExperiences.map((exp, i) => ({
-      ...exp,
-      ...(translatedExp[i] || {}),
-    }));
-  }, [apiExperiences, translatedExp]);
+  }, [lang]);
 
   useEffect(() => {
     if (loading) return;
@@ -74,14 +68,7 @@ function Experience() {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [loading, experiences.length, translatedEdu.length]);
-
-  const education = useMemo(() => {
-    return educationData.map((edu, i) => ({
-      ...edu,
-      ...(translatedEdu[i] || {}),
-    }));
-  }, [translatedEdu]);
+  }, [loading, experiences.length, education.length]);
 
   return (
     <section id="experience" className="experience" ref={sectionRef}>

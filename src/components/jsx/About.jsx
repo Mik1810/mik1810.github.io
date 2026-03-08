@@ -1,8 +1,29 @@
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/About.css';
 
 function About() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const [interests, setInterests] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadAbout = async () => {
+      try {
+        const response = await fetch(`/api/about?lang=${lang}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (response.ok) setInterests(data?.interests || []);
+      } catch (error) {
+        if (error.name !== 'AbortError') setInterests([]);
+      }
+    };
+
+    loadAbout();
+    return () => controller.abort();
+  }, [lang]);
 
   return (
     <section id="about" className="about">
@@ -13,7 +34,7 @@ function About() {
           <div className="about-bio">
             <p>{t('about.bio')}</p>
             <div className="about-interests">
-              {t('about.interests').map((interest) => (
+              {interests.map((interest) => (
                 <span key={interest} className="about-interest-tag">{interest}</span>
               ))}
             </div>
