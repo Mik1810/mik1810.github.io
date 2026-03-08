@@ -67,13 +67,32 @@ export function ContentProvider({ children }) {
             ? skillsSettled.value
             : { ok: false, data: null };
 
-        let projectsData = Array.isArray(projectsResult.data)
-          ? projectsResult.data
-          : [];
-        let skillsData =
-          skillsResult.data && typeof skillsResult.data === 'object'
-            ? skillsResult.data
-            : { techStack: [], categories: [] };
+        const normalizeProjects = (data) => {
+          if (Array.isArray(data)) return data;
+          if (Array.isArray(data?.projects)) return data.projects;
+          if (Array.isArray(data?.data)) return data.data;
+          return [];
+        };
+
+        const normalizeSkills = (data) => {
+          if (!data || typeof data !== 'object') {
+            return { techStack: [], categories: [] };
+          }
+          const techStack = Array.isArray(data.techStack)
+            ? data.techStack
+            : Array.isArray(data.tech_stack)
+              ? data.tech_stack
+              : [];
+          const categories = Array.isArray(data.categories)
+            ? data.categories
+            : Array.isArray(data.skills)
+              ? data.skills
+              : [];
+          return { techStack, categories };
+        };
+
+        let projectsData = normalizeProjects(projectsResult.data);
+        let skillsData = normalizeSkills(skillsResult.data);
 
         // First-load guard: if APIs transiently return empty, retry once more.
         if (projectsData.length === 0 || (skillsData.categories || []).length === 0) {
@@ -83,16 +102,18 @@ export function ContentProvider({ children }) {
             fetchJson(`/api/skills?lang=${lang}`),
           ]);
 
-          if (projectsRetry.ok && Array.isArray(projectsRetry.data) && projectsRetry.data.length > 0) {
-            projectsData = projectsRetry.data;
+          const projectsRetryData = normalizeProjects(projectsRetry.data);
+          const skillsRetryData = normalizeSkills(skillsRetry.data);
+
+          if (projectsRetry.ok && projectsRetryData.length > 0) {
+            projectsData = projectsRetryData;
           }
           if (
             skillsRetry.ok &&
-            skillsRetry.data &&
-            Array.isArray(skillsRetry.data.categories) &&
-            skillsRetry.data.categories.length > 0
+            Array.isArray(skillsRetryData.categories) &&
+            skillsRetryData.categories.length > 0
           ) {
-            skillsData = skillsRetry.data;
+            skillsData = skillsRetryData;
           }
         }
 
@@ -117,6 +138,21 @@ export function ContentProvider({ children }) {
             ? skillsData.categories
             : []
         );
+
+        if (projectsData.length === 0) {
+          console.warn('Projects empty on client load', {
+            ok: projectsResult.ok,
+            dataType: typeof projectsResult.data,
+            data: projectsResult.data,
+          });
+        }
+        if (!Array.isArray(skillsData?.categories) || skillsData.categories.length === 0) {
+          console.warn('Skills categories empty on client load', {
+            ok: skillsResult.ok,
+            dataType: typeof skillsResult.data,
+            data: skillsResult.data,
+          });
+        }
       } catch (error) {
         if (error.name !== 'AbortError') {
           setAbout({ interests: [] });

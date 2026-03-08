@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 const CACHE_TTL_MS = 60 * 1000;
 const cache = new Map();
 const keyOf = (v) => (v === undefined || v === null ? null : String(v));
+const pick = (...vals) => vals.find((v) => v !== undefined && v !== null);
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -19,13 +20,13 @@ export default async function handler(req, res) {
 
   try {
     const [
-      { data: techBaseRows, error: techBaseError },
-      { data: techI18nRows, error: techI18nError },
-      { data: techItemRows, error: techItemError },
-      { data: skillCategoryBaseRows, error: skillCategoryBaseError },
-      { data: skillCategoryI18nRows, error: skillCategoryI18nError },
-      { data: skillItemBaseRows, error: skillItemBaseError },
-      { data: skillItemI18nRows, error: skillItemI18nError },
+      { data: techCategoriesBase, error: techCategoriesError },
+      { data: techCategoriesI18n, error: techCategoriesI18nError },
+      { data: techItemsRows, error: techItemsError },
+      { data: skillCategoriesBase, error: skillCategoriesError },
+      { data: skillCategoriesI18n, error: skillCategoriesI18nError },
+      { data: skillItemsBase, error: skillItemsError },
+      { data: skillItemsI18n, error: skillItemsI18nError },
     ] = await Promise.all([
       supabaseAdmin
         .from('tech_categories')
@@ -58,59 +59,85 @@ export default async function handler(req, res) {
     ]);
 
     if (
-      techBaseError ||
-      techI18nError ||
-      techItemError ||
-      skillCategoryBaseError ||
-      skillCategoryI18nError ||
-      skillItemBaseError ||
-      skillItemI18nError
+      techCategoriesError ||
+      techCategoriesI18nError ||
+      techItemsError ||
+      skillCategoriesError ||
+      skillCategoriesI18nError ||
+      skillItemsError ||
+      skillItemsI18nError
     ) {
       console.error('Supabase error:', {
-        techBaseError,
-        techI18nError,
-        techItemError,
-        skillCategoryBaseError,
-        skillCategoryI18nError,
-        skillItemBaseError,
-        skillItemI18nError,
+        techCategoriesError,
+        techCategoriesI18nError,
+        techItemsError,
+        skillCategoriesError,
+        skillCategoriesI18nError,
+        skillItemsError,
+        skillItemsI18nError,
       });
       return res.status(500).json({ error: 'Database error' });
     }
 
     const techNameById = new Map(
-      (techI18nRows || []).map((r) => [keyOf(r.tech_category_id), r.name])
+      (techCategoriesI18n || []).map((row) => [
+        keyOf(
+          pick(
+            row.tech_category_id,
+            row.category_id,
+            row.id_category,
+            row.techCategoryId
+          )
+        ),
+        pick(row.name, row.category_name, row.category),
+      ])
     );
     const techItemsByCategoryId = new Map();
-    for (const row of techItemRows || []) {
-      const categoryId = keyOf(row.tech_category_id);
+    for (const row of techItemsRows || []) {
+      const categoryId = keyOf(
+        pick(row.tech_category_id, row.category_id, row.id_category, row.techCategoryId)
+      );
       if (!categoryId) continue;
       if (!techItemsByCategoryId.has(categoryId)) techItemsByCategoryId.set(categoryId, []);
       techItemsByCategoryId.get(categoryId).push({
-        name: row.name,
-        devicon: row.devicon,
-        color: row.color,
+        name: pick(row.name, row.label, ''),
+        devicon: pick(row.devicon, row.icon, ''),
+        color: pick(row.color, '#999999'),
       });
     }
 
-    const techStack = (techBaseRows || []).map((row) => ({
-      category: techNameById.get(keyOf(row.id)) || row.slug || '',
+    const techStack = (techCategoriesBase || []).map((row) => ({
+      category: techNameById.get(keyOf(row.id)) || row.slug || row.name || '',
       items: techItemsByCategoryId.get(keyOf(row.id)) || [],
     }));
 
     const skillCategoryNameById = new Map(
-      (skillCategoryI18nRows || []).map((r) => [
-        keyOf(r.skill_category_id),
-        r.category_name,
+      (skillCategoriesI18n || []).map((row) => [
+        keyOf(
+          pick(
+            row.skill_category_id,
+            row.category_id,
+            row.id_category,
+            row.skillCategoryId
+          )
+        ),
+        pick(row.category_name, row.name, row.category),
       ])
     );
     const skillItemLabelById = new Map(
-      (skillItemI18nRows || []).map((r) => [keyOf(r.skill_item_id), r.label])
+      (skillItemsI18n || []).map((row) => [
+        keyOf(
+          pick(row.skill_item_id, row.item_id, row.id_item, row.skillItemId)
+        ),
+        pick(row.label, row.name, row.value),
+      ])
     );
 
     const skillItemsByCategoryId = new Map();
-    for (const row of skillItemBaseRows || []) {
-      const categoryId = keyOf(row.skill_category_id);
+    for (const row of skillItemsBase || []) {
+      const categoryId = keyOf(
+        pick(row.skill_category_id, row.category_id, row.id_category, row.skillCategoryId)
+      );
       const label = skillItemLabelById.get(keyOf(row.id));
       if (!categoryId || !label) continue;
       if (!skillItemsByCategoryId.has(categoryId)) {
@@ -119,13 +146,15 @@ export default async function handler(req, res) {
       skillItemsByCategoryId.get(categoryId).push(label);
     }
 
-    const categories = (skillCategoryBaseRows || []).map((row) => ({
+    const categories = (skillCategoriesBase || []).map((row) => ({
       category: skillCategoryNameById.get(keyOf(row.id)) || `Category ${row.id}`,
       skills: skillItemsByCategoryId.get(keyOf(row.id)) || [],
     }));
 
     const payload = { techStack, categories };
-    cache.set(cacheKey, { at: Date.now(), value: payload });
+    if (techStack.length > 0 || categories.length > 0) {
+      cache.set(cacheKey, { at: Date.now(), value: payload });
+    }
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json(payload);
   } catch (err) {

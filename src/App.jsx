@@ -18,7 +18,8 @@ import { useContent } from './context/ContentContext';
 function App() {
   const { loading: languageLoading } = useLanguage();
   const { loading: profileLoading } = useProfile();
-  const { loading: contentLoading } = useContent();
+  const { loading: contentLoading, projects, skillCategories, techStack } =
+    useContent();
 
   const appLoading = languageLoading || profileLoading || contentLoading;
 
@@ -38,9 +39,11 @@ function App() {
       { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
-    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    document.querySelectorAll('.reveal').forEach((el) => {
+      if (!el.classList.contains('visible')) observer.observe(el);
+    });
     return () => observer.disconnect();
-  }, [appLoading]);
+  }, [appLoading, projects.length, skillCategories.length, techStack.length]);
 
   if (appLoading) {
     return (
