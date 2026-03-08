@@ -9,7 +9,6 @@ import Contact from './components/jsx/Contact';
 import Footer from './components/jsx/Footer';
 import ScrollToTop from './components/jsx/ScrollToTop';
 import ScrollProgress from './components/jsx/ScrollProgress';
-import SupabaseTest from './components/jsx/SupabaseTest';
 import AdminLogin from './components/jsx/AdminLogin';
 import { Routes, Route } from 'react-router-dom';
 

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '../../supabaseClient';
 import educationData from '../../data/education.json';
 import { useLanguage } from '../../context/LanguageContext';
 import '../css/Experience.css';
@@ -17,22 +16,25 @@ function Experience() {
     const fetchExperiences = async () => {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from('experiences')
-        .select('*')
-        .order('order_index', { ascending: true });
+      try {
+        const response = await fetch('/api/experiences');
+        const data = await response.json();
 
-      if (error) {
-        console.error('Supabase error:', error);
+        if (!response.ok) {
+          console.error('API error:', data);
+          setExperiences([]);
+        } else {
+          const merged = data.map((exp, i) => ({
+            ...exp,
+            ...(translatedExp[i] || {}),
+          }));
+
+          console.log('Experiences from API:', data);
+          setExperiences(merged);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
         setExperiences([]);
-      } else {
-        const merged = data.map((exp, i) => ({
-          ...exp,
-          ...(translatedExp[i] || {}),
-        }));
-
-        console.log('Supabase experiences:', data);
-        setExperiences(merged);
       }
 
       setLoading(false);
@@ -82,7 +84,9 @@ function Experience() {
         </p>
 
         <div className="timeline">
-          <h3 className="timeline-heading">{t('experience.activitiesHeading')}</h3>
+          <h3 className="timeline-heading">
+            {t('experience.activitiesHeading')}
+          </h3>
 
           {loading ? (
             <div className="timeline-item">Caricamento esperienze...</div>
@@ -92,56 +96,87 @@ function Experience() {
             experiences.map((exp, index) => (
               <div
                 key={exp.id || index}
-                className={`timeline-item reveal reveal-delay-${Math.min(index + 1, 4)}`}
+                className={`timeline-item reveal reveal-delay-${Math.min(
+                  index + 1,
+                  4
+                )}`}
               >
                 <div className="timeline-dot"></div>
+
                 <div className="timeline-content">
                   <div className="timeline-header">
                     <div className="timeline-header-left">
                       <span
-                        className={`timeline-icon${exp.logo_bg ? ' has-logo-bg' : ''}`}
-                        style={exp.logo_bg ? { '--logo-bg': exp.logo_bg } : undefined}
+                        className={`timeline-icon${
+                          exp.logo_bg ? ' has-logo-bg' : ''
+                        }`}
+                        style={
+                          exp.logo_bg
+                            ? { '--logo-bg': exp.logo_bg }
+                            : undefined
+                        }
                       >
-                        {exp.logo ? <img src={exp.logo} alt={exp.role} /> : exp.icon}
+                        {exp.logo ? (
+                          <img src={exp.logo} alt={exp.role} />
+                        ) : (
+                          exp.icon
+                        )}
                       </span>
+
                       <div>
                         <h4 className="timeline-role">{exp.role}</h4>
                         <p className="timeline-company">{exp.company}</p>
                       </div>
                     </div>
+
                     <span className="timeline-period">
                       {exp.period || `${exp.start_date} - ${exp.end_date}`}
                     </span>
                   </div>
+
                   <p className="timeline-description">{exp.description}</p>
                 </div>
               </div>
             ))
           )}
 
-          <h3 className="timeline-heading reveal" style={{ marginTop: '3rem' }}>
+          <h3
+            className="timeline-heading reveal"
+            style={{ marginTop: '3rem' }}
+          >
             {t('experience.educationHeading')}
           </h3>
 
           {education.map((edu, index) => (
             <div
               key={index}
-              className={`timeline-item reveal reveal-delay-${Math.min(index + 1, 4)}`}
+              className={`timeline-item reveal reveal-delay-${Math.min(
+                index + 1,
+                4
+              )}`}
             >
               <div className="timeline-dot"></div>
+
               <div className="timeline-content">
                 <div className="timeline-header">
                   <div className="timeline-header-left">
                     <span className="timeline-icon">
-                      {edu.logo ? <img src={edu.logo} alt={edu.degree} /> : edu.icon}
+                      {edu.logo ? (
+                        <img src={edu.logo} alt={edu.degree} />
+                      ) : (
+                        edu.icon
+                      )}
                     </span>
+
                     <div>
                       <h4 className="timeline-role">{edu.degree}</h4>
                       <p className="timeline-company">{edu.institution}</p>
                     </div>
                   </div>
+
                   <span className="timeline-period">{edu.period}</span>
                 </div>
+
                 <p className="timeline-description">{edu.description}</p>
               </div>
             </div>
