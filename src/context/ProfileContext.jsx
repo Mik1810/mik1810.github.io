@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLanguage } from './LanguageContext';
 
 const ProfileContext = createContext();
@@ -7,6 +7,11 @@ export function ProfileProvider({ children }) {
   const { lang } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const refreshProfile = useCallback(() => {
+    setReloadKey((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,10 +38,10 @@ export function ProfileProvider({ children }) {
 
     loadProfile();
     return () => controller.abort();
-  }, [lang]);
+  }, [lang, reloadKey]);
 
   return (
-    <ProfileContext.Provider value={{ profile, loading }}>
+    <ProfileContext.Provider value={{ profile, loading, refreshProfile }}>
       {children}
     </ProfileContext.Provider>
   );

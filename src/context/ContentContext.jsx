@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLanguage } from './LanguageContext';
 
 const ContentContext = createContext();
 
 export function ContentProvider({ children }) {
   const { lang } = useLanguage();
+  const [reloadKey, setReloadKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [about, setAbout] = useState({ interests: [] });
   const [projects, setProjects] = useState([]);
@@ -12,6 +13,9 @@ export function ContentProvider({ children }) {
   const [education, setEducation] = useState([]);
   const [techStack, setTechStack] = useState([]);
   const [skillCategories, setSkillCategories] = useState([]);
+  const refreshContent = useCallback(() => {
+    setReloadKey((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -138,21 +142,6 @@ export function ContentProvider({ children }) {
             ? skillsData.categories
             : []
         );
-
-        if (projectsData.length === 0) {
-          console.warn('Projects empty on client load', {
-            ok: projectsResult.ok,
-            dataType: typeof projectsResult.data,
-            data: projectsResult.data,
-          });
-        }
-        if (!Array.isArray(skillsData?.categories) || skillsData.categories.length === 0) {
-          console.warn('Skills categories empty on client load', {
-            ok: skillsResult.ok,
-            dataType: typeof skillsResult.data,
-            data: skillsResult.data,
-          });
-        }
       } catch (error) {
         if (error.name !== 'AbortError') {
           setAbout({ interests: [] });
@@ -169,7 +158,7 @@ export function ContentProvider({ children }) {
 
     loadContent();
     return () => controller.abort();
-  }, [lang]);
+  }, [lang, reloadKey]);
 
   return (
     <ContentContext.Provider
@@ -181,6 +170,7 @@ export function ContentProvider({ children }) {
         education,
         techStack,
         skillCategories,
+        refreshContent,
       }}
     >
       {children}

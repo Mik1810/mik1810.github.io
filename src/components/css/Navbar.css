@@ -35,6 +35,40 @@
   flex-shrink: 0;
 }
 
+.navbar-login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  padding: 0.4rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.navbar-login-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+}
+
+.navbar-logout-btn {
+  border-color: color-mix(in srgb, #ef4444 35%, var(--color-border));
+  color: #ef4444;
+}
+
+.navbar-logout-btn:hover {
+  border-color: #ef4444;
+  color: #ffffff;
+  background: #ef4444;
+}
+
 /* Stile condiviso per i bottoni icona della navbar (theme toggle, lang switcher) */
 .navbar-icon-btn {
   display: inline-flex;
@@ -156,6 +190,10 @@
   }
 
   .navbar-right .lang-switcher {
+    display: none;
+  }
+
+  .navbar-login-btn span {
     display: none;
   }
 }

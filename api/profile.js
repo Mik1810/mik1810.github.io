@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   try {
     const [
       { data: profileRow, error: profileError },
-      { data: profileI18nRows, error: profileI18nError },
+      profileI18nResult,
       { data: socialRows, error: socialError },
       { data: roleBaseRows, error: roleBaseError },
       { data: roleI18nRows, error: roleI18nError },
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         .single(),
       supabaseAdmin
         .from('profile_i18n')
-        .select('locale, greeting, location, university_name')
+        .select('locale, greeting, location, university_name, bio')
         .eq('profile_id', 1)
         .eq('locale', lang),
       supabaseAdmin
@@ -48,6 +48,20 @@ export default async function handler(req, res) {
         .select('hero_role_id, role')
         .eq('locale', lang),
     ]);
+
+    let profileI18nRows = profileI18nResult.data;
+    let profileI18nError = profileI18nResult.error;
+
+    // Backward compatibility if `bio` column is not present yet.
+    if (profileI18nError?.code === '42703') {
+      const fallback = await supabaseAdmin
+        .from('profile_i18n')
+        .select('locale, greeting, location, university_name')
+        .eq('profile_id', 1)
+        .eq('locale', lang);
+      profileI18nRows = fallback.data;
+      profileI18nError = fallback.error;
+    }
 
     if (
       profileError ||
@@ -79,6 +93,7 @@ export default async function handler(req, res) {
       cv: profileRow?.cv_url || '',
       greeting: profileI18n.greeting || '',
       location: profileI18n.location || '',
+      bio: profileI18n.bio || '',
       university: {
         name: profileI18n.university_name || '',
         logo: profileRow?.university_logo_url || '',

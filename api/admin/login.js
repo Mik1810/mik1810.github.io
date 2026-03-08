@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../lib/supabaseAdmin.js';
+import { createSessionCookie, createSessionToken } from '../../lib/authSession.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -20,8 +21,16 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: error.message });
     }
 
+    const user = data?.user ? { id: data.user.id, email: data.user.email } : null;
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid user session' });
+    }
+
+    const token = createSessionToken(user);
+    res.setHeader('Set-Cookie', createSessionCookie(token));
+
     return res.status(200).json({
-      user: data?.user ? { id: data.user.id, email: data.user.email } : null,
+      user,
     });
   } catch (err) {
     return res.status(500).json({ error: 'Internal server error' });

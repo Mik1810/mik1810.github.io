@@ -1,0 +1,103 @@
+.admin-page {
+  min-height: calc(100vh - 64px);
+  display: grid;
+  place-items: center;
+  padding: 6rem 1rem 2rem;
+  background: linear-gradient(
+    160deg,
+    var(--color-bg-gradient-start),
+    var(--color-bg-gradient-end)
+  );
+}
+
+.admin-card {
+  width: min(100%, 460px);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 1.4rem;
+}
+
+.admin-card h3 {
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.admin-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.95rem;
+}
+
+.admin-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admin-input {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.68rem 0.72rem;
+  background: var(--color-input-bg);
+  color: var(--color-text-primary);
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.admin-btn {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-btn-primary-bg);
+  color: var(--color-btn-primary-text);
+  padding: 0.72rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.2s, opacity 0.2s;
+}
+
+.admin-btn:hover {
+  transform: translateY(-1px);
+  background: var(--color-btn-primary-hover);
+}
+
+.admin-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-btn-inline {
+  width: auto;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.admin-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.admin-user {
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.admin-user b {
+  color: var(--color-text-primary);
+}

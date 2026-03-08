@@ -5,7 +5,6 @@ const CACHE_TTL_MS = 60 * 1000;
 const cache = new Map();
 
 export default async function handler(req, res) {
-  const startedAt = Date.now();
   const lang = req.query?.lang === 'en' ? 'en' : 'it';
   const cacheKey = `experiences:${lang}`;
 
@@ -22,7 +21,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const dbStartedAt = Date.now();
     const [{ data: experiencesBase, error: experiencesError }, { data: experiencesI18n, error: experiencesI18nError }, { data: educationBase, error: educationError }, { data: educationI18n, error: educationI18nError }] = await Promise.all([
       supabaseAdmin
         .from('experiences')
@@ -105,18 +103,9 @@ export default async function handler(req, res) {
       experiences,
       education,
     };
-    const dbMs = Date.now() - dbStartedAt;
-
     cache.set(cacheKey, { at: Date.now(), value: payload });
 
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
-    console.log('Fetched experiences timing:', {
-      lang,
-      dbMs,
-      totalMs: Date.now() - startedAt,
-      experienceRows: experiences.length,
-      educationRows: education.length,
-    });
     return res.status(200).json(payload);
   } catch (err) {
     console.error('Server error:', err);

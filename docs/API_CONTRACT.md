@@ -8,69 +8,9 @@ Language parameter:
 - Supported: `it`, `en`
 - Default fallback: `it`
 
-## GET `/api/ui?lang=it|en`
-Returns localized UI labels used by `t(...)`.
-
-Example:
-```bash
-curl "http://localhost:3000/api/ui?lang=it"
-```
-
-Response (example):
-```json
-{
-  "nav": {
-    "home": "Home",
-    "about": "Chi Sono",
-    "projects": "Progetti",
-    "experience": "Esperienze",
-    "skills": "Competenze",
-    "contact": "Contatti",
-    "downloadCv": "Scarica CV"
-  },
-  "hero": {
-    "btnProjects": "I miei progetti",
-    "btnContact": "Contattami"
-  },
-  "about": {
-    "title": "Chi Sono",
-    "subtitle": "Un po' su di me",
-    "bio": "..."
-  },
-  "projects": {
-    "title": "Progetti e Competizioni",
-    "subtitle": "Una selezione dei miei lavori più significativi",
-    "codeLabel": "Codice",
-    "siteLabel": "Sito"
-  },
-  "experience": {
-    "title": "Esperienze",
-    "subtitle": "Il mio percorso accademico e le attività svolte",
-    "activitiesHeading": "Attività e Conferenze",
-    "educationHeading": "Formazione"
-  },
-  "skills": {
-    "title": "Competenze",
-    "subtitle": "Le tecnologie e gli strumenti con cui lavoro"
-  },
-  "contact": {
-    "title": "Contatti",
-    "subtitle": "...",
-    "nameLabel": "Nome",
-    "namePlaceholder": "Il tuo nome",
-    "emailLabel": "Email",
-    "emailPlaceholder": "La tua email",
-    "messageLabel": "Messaggio",
-    "messagePlaceholder": "Scrivi il tuo messaggio...",
-    "sendBtn": "Invia messaggio",
-    "mailSubject": "Contatto da",
-    "mailFrom": "Da"
-  },
-  "footer": {
-    "rights": "Tutti i diritti riservati."
-  }
-}
-```
+Static labels (headings/buttons/nav/form labels) are local-only:
+- `src/data/staticI18n.json`
+- No `/api/ui` endpoint.
 
 ## GET `/api/profile?lang=it|en`
 Returns profile data used by Hero/Navbar/Footer/Contact.

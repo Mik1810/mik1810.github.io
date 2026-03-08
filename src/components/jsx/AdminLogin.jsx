@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import '../css/AdminAuth.css';
 
 const AdminLogin = () => {
+  const navigate = useNavigate();
+  const { authenticated, authLoading, login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (!authLoading && authenticated) {
+      navigate('/admin', { replace: true });
+    }
+  }, [authLoading, authenticated, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,61 +23,59 @@ const AdminLogin = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || 'Login fallito');
-        setUser(null);
+      const result = await login(email, password);
+      if (!result.ok) {
+        setError(result.error || 'Login fallito');
       } else {
-        setUser(data.user || null);
+        navigate('/admin', { replace: true });
       }
-    } catch (err) {
+    } catch {
       setError('Errore di rete durante il login');
-      setUser(null);
     }
 
     setLoading(false);
   };
 
   return (
-    <div style={{ maxWidth: 320, margin: '2rem auto', padding: '2rem', borderRadius: 8, boxShadow: '0 2px 8px #0002', background: '#fff' }}>
-      <h3>Admin Login</h3>
-      {user ? (
-        <div>
-          <p>Login effettuato come: <b>{user.email}</b></p>
-        </div>
-      ) : (
-        <form onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', marginBottom: 8, padding: 8 }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', marginBottom: 8, padding: 8 }}
-          />
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: 8 }}>
+    <main className="admin-page">
+      <section className="admin-card">
+        <h3>Admin Login</h3>
+        <form className="admin-form" onSubmit={handleLogin}>
+          <label className="admin-label" htmlFor="admin-email">
+            Email
+            <input
+              className="admin-input"
+              type="email"
+              id="admin-email"
+              name="email"
+              autoComplete="username"
+              placeholder="name@example.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </label>
+          <label className="admin-label" htmlFor="admin-password">
+            Password
+            <input
+              className="admin-input"
+              type="password"
+              id="admin-password"
+              name="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+          </label>
+          <button className="admin-btn" type="submit" disabled={loading}>
             {loading ? 'Login...' : 'Login'}
           </button>
-          {error && <p style={{ color: 'red', marginTop: 8 }}>{error}</p>}
+          {error && <p className="admin-error">{error}</p>}
         </form>
-      )}
-    </div>
+      </section>
+    </main>
   );
 };
 

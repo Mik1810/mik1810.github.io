@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Navbar from './components/jsx/Navbar';
 import HeroTyping from './components/jsx/HeroTyping';
 import About from './components/jsx/About';
@@ -10,18 +10,47 @@ import Footer from './components/jsx/Footer';
 import ScrollToTop from './components/jsx/ScrollToTop';
 import ScrollProgress from './components/jsx/ScrollProgress';
 import AdminLogin from './components/jsx/AdminLogin';
-import { Routes, Route } from 'react-router-dom';
+import AdminDashboard from './components/jsx/AdminDashboard';
+import RequireAdmin from './components/jsx/RequireAdmin';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { useLanguage } from './context/LanguageContext';
 import { useProfile } from './context/ProfileContext';
 import { useContent } from './context/ContentContext';
 
 function App() {
+  const { pathname } = useLocation();
   const { loading: languageLoading } = useLanguage();
-  const { loading: profileLoading } = useProfile();
-  const { loading: contentLoading, projects, skillCategories, techStack } =
+  const { loading: profileLoading, profile, refreshProfile } = useProfile();
+  const { loading: contentLoading, projects, skillCategories, techStack, refreshContent } =
     useContent();
+  const previousPathnameRef = useRef(pathname);
+  const [bootDelayDone, setBootDelayDone] = useState(false);
 
-  const appLoading = languageLoading || profileLoading || contentLoading;
+  const dataLoading = languageLoading || profileLoading || contentLoading;
+  const heroReady = Boolean(profile?.name && Array.isArray(profile?.roles));
+  const shouldGateHome = pathname === '/';
+
+  useEffect(() => {
+    if (dataLoading) {
+      setBootDelayDone(false);
+      return undefined;
+    }
+    const timeout = setTimeout(() => setBootDelayDone(true), 450);
+    return () => clearTimeout(timeout);
+  }, [dataLoading]);
+
+  const appLoading = shouldGateHome
+    ? dataLoading || !heroReady || !bootDelayDone
+    : dataLoading;
+
+  useEffect(() => {
+    const previousPath = previousPathnameRef.current;
+    if (pathname === '/' && previousPath !== '/') {
+      refreshProfile();
+      refreshContent();
+    }
+    previousPathnameRef.current = pathname;
+  }, [pathname, refreshProfile, refreshContent]);
 
   // Scroll-reveal with IntersectionObserver
   useEffect(() => {
@@ -58,7 +87,15 @@ function App() {
       <ScrollProgress />
       <Navbar />
       <Routes>
-        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/login" element={<AdminLogin />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminDashboard />
+            </RequireAdmin>
+          }
+        />
         <Route path="/" element={
           <main>
             <HeroTyping />
