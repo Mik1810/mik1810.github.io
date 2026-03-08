@@ -1,49 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useContent } from '../../context/ContentContext';
 import '../css/Experience.css';
 
 function Experience() {
-  const { t, lang } = useLanguage();
-
-  const [experiences, setExperiences] = useState([]);
-  const [education, setEducation] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
+  const { experiences, education, loading } = useContent();
   const sectionRef = useRef(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchExperiences = async () => {
-      setLoading(true);
-
-      try {
-        const response = await fetch(`/api/experiences?lang=${lang}`, {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-
-        if (!response.ok) {
-          console.error('API error:', data);
-          setExperiences([]);
-          setEducation([]);
-        } else {
-          setExperiences(data?.experiences || []);
-          setEducation(data?.education || []);
-        }
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          console.error('Fetch error:', error);
-          setExperiences([]);
-          setEducation([]);
-        }
-      }
-
-      setLoading(false);
-    };
-
-    fetchExperiences();
-    return () => controller.abort();
-  }, [lang]);
 
   useEffect(() => {
     if (loading) return;

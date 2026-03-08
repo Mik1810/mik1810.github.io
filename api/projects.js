@@ -3,17 +3,7 @@ import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 const CACHE_TTL_MS = 60 * 1000;
 const cache = new Map();
 
-const firstDefined = (...vals) => vals.find((v) => v !== undefined && v !== null);
-
-const projectFk = (row) =>
-  firstDefined(
-    row.project_id,
-    row.projects_id,
-    row.projectId,
-    row.id_project,
-    row.idProject,
-    row.id
-  );
+const keyOf = (v) => (v === undefined || v === null ? null : String(v));
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -33,50 +23,39 @@ export default async function handler(req, res) {
       { data: projectRows, error: projectError },
       { data: i18nRows, error: i18nError },
       { data: tagRows, error: tagError },
-      { data: i18nFallbackRows, error: i18nFallbackError },
     ] = await Promise.all([
       supabaseAdmin
         .from('projects')
-        .select('*'),
+        .select('id, slug, order_index, live_url'),
       supabaseAdmin
         .from('projects_i18n')
-        .select('*')
+        .select('project_id, title, description')
         .eq('locale', lang),
       supabaseAdmin
         .from('project_tags')
-        .select('*'),
-      supabaseAdmin
-        .from('projects_i18n')
-        .select('*')
-        .eq('locale', lang === 'it' ? 'en' : 'it'),
+        .select('project_id, order_index, tag'),
     ]);
 
-    if (projectError || i18nError || tagError || i18nFallbackError) {
+    if (projectError || i18nError || tagError) {
       console.error('Supabase error:', {
         projectError,
         i18nError,
         tagError,
-        i18nFallbackError,
       });
       return res.status(500).json({ error: 'Database error' });
     }
 
-    const textByProjectId = new Map(
-      (i18nRows || [])
-        .map((row) => [projectFk(row), row])
-        .filter(([id]) => id !== undefined && id !== null)
-    );
-    const fallbackTextByProjectId = new Map(
-      (i18nFallbackRows || [])
-        .map((row) => [projectFk(row), row])
-        .filter(([id]) => id !== undefined && id !== null)
-    );
+    const textByProjectId = new Map();
+    for (const row of i18nRows || []) {
+      const id = keyOf(row.project_id);
+      if (id) textByProjectId.set(id, row);
+    }
     const tagsByProjectId = new Map();
     const sortedTags = (tagRows || [])
       .slice()
       .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
     for (const row of sortedTags) {
-      const projectId = projectFk(row);
+      const projectId = keyOf(row.project_id);
       if (!projectId) continue;
       if (!tagsByProjectId.has(projectId)) tagsByProjectId.set(projectId, []);
       tagsByProjectId.get(projectId).push(row.tag ?? row.name ?? '');
@@ -88,30 +67,18 @@ export default async function handler(req, res) {
 
     let payload = sortedProjects
       .map((row) => {
-        const i18n = textByProjectId.get(row.id);
-        const i18nFallback = fallbackTextByProjectId.get(row.id);
+        const rowKey = keyOf(row.id);
+        const i18n = textByProjectId.get(rowKey);
         return {
           id: row.id,
           slug: row.slug ?? `project-${row.id}`,
-          title: i18n?.title ?? i18nFallback?.title ?? row.title ?? '',
-          description:
-            i18n?.description ??
-            i18nFallback?.description ??
-            row.description ??
-            '',
-          tags: tagsByProjectId.get(row.id) || [],
+          title: i18n?.title ?? '',
+          description: i18n?.description ?? '',
+          tags: tagsByProjectId.get(rowKey) || [],
           live: row.live_url ?? row.live ?? null,
-          github: row.github_url ?? row.github ?? null,
+          github: null,
         };
-      })
-      .filter((row) => row.title);
-
-    if (payload.length === 0) {
-      return res.status(500).json({
-        error:
-          'No project rows found in DB. Ensure projects, projects_i18n, and project_tags are populated.',
       });
-    }
 
     cache.set(cacheKey, { at: Date.now(), value: payload });
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');

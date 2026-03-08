@@ -11,10 +11,21 @@ import ScrollToTop from './components/jsx/ScrollToTop';
 import ScrollProgress from './components/jsx/ScrollProgress';
 import AdminLogin from './components/jsx/AdminLogin';
 import { Routes, Route } from 'react-router-dom';
+import { useLanguage } from './context/LanguageContext';
+import { useProfile } from './context/ProfileContext';
+import { useContent } from './context/ContentContext';
 
 function App() {
+  const { loading: languageLoading } = useLanguage();
+  const { loading: profileLoading } = useProfile();
+  const { loading: contentLoading } = useContent();
+
+  const appLoading = languageLoading || profileLoading || contentLoading;
+
   // Scroll-reveal with IntersectionObserver
   useEffect(() => {
+    if (appLoading) return undefined;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -26,11 +37,18 @@ function App() {
       },
       { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
+
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+    return () => observer.disconnect();
+  }, [appLoading]);
+
+  if (appLoading) {
+    return (
+      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+        <p>Caricamento contenuti...</p>
+      </main>
+    );
+  }
 
   return (
     <>

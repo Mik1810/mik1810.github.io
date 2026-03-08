@@ -1,29 +1,11 @@
-import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useContent } from '../../context/ContentContext';
 import '../css/About.css';
 
 function About() {
-  const { t, lang } = useLanguage();
-  const [interests, setInterests] = useState([]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadAbout = async () => {
-      try {
-        const response = await fetch(`/api/about?lang=${lang}`, {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-        if (response.ok) setInterests(data?.interests || []);
-      } catch (error) {
-        if (error.name !== 'AbortError') setInterests([]);
-      }
-    };
-
-    loadAbout();
-    return () => controller.abort();
-  }, [lang]);
+  const { t } = useLanguage();
+  const { about } = useContent();
+  const interests = about?.interests || [];
 
   return (
     <section id="about" className="about">

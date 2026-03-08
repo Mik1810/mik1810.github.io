@@ -12,11 +12,13 @@ export function LanguageProvider({ children }) {
   }, [lang]);
 
   const [translations, setTranslations] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
 
     const loadTranslations = async () => {
+      setLoading(true);
       try {
         const response = await fetch(`/api/ui?lang=${lang}`, {
           signal: controller.signal,
@@ -32,6 +34,7 @@ export function LanguageProvider({ children }) {
           setTranslations({});
         }
       }
+      setLoading(false);
     };
 
     loadTranslations();
@@ -55,7 +58,7 @@ export function LanguageProvider({ children }) {
   );
 
   return (
-    <LanguageContext.Provider value={{ lang, toggleLang, t }}>
+    <LanguageContext.Provider value={{ lang, toggleLang, t, loading }}>
       {children}
     </LanguageContext.Provider>
   );

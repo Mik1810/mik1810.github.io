@@ -88,7 +88,13 @@ function HeroTyping() {
           </h2>
           {nameFinished && (
             <div className="hero-university-badge">
-              <img src={university.logo} alt={uniName} className="hero-university-logo" />
+              {university.logo ? (
+                <img
+                  src={university.logo}
+                  alt={uniName}
+                  className="hero-university-logo"
+                />
+              ) : null}
               <span>{uniName}</span>
             </div>
           )}
@@ -105,7 +111,9 @@ function HeroTyping() {
           </div>
         </div>
         <div className="hero-typing-image photo-glow">
-          <img className="float-animation" src={photo} alt={nameText} />
+          {photo ? (
+            <img className="float-animation" src={photo} alt={nameText} />
+          ) : null}
         </div>
       </div>
     </section>

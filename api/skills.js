@@ -2,38 +2,7 @@ import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
 const CACHE_TTL_MS = 60 * 1000;
 const cache = new Map();
-
-const firstDefined = (...vals) => vals.find((v) => v !== undefined && v !== null);
-
-const techCategoryFk = (row) =>
-  firstDefined(
-    row.tech_category_id,
-    row.category_id,
-    row.techCategoryId,
-    row.id_category,
-    row.idCategory,
-    row.id
-  );
-
-const skillCategoryFk = (row) =>
-  firstDefined(
-    row.skill_category_id,
-    row.category_id,
-    row.skillCategoryId,
-    row.id_category,
-    row.idCategory,
-    row.id
-  );
-
-const skillItemFk = (row) =>
-  firstDefined(
-    row.skill_item_id,
-    row.item_id,
-    row.skillItemId,
-    row.id_item,
-    row.idItem,
-    row.id
-  );
+const keyOf = (v) => (v === undefined || v === null ? null : String(v));
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -57,44 +26,35 @@ export default async function handler(req, res) {
       { data: skillCategoryI18nRows, error: skillCategoryI18nError },
       { data: skillItemBaseRows, error: skillItemBaseError },
       { data: skillItemI18nRows, error: skillItemI18nError },
-      {
-        data: skillCategoryI18nFallbackRows,
-        error: skillCategoryI18nFallbackError,
-      },
-      { data: skillItemI18nFallbackRows, error: skillItemI18nFallbackError },
     ] = await Promise.all([
       supabaseAdmin
         .from('tech_categories')
-        .select('*'),
+        .select('id, order_index, slug')
+        .order('order_index', { ascending: true }),
       supabaseAdmin
         .from('tech_categories_i18n')
-        .select('*')
+        .select('tech_category_id, name')
         .eq('locale', lang),
       supabaseAdmin
         .from('tech_items')
-        .select('*'),
+        .select('id, tech_category_id, order_index, name, devicon, color')
+        .order('order_index', { ascending: true }),
       supabaseAdmin
         .from('skill_categories')
-        .select('*'),
+        .select('id, order_index')
+        .order('order_index', { ascending: true }),
       supabaseAdmin
         .from('skill_categories_i18n')
-        .select('*')
+        .select('skill_category_id, category_name')
         .eq('locale', lang),
       supabaseAdmin
         .from('skill_items')
-        .select('*'),
+        .select('id, skill_category_id, order_index')
+        .order('order_index', { ascending: true }),
       supabaseAdmin
         .from('skill_items_i18n')
-        .select('*')
+        .select('skill_item_id, label')
         .eq('locale', lang),
-      supabaseAdmin
-        .from('skill_categories_i18n')
-        .select('*')
-        .eq('locale', lang === 'it' ? 'en' : 'it'),
-      supabaseAdmin
-        .from('skill_items_i18n')
-        .select('*')
-        .eq('locale', lang === 'it' ? 'en' : 'it'),
     ]);
 
     if (
@@ -104,9 +64,7 @@ export default async function handler(req, res) {
       skillCategoryBaseError ||
       skillCategoryI18nError ||
       skillItemBaseError ||
-      skillItemI18nError ||
-      skillCategoryI18nFallbackError ||
-      skillItemI18nFallbackError
+      skillItemI18nError
     ) {
       console.error('Supabase error:', {
         techBaseError,
@@ -116,28 +74,18 @@ export default async function handler(req, res) {
         skillCategoryI18nError,
         skillItemBaseError,
         skillItemI18nError,
-        skillCategoryI18nFallbackError,
-        skillItemI18nFallbackError,
       });
       return res.status(500).json({ error: 'Database error' });
     }
 
     const techNameById = new Map(
-      (techI18nRows || []).map((row) => [
-        techCategoryFk(row),
-        row.name ?? row.category_name ?? row.category,
-      ])
+      (techI18nRows || []).map((r) => [keyOf(r.tech_category_id), r.name])
     );
     const techItemsByCategoryId = new Map();
-    const sortedTechItems = (techItemRows || [])
-      .slice()
-      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
-    for (const row of sortedTechItems) {
-      const categoryId = techCategoryFk(row);
+    for (const row of techItemRows || []) {
+      const categoryId = keyOf(row.tech_category_id);
       if (!categoryId) continue;
-      if (!techItemsByCategoryId.has(categoryId)) {
-        techItemsByCategoryId.set(categoryId, []);
-      }
+      if (!techItemsByCategoryId.has(categoryId)) techItemsByCategoryId.set(categoryId, []);
       techItemsByCategoryId.get(categoryId).push({
         name: row.name,
         devicon: row.devicon,
@@ -145,48 +93,25 @@ export default async function handler(req, res) {
       });
     }
 
-    const techStack = (techBaseRows || [])
-      .slice()
-      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0))
-      .map((row) => ({
-        category: techNameById.get(row.id) || row.name || '',
-        items: techItemsByCategoryId.get(row.id) || [],
-      }))
-      .filter((row) => row.category);
+    const techStack = (techBaseRows || []).map((row) => ({
+      category: techNameById.get(keyOf(row.id)) || row.slug || '',
+      items: techItemsByCategoryId.get(keyOf(row.id)) || [],
+    }));
 
     const skillCategoryNameById = new Map(
-      (skillCategoryI18nRows || []).map((row) => [
-        skillCategoryFk(row),
-        row.category_name ?? row.category ?? row.name,
-      ])
-    );
-    const skillCategoryFallbackNameById = new Map(
-      (skillCategoryI18nFallbackRows || []).map((row) => [
-        skillCategoryFk(row),
-        row.category_name ?? row.category ?? row.name,
+      (skillCategoryI18nRows || []).map((r) => [
+        keyOf(r.skill_category_id),
+        r.category_name,
       ])
     );
     const skillItemLabelById = new Map(
-      (skillItemI18nRows || []).map((row) => [
-        skillItemFk(row),
-        row.label ?? row.name,
-      ])
+      (skillItemI18nRows || []).map((r) => [keyOf(r.skill_item_id), r.label])
     );
-    const skillItemFallbackLabelById = new Map(
-      (skillItemI18nFallbackRows || []).map((row) => [
-        skillItemFk(row),
-        row.label ?? row.name,
-      ])
-    );
+
     const skillItemsByCategoryId = new Map();
-    const sortedSkillItems = (skillItemBaseRows || [])
-      .slice()
-      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0));
-    for (const row of sortedSkillItems) {
-      const categoryId = skillCategoryFk(row);
-      const label =
-        skillItemLabelById.get(row.id) ||
-        skillItemFallbackLabelById.get(row.id);
+    for (const row of skillItemBaseRows || []) {
+      const categoryId = keyOf(row.skill_category_id);
+      const label = skillItemLabelById.get(keyOf(row.id));
       if (!categoryId || !label) continue;
       if (!skillItemsByCategoryId.has(categoryId)) {
         skillItemsByCategoryId.set(categoryId, []);
@@ -194,31 +119,12 @@ export default async function handler(req, res) {
       skillItemsByCategoryId.get(categoryId).push(label);
     }
 
-    let categories = (skillCategoryBaseRows || [])
-      .slice()
-      .sort((a, b) => (a.order_index ?? a.id ?? 0) - (b.order_index ?? b.id ?? 0))
-      .map((row) => ({
-        category:
-          skillCategoryNameById.get(row.id) ||
-          skillCategoryFallbackNameById.get(row.id) ||
-          row.name ||
-          '',
-        skills: skillItemsByCategoryId.get(row.id) || [],
-      }))
-      .filter((row) => row.category);
+    const categories = (skillCategoryBaseRows || []).map((row) => ({
+      category: skillCategoryNameById.get(keyOf(row.id)) || `Category ${row.id}`,
+      skills: skillItemsByCategoryId.get(keyOf(row.id)) || [],
+    }));
 
-    if (categories.length === 0) {
-      return res.status(500).json({
-        error:
-          'No skill category rows found in DB. Ensure skill_categories, skill_categories_i18n, skill_items, and skill_items_i18n are populated.',
-      });
-    }
-
-    const payload = {
-      techStack,
-      categories,
-    };
-
+    const payload = { techStack, categories };
     cache.set(cacheKey, { at: Date.now(), value: payload });
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json(payload);

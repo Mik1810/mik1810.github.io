@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useContent } from '../../context/ContentContext';
 import '../css/Projects.css';
 
 const handleTilt = (e) => {
@@ -19,34 +19,9 @@ const handleTiltReset = (e) => {
 };
 
 function Projects() {
-  const { t, lang } = useLanguage();
-  const [projects, setProjects] = useState([]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadProjects = async () => {
-      try {
-        const response = await fetch(`/api/projects?lang=${lang}`, {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-        if (response.ok) setProjects(data || []);
-        else {
-          console.error('Projects API error:', data);
-          setProjects([]);
-        }
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          console.error('Projects fetch error:', error);
-          setProjects([]);
-        }
-      }
-    };
-
-    loadProjects();
-    return () => controller.abort();
-  }, [lang]);
+  const { t } = useLanguage();
+  const { projects } = useContent();
+  const safeProjects = Array.isArray(projects) ? projects : [];
 
   return (
     <section id="projects" className="projects">
@@ -56,9 +31,9 @@ function Projects() {
           {t('projects.subtitle')}
         </p>
         <div className="projects-grid">
-          {projects.map((project, index) => (
+          {safeProjects.map((project, index) => (
             <div
-              key={index}
+              key={project.id || index}
               className={`project-card reveal reveal-delay-${index + 1}`}
               onMouseMove={handleTilt}
               onMouseLeave={handleTiltReset}
@@ -67,7 +42,7 @@ function Projects() {
                 <h3 className="project-title">{project.title}</h3>
                 <p className="project-description">{project.description}</p>
                 <div className="project-tags">
-                  {project.tags.map((tag) => (
+                  {(Array.isArray(project.tags) ? project.tags : []).map((tag) => (
                     <span key={tag} className="project-tag">
                       {tag}
                     </span>
