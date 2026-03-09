@@ -3,7 +3,7 @@ import { useProfile } from '../../context/ProfileContext';
 import icons from '../../data/icons';
 import '../css/Footer.css';
 
-function Footer() {
+function Footer({ className = '' }) {
   const year = new Date().getFullYear();
   const { t } = useLanguage();
   const { profile } = useProfile();
@@ -11,7 +11,7 @@ function Footer() {
   const socials = profile?.socials || [];
 
   return (
-    <footer className="footer">
+    <footer className={`footer ${className}`.trim()}>
       <div className="footer-container">
         <p>&copy; {year} {name}. {t('footer.rights')}</p>
         <div className="footer-socials">

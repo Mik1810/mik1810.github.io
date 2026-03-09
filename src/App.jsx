@@ -19,6 +19,7 @@ import { useContent } from './context/ContentContext';
 
 function App() {
   const { pathname } = useLocation();
+  const isAdminRoute = pathname.startsWith('/admin');
   const { loading: languageLoading } = useLanguage();
   const { loading: profileLoading, profile, refreshProfile } = useProfile();
   const { loading: contentLoading, projects, skillCategories, techStack, refreshContent } =
@@ -107,7 +108,7 @@ function App() {
           </main>
         } />
       </Routes>
-      <Footer />
+      <Footer className={isAdminRoute ? 'footer-admin' : ''} />
       <ScrollToTop />
     </>
   );

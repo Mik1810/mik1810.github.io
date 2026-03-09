@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: clamp(2px, 0.35vw, 4px);
   z-index: 1100;
   background: transparent;
   pointer-events: none;
@@ -12,6 +12,14 @@
 .scroll-progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
-  transition: width 0.1s linear;
+  transform-origin: left center;
+  will-change: transform;
+  transition: transform 0.08s linear;
   border-radius: 0 2px 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-bar {
+    transition: none;
+  }
 }

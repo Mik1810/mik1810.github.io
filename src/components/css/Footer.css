@@ -4,6 +4,10 @@
   padding: 2rem 1.5rem;
 }
 
+.footer.footer-admin {
+  margin-left: 280px;
+}
+
 .footer-container {
   max-width: 1100px;
   margin: 0 auto;
@@ -41,6 +45,10 @@
 }
 
 @media (max-width: 768px) {
+  .footer.footer-admin {
+    margin-left: 0;
+  }
+
   .footer-container {
     flex-direction: column;
     gap: 1rem;

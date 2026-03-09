@@ -14,7 +14,10 @@ function Navbar() {
   const { pathname } = useLocation();
   const { profile } = useProfile();
   const { authenticated, logout } = useAuth();
-  const name = profile?.name || 'Portfolio';
+  const isAdminRoute = pathname.startsWith('/admin');
+  const name = isAdminRoute
+    ? profile?.email || 'email'
+    : profile?.name || 'Portfolio';
   const cv = profile?.cv || '#';
   const showHomeLinks = pathname === '/';
   const loginLabel = lang === 'it' ? 'Login admin' : 'Admin login';
