@@ -27,7 +27,8 @@ claude.md
 chatgpt.md
 .env
 .vercel
-*.sql
+db/
+db
 
 # Exclude the vscode workspace
 *.code-workspace
