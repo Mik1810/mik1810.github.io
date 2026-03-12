@@ -1,6 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useContent } from '../../context/ContentContext';
-import { githubProjects } from '../../data/githubProjects';
 import '../css/Projects.css';
 
 const handleTilt = (e) => {
@@ -19,11 +19,158 @@ const handleTiltReset = (e) => {
   e.currentTarget.style.transform = '';
 };
 
+function GithubProjectMedia({ project }) {
+  const images = Array.isArray(project.images) && project.images.length > 0
+    ? project.images
+    : project.image
+      ? [project.image]
+      : [];
+  const loopedImages = images.length > 1
+    ? [images[images.length - 1], ...images, images[0]]
+    : images;
+  const [currentIndex, setCurrentIndex] = useState(images.length > 1 ? 1 : 0);
+  const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
+
+  useEffect(() => {
+    setCurrentIndex(images.length > 1 ? 1 : 0);
+    setIsTransitionEnabled(false);
+  }, [project.slug, images.length]);
+
+  useEffect(() => {
+    if (images.length <= 1) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      setIsTransitionEnabled(true);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [images.length, project.slug]);
+
+  useEffect(() => {
+    if (images.length <= 1) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      if (document.hidden) return;
+      setIsTransitionEnabled(true);
+      setCurrentIndex((prev) => {
+        if (prev >= images.length) return images.length + 1;
+        if (prev < 1) return 1;
+        return prev + 1;
+      });
+    }, 3500);
+
+    return () => window.clearInterval(intervalId);
+  }, [images.length]);
+
+  if (images.length === 0) {
+    return (
+      <div className="github-project-fallback github-project-fallback-static">
+        <span>{project.title}</span>
+      </div>
+    );
+  }
+
+  const showControls = images.length > 1;
+  const activeDotIndex = showControls
+    ? (currentIndex - 1 + images.length) % images.length
+    : currentIndex;
+  const goPrev = () => {
+    setIsTransitionEnabled(true);
+    setCurrentIndex((prev) => {
+      if (prev <= 1) return 0;
+      if (prev > images.length) return images.length;
+      return prev - 1;
+    });
+  };
+  const goNext = () => {
+    setIsTransitionEnabled(true);
+    setCurrentIndex((prev) => {
+      if (prev >= images.length) return images.length + 1;
+      if (prev < 1) return 1;
+      return prev + 1;
+    });
+  };
+  const handleTrackTransitionEnd = () => {
+    if (!showControls) return;
+    if (currentIndex <= 0) {
+      setIsTransitionEnabled(false);
+      setCurrentIndex(images.length);
+      return;
+    }
+    if (currentIndex >= images.length + 1) {
+      setIsTransitionEnabled(false);
+      setCurrentIndex(1);
+    }
+  };
+
+  return (
+    <div className="github-project-media">
+      <div
+        className="github-project-media-track"
+        onTransitionEnd={handleTrackTransitionEnd}
+        data-transition={isTransitionEnabled ? 'enabled' : 'disabled'}
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {loopedImages.map((imageSrc, index) => (
+          <div key={`${project.slug}-image-${index}`} className="github-project-media-slide">
+            <img
+              src={imageSrc}
+              alt={`${project.title} screenshot ${((index - 1 + images.length) % images.length) + 1}`}
+              loading="lazy"
+              className="github-project-media-image"
+              onError={(event) => {
+                event.currentTarget.style.display = 'none';
+                const fallback = event.currentTarget.parentElement?.parentElement?.nextElementSibling;
+                if (fallback) fallback.hidden = false;
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="github-project-fallback" hidden>
+        <span>{project.title}</span>
+      </div>
+      {showControls && (
+        <>
+          <button
+            type="button"
+            className="github-project-nav github-project-nav-left"
+            onClick={goPrev}
+            aria-label={`Previous ${project.title} screenshot`}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="github-project-nav github-project-nav-right"
+            onClick={goNext}
+            aria-label={`Next ${project.title} screenshot`}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+          <div className="github-project-dots" aria-hidden="true">
+            {images.map((_, index) => (
+              <span
+                key={`${project.slug}-dot-${index}`}
+                className={index === activeDotIndex ? 'is-active' : ''}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Projects() {
-  const { t, lang } = useLanguage();
-  const { projects } = useContent();
+  const { t } = useLanguage();
+  const { projects, githubProjects } = useContent();
   const safeProjects = Array.isArray(projects) ? projects : [];
-  const featuredGithubProjects = githubProjects[lang] || githubProjects.it || [];
+  const featuredGithubProjects = Array.isArray(githubProjects) ? githubProjects : [];
 
   return (
     <section id="projects" className="projects">
@@ -95,34 +242,16 @@ function Projects() {
                 key={project.slug || index}
                 className={`github-project-card reveal reveal-delay-${Math.min(index + 1, 4)}`}
               >
-                {project.image ? (
-                  <div className="github-project-media">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      loading="lazy"
-                      onError={(event) => {
-                        event.currentTarget.style.display = 'none';
-                        const fallback = event.currentTarget.nextElementSibling;
-                        if (fallback) fallback.hidden = false;
-                      }}
-                    />
-                    <div className="github-project-fallback" hidden>
-                      <span>{project.title}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="github-project-fallback github-project-fallback-static">
-                    <span>{project.title}</span>
-                  </div>
-                )}
-
-                <div className="github-project-content">
+                <div className="github-project-header">
                   <div className="github-project-topline">
                     <h4 className="github-project-title">{project.title}</h4>
                     <span className="github-project-badge">GitHub</span>
                   </div>
+                </div>
 
+                <GithubProjectMedia project={project} />
+
+                <div className="github-project-content">
                   <p className="github-project-description">{project.description}</p>
 
                   <div className="project-tags">

@@ -22,7 +22,7 @@
       "title": "Progetti e Competizioni",
       "subtitle": "Una selezione dei miei lavori più significativi",
       "githubTitle": "Selected GitHub Projects",
-      "githubSubtitle": "Una raccolta di repository che mostra progetti web, interfacce e sperimentazione tecnica. Le card supportano immagini preview dedicate per i progetti che vuoi mettere piu in evidenza.",
+      "githubSubtitle": "Una raccolta di repository che mostra progetti web, interfacce e sperimentazione tecnica.",
       "codeLabel": "Codice",
       "siteLabel": "Sito",
       "repoLabel": "Repository"
@@ -79,7 +79,7 @@
       "title": "Projects & Competitions",
       "subtitle": "A selection of my most significant work",
       "githubTitle": "Selected GitHub Projects",
-      "githubSubtitle": "A curated set of repositories showcasing web projects, interface work, and technical experimentation. These cards support dedicated preview images for the projects you want to feature the most.",
+      "githubSubtitle": "A curated set of repositories showcasing web projects, interface work, and technical experimentation.",
       "codeLabel": "Code",
       "siteLabel": "Site",
       "repoLabel": "Repository"

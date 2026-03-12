@@ -5,6 +5,10 @@ const cache = new Map();
 
 const keyOf = (v) => (v === undefined || v === null ? null : String(v));
 const pick = (...vals) => vals.find((v) => v !== undefined && v !== null);
+const isMissingRelationError = (error) =>
+  error?.code === 'PGRST205' ||
+  error?.code === '42P01' ||
+  /could not find the table|relation .* does not exist/i.test(error?.message || '');
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -24,6 +28,10 @@ export default async function handler(req, res) {
       { data: projectsBase, error: projectsError },
       { data: i18nRows, error: i18nError },
       { data: tagsRows, error: tagsError },
+      { data: githubBase, error: githubBaseError },
+      { data: githubI18nRows, error: githubI18nError },
+      { data: githubTagsRows, error: githubTagsError },
+      { data: githubImagesRows, error: githubImagesError },
     ] = await Promise.all([
       supabaseAdmin
         .from('projects')
@@ -37,15 +45,50 @@ export default async function handler(req, res) {
         .from('project_tags')
         .select('project_id, order_index, tag')
         .order('order_index', { ascending: true }),
+      supabaseAdmin
+        .from('github_projects')
+        .select('id, slug, order_index, github_url, live_url, image_url, featured')
+        .eq('featured', true)
+        .order('order_index', { ascending: true }),
+      supabaseAdmin
+        .from('github_projects_i18n')
+        .select('github_project_id, title, description')
+        .eq('locale', lang),
+      supabaseAdmin
+        .from('github_project_tags')
+        .select('github_project_id, order_index, tag')
+        .order('order_index', { ascending: true }),
+      supabaseAdmin
+        .from('github_project_images')
+        .select('github_project_id, order_index, image_url, alt_text')
+        .order('order_index', { ascending: true }),
     ]);
 
-    if (projectsError || i18nError || tagsError) {
+    const githubImagesMissing = isMissingRelationError(githubImagesError);
+
+    if (
+      projectsError ||
+      i18nError ||
+      tagsError ||
+      githubBaseError ||
+      githubI18nError ||
+      githubTagsError ||
+      (githubImagesError && !githubImagesMissing)
+    ) {
       console.error('Supabase error:', {
         projectsError,
         i18nError,
         tagsError,
+        githubBaseError,
+        githubI18nError,
+        githubTagsError,
+        githubImagesError,
       });
       return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (githubImagesMissing) {
+      console.warn('github_project_images table not found, falling back to image_url previews');
     }
 
     const textByProjectId = new Map(
@@ -64,7 +107,7 @@ export default async function handler(req, res) {
       tagsByProjectId.get(projectId).push(pick(row.tag, row.name, row.value, ''));
     }
 
-    const payload = (projectsBase || [])
+    const projects = (projectsBase || [])
       .map((row) => {
         const rowKey = keyOf(row.id);
         const i18n = textByProjectId.get(rowKey);
@@ -79,7 +122,78 @@ export default async function handler(req, res) {
         };
       });
 
-    if (payload.length > 0 && payload.some((p) => p.title)) {
+    const githubTextByProjectId = new Map(
+      (githubI18nRows || []).map((row) => [
+        keyOf(
+          pick(
+            row.github_project_id,
+            row.github_projects_id,
+            row.id_github_project,
+            row.githubProjectId
+          )
+        ),
+        row,
+      ])
+    );
+    const githubTagsByProjectId = new Map();
+    for (const row of githubTagsRows || []) {
+      const projectId = keyOf(
+        pick(
+          row.github_project_id,
+          row.github_projects_id,
+          row.id_github_project,
+          row.githubProjectId
+        )
+      );
+      if (!projectId) continue;
+      if (!githubTagsByProjectId.has(projectId)) githubTagsByProjectId.set(projectId, []);
+      githubTagsByProjectId.get(projectId).push(pick(row.tag, row.name, row.value, ''));
+    }
+
+    const githubImagesByProjectId = new Map();
+    for (const row of githubImagesRows || []) {
+      const projectId = keyOf(
+        pick(
+          row.github_project_id,
+          row.github_projects_id,
+          row.id_github_project,
+          row.githubProjectId
+        )
+      );
+      if (!projectId) continue;
+      if (!githubImagesByProjectId.has(projectId)) githubImagesByProjectId.set(projectId, []);
+      githubImagesByProjectId.get(projectId).push({
+        image: pick(row.image_url, row.url, ''),
+        alt: pick(row.alt_text, row.alt, null),
+      });
+    }
+
+    const githubProjects = (githubBase || []).map((row) => {
+      const rowKey = keyOf(row.id);
+      const i18n = githubTextByProjectId.get(rowKey);
+      const gallery = (githubImagesByProjectId.get(rowKey) || [])
+        .map((item) => item.image)
+        .filter(Boolean);
+
+      return {
+        id: row.id,
+        slug: row.slug || `github-project-${row.id}`,
+        title: i18n?.title || '',
+        description: i18n?.description || '',
+        tags: githubTagsByProjectId.get(rowKey) || [],
+        githubUrl: row.github_url || null,
+        liveUrl: row.live_url || null,
+        image: row.image_url || null,
+        images: gallery,
+      };
+    });
+
+    const payload = { projects, githubProjects };
+
+    if (
+      (projects.length > 0 && projects.some((p) => p.title)) ||
+      (githubProjects.length > 0 && githubProjects.some((p) => p.title))
+    ) {
       cache.set(cacheKey, { at: Date.now(), value: payload });
     }
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');

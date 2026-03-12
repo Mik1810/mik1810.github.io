@@ -22,7 +22,7 @@ function App() {
   const isAdminRoute = pathname.startsWith('/admin');
   const { loading: languageLoading } = useLanguage();
   const { loading: profileLoading, profile, refreshProfile } = useProfile();
-  const { loading: contentLoading, projects, skillCategories, techStack, refreshContent } =
+  const { loading: contentLoading, projects, githubProjects, skillCategories, techStack, refreshContent } =
     useContent();
   const previousPathnameRef = useRef(pathname);
   const [bootDelayDone, setBootDelayDone] = useState(false);
@@ -73,7 +73,7 @@ function App() {
       if (!el.classList.contains('visible')) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [appLoading, projects.length, skillCategories.length, techStack.length]);
+  }, [appLoading, projects.length, githubProjects.length, skillCategories.length, techStack.length]);
 
   if (appLoading) {
     return (

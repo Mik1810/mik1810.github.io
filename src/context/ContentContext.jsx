@@ -9,6 +9,7 @@ export function ContentProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [about, setAbout] = useState({ interests: [] });
   const [projects, setProjects] = useState([]);
+  const [githubProjects, setGithubProjects] = useState([]);
   const [experiences, setExperiences] = useState([]);
   const [education, setEducation] = useState([]);
   const [techStack, setTechStack] = useState([]);
@@ -72,10 +73,17 @@ export function ContentProvider({ children }) {
             : { ok: false, data: null };
 
         const normalizeProjects = (data) => {
-          if (Array.isArray(data)) return data;
-          if (Array.isArray(data?.projects)) return data.projects;
-          if (Array.isArray(data?.data)) return data.data;
-          return [];
+          if (Array.isArray(data)) return { projects: data, githubProjects: [] };
+          if (Array.isArray(data?.projects) || Array.isArray(data?.githubProjects)) {
+            return {
+              projects: Array.isArray(data?.projects) ? data.projects : [],
+              githubProjects: Array.isArray(data?.githubProjects) ? data.githubProjects : [],
+            };
+          }
+          if (Array.isArray(data?.data)) {
+            return { projects: data.data, githubProjects: [] };
+          }
+          return { projects: [], githubProjects: [] };
         };
 
         const normalizeSkills = (data) => {
@@ -99,7 +107,7 @@ export function ContentProvider({ children }) {
         let skillsData = normalizeSkills(skillsResult.data);
 
         // First-load guard: if APIs transiently return empty, retry once more.
-        if (projectsData.length === 0 || (skillsData.categories || []).length === 0) {
+        if (projectsData.projects.length === 0 || (skillsData.categories || []).length === 0) {
           await delay(300);
           const [projectsRetry, skillsRetry] = await Promise.all([
             fetchJson(`/api/projects?lang=${lang}`),
@@ -109,7 +117,7 @@ export function ContentProvider({ children }) {
           const projectsRetryData = normalizeProjects(projectsRetry.data);
           const skillsRetryData = normalizeSkills(skillsRetry.data);
 
-          if (projectsRetry.ok && projectsRetryData.length > 0) {
+          if (projectsRetry.ok && projectsRetryData.projects.length > 0) {
             projectsData = projectsRetryData;
           }
           if (
@@ -125,7 +133,8 @@ export function ContentProvider({ children }) {
         const expData = expResult.ok ? expResult.data : null;
 
         setAbout(aboutData || { interests: [] });
-        setProjects(projectsData);
+        setProjects(projectsData.projects);
+        setGithubProjects(projectsData.githubProjects);
         setExperiences(
           Array.isArray(expData?.experiences) ? expData.experiences : []
         );
@@ -146,6 +155,7 @@ export function ContentProvider({ children }) {
         if (error.name !== 'AbortError') {
           setAbout({ interests: [] });
           setProjects([]);
+          setGithubProjects([]);
           setExperiences([]);
           setEducation([]);
           setTechStack([]);
@@ -166,6 +176,7 @@ export function ContentProvider({ children }) {
         loading,
         about,
         projects,
+        githubProjects,
         experiences,
         education,
         techStack,
