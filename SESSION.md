@@ -1014,3 +1014,9 @@ Conclusione:
 
 - Ora locale: `2026-03-14 19:17:07 +01:00`
 - Stato: `Componenti admin migrati, restano solo i file config JS`
+## 2026-03-14 20:00 CET - Deployment cleanup workflow
+
+- Added [cleanup-deployments.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/cleanup-deployments.yml) to keep only the latest GitHub deployment for `production` and the latest for `preview`.
+- The workflow runs on `deployment_status` success, marks older deployments as `inactive`, then deletes them via the GitHub Deployments API.
+- Environment grouping is inferred from deployment environment names containing `production` or `preview`.
+- Follow-up check needed after the first runs: confirm the actual deployment environment names emitted by Vercel/GitHub match the workflow classification.
