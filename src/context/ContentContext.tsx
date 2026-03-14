@@ -69,8 +69,15 @@ export function ContentProvider({ children }: ProviderProps) {
     ): Promise<FetchJsonResult<T>> => {
       let lastData: FetchJsonResult<T> = { ok: false, data: null }
       for (let attempt = 0; attempt <= retryCount; attempt += 1) {
+        const requestController = new AbortController()
+        const timeoutId = setTimeout(() => requestController.abort(), 8000)
+        const abortFromParent = () => requestController.abort()
+        controller.signal.addEventListener('abort', abortFromParent)
         try {
-          const res = await fetch(url, { signal: controller.signal })
+          const res = await fetch(url, {
+            signal: requestController.signal,
+            cache: 'no-store',
+          })
           let data: T | null = null
           try {
             data = (await res.json()) as T
@@ -81,8 +88,13 @@ export function ContentProvider({ children }: ProviderProps) {
           if (res.ok) return lastData
         } catch (error) {
           if (error instanceof DOMException && error.name === 'AbortError') {
-            throw error
+            if (controller.signal.aborted) {
+              throw error
+            }
           }
+        } finally {
+          clearTimeout(timeoutId)
+          controller.signal.removeEventListener('abort', abortFromParent)
         }
         if (attempt < retryCount) await delay(250)
       }

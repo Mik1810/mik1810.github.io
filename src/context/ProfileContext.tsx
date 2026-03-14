@@ -17,11 +17,28 @@ export function ProfileProvider({ children }: ProviderProps) {
   useEffect(() => {
     const controller = new AbortController()
 
+    const withTimeoutSignal = (timeoutMs: number) => {
+      const timeoutController = new AbortController()
+      const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs)
+      const abortFromParent = () => timeoutController.abort()
+      controller.signal.addEventListener('abort', abortFromParent)
+
+      return {
+        signal: timeoutController.signal,
+        cleanup: () => {
+          clearTimeout(timeoutId)
+          controller.signal.removeEventListener('abort', abortFromParent)
+        },
+      }
+    }
+
     const loadProfile = async () => {
       setLoading(true)
+      const timeout = withTimeoutSignal(8000)
       try {
         const response = await fetch(`/api/profile?lang=${lang}`, {
-          signal: controller.signal,
+          signal: timeout.signal,
+          cache: 'no-store',
         })
         const data = (await response.json()) as ProfileData
         if (response.ok) {
@@ -33,6 +50,8 @@ export function ProfileProvider({ children }: ProviderProps) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
           setProfile(null)
         }
+      } finally {
+        timeout.cleanup()
       }
       setLoading(false)
     }

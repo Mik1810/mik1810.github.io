@@ -1279,3 +1279,19 @@ Conclusione:
   - prevent public functions from hanging indefinitely on a stalled DB query
   - turn indefinite waits into explicit Postgres-side failures that surface in logs
   - improve diagnosability if the pooler or connection string is still not ideal in production
+## 2026-03-15 00:45 CET - Removed infinite front-end loading gate on partial profile failure
+
+- Observed that the live site could remain stuck on `Caricamento contenuti...` even when several API endpoints were already returning `200` or `304`.
+- Root cause on the client side:
+  - [App.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/App.tsx) gated the home route on `heroReady`
+  - `heroReady` required a non-empty profile payload
+  - if `/api/profile` failed, timed out, or returned a non-OK response during bootstrap, the app could stay blocked indefinitely even though the rest of the page was renderable with fallbacks
+- Applied the following UI resilience fixes:
+  - removed the `heroReady` hard gate from [App.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/App.tsx)
+  - added `cache: 'no-store'` to initial content/profile fetches to avoid ambiguous browser-side revalidation behavior during bootstrap
+  - added an 8-second request timeout to:
+    - [ProfileContext.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/context/ProfileContext.tsx)
+    - [ContentContext.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/context/ContentContext.tsx)
+- Goal:
+  - render the homepage with graceful fallbacks instead of keeping the entire UI behind an infinite loading gate
+  - make client bootstrap deterministic even when one API request is slow or temporarily fails

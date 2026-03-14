@@ -22,7 +22,7 @@ function App() {
   const { pathname } = useLocation()
   const isAdminRoute = pathname.startsWith('/admin')
   const { loading: languageLoading } = useLanguage()
-  const { loading: profileLoading, profile, refreshProfile } = useProfile()
+  const { loading: profileLoading, refreshProfile } = useProfile()
   const {
     loading: contentLoading,
     projects,
@@ -35,7 +35,6 @@ function App() {
   const [bootDelayDone, setBootDelayDone] = useState(false)
 
   const dataLoading = languageLoading || profileLoading || contentLoading
-  const heroReady = Boolean(profile?.name && Array.isArray(profile?.roles))
   const shouldGateHome = pathname === '/'
 
   useEffect(() => {
@@ -51,7 +50,7 @@ function App() {
   }, [dataLoading, bootDelayDone])
 
   const appLoading = shouldGateHome
-    ? dataLoading || !heroReady || !bootDelayDone
+    ? dataLoading || !bootDelayDone
     : dataLoading
 
   useEffect(() => {
