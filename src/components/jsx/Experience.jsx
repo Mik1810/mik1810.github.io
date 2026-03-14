@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import { useContent } from '../../context/ContentContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useContent } from '../../context/useContent';
 import '../css/Experience.css';
 
 function Experience() {

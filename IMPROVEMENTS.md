@@ -416,31 +416,6 @@ Dopo che dati, auth e validazione sono stabili
 
 ---
 
-## Fase 10 — Sync GitHub automatica
-
-### Interventi
-- endpoint cron tipo `/api/cron/github-sync`
-- sincronizzazione metadata tecnici dei repo
-- mantenere in DB i contenuti editoriali e i18n
-
-### Priorità
-Media
-
-### Effort
-Medio
-
-### Impatto
-Medio-Alto
-
-### Ordine
-Dopo il consolidamento del layer dati
-
-### Deliverable
-- portfolio più vivo
-- manutenzione ridotta
-
----
-
 # 4. Matrice sintetica priorità / effort / impatto
 
 | Intervento | Priorità | Effort | Impatto |
@@ -456,7 +431,7 @@ Dopo il consolidamento del layer dati
 | Pagina singola progetto | Alta | Medio-Alto | Molto alto |
 | SEO + performance | Media | Medio | Alto |
 | Dashboard admin | Media | Alto | Molto alto |
-| Sync GitHub automatica | Media | Medio | Medio-Alto |
+
 
 ---
 
@@ -510,8 +485,6 @@ Questa è una struttura proposta per la crescita del progetto, mantenendo Vite +
 │  ├─ session.ts
 │  ├─ login.ts
 │  ├─ logout.ts
-│  ├─ cron/
-│  │  └─ github-sync.ts
 │  └─ admin/
 │     ├─ projects/
 │     │  ├─ index.ts        # GET list / POST create

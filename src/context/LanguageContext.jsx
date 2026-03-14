@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { LanguageContext } from './languageContextValue';
 import staticI18n from '../data/staticI18n.json';
-const LanguageContext = createContext();
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
@@ -12,7 +12,7 @@ export function LanguageProvider({ children }) {
     document.documentElement.setAttribute('lang', lang);
   }, [lang]);
 
-  const translations = staticI18n[lang] || staticI18n.it || {};
+  const translations = useMemo(() => staticI18n[lang] || staticI18n.it || {}, [lang]);
   const loading = false;
 
   const toggleLang = useCallback(() => {
@@ -36,10 +36,4 @@ export function LanguageProvider({ children }) {
       {children}
     </LanguageContext.Provider>
   );
-}
-
-export function useLanguage() {
-  const ctx = useContext(LanguageContext);
-  if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
-  return ctx;
 }

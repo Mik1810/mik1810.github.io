@@ -1,5 +1,5 @@
-import { useLanguage } from '../../context/LanguageContext';
-import { useContent } from '../../context/ContentContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useContent } from '../../context/useContent';
 import '../css/Skills.css';
 
 const DEVICON_BASE = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons';

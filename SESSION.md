@@ -277,3 +277,137 @@ STATUS=200
 
 Nota:
 - questo conferma che il fix a `lib/devApiServer.js` per la risoluzione `*.ts`/`*.js` funziona anche nel runtime locale
+
+## Correzione lint errors
+
+### Obiettivo
+
+Portare `npm run lint` a esito positivo senza limitarsi a spegnere le regole, mantenendo invariato il comportamento utente dell'app.
+
+### Interventi backend
+
+File toccati:
+- `api/admin/login.js`
+- `api/admin/table.js`
+
+Modifica:
+- rimossi i parametri `err` inutilizzati nei blocchi `catch`
+
+Esempio:
+
+```js
+} catch {
+  return res.status(500).json({ error: 'Internal server error' });
+}
+```
+
+### Interventi frontend su state/effect
+
+File toccati:
+- `src/App.jsx`
+- `src/components/jsx/HeroTyping.jsx`
+- `src/components/jsx/Projects.jsx`
+- `src/components/jsx/AdminDashboard.jsx`
+
+Dettagli:
+- `App.jsx`: separato il reset di `bootDelayDone` dal delayed boot gate per evitare aggiornamenti sincroni nello stesso `useEffect`
+- `HeroTyping.jsx`: estratta una versione stateful keyed della hero animation per resettare l'animazione tramite remount invece che con `setState` sincroni nell'effetto
+- `Projects.jsx`: estratto un carousel keyed per azzerare lo stato media quando cambia il progetto, evitando reset sincroni in `useEffect`
+- `AdminDashboard.jsx`: stabilizzati `primaryKeys` e `loadRows` per eliminare i warning residui `react-hooks/exhaustive-deps`
+
+Snippet rappresentativi:
+
+```jsx
+<HeroTypingAnimation
+  key={animationKey}
+  nameText={nameText}
+  roles={roles}
+  ...
+/>
+```
+
+```jsx
+<GithubProjectMediaCarousel
+  key={`${project.slug}:${images.join('|')}`}
+  project={project}
+  images={images}
+  loopedImages={loopedImages}
+/>
+```
+
+### Rifinitura context per React Fast Refresh
+
+Problema:
+- i file `src/context/*` esportavano nello stesso modulo sia il provider che hook/helper non-component, causando errori `react-refresh/only-export-components`
+
+Soluzione:
+- mantenuti i provider nei file esistenti
+- spostati i valori context in file dedicati `*ContextValue.js`
+- spostati i custom hook in file dedicati `use*.js`
+- aggiornati tutti gli import nei componenti
+
+Nuovi file creati:
+- `src/context/authContextValue.js`
+- `src/context/contentContextValue.js`
+- `src/context/languageContextValue.js`
+- `src/context/profileContextValue.js`
+- `src/context/themeContextValue.js`
+- `src/context/useAuth.js`
+- `src/context/useContent.js`
+- `src/context/useLanguage.js`
+- `src/context/useProfile.js`
+- `src/context/useTheme.js`
+
+Esempio:
+
+```js
+import { useContext } from 'react';
+import { LanguageContext } from './languageContextValue';
+
+export function useLanguage() {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) throw new Error('useLanguage must be used within LanguageProvider');
+  return ctx;
+}
+```
+
+### Verifiche finali dopo i fix lint
+
+Comandi eseguiti:
+
+```bash
+npm run lint
+npm run build
+npm run typecheck
+```
+
+Esito:
+- `PASS`
+- nessun errore lint residuo
+- build frontend ancora valida
+- typecheck ancora valido
+
+Output sintetico:
+
+```txt
+> npm run lint
+> eslint .
+
+> npm run build
+> vite build
+✓ built in 8.85s
+
+> npm run typecheck
+> tsc --noEmit
+```
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 18:05:18 +01:00`
+- Stato: `Lint errors risolti, baseline tecnica pulita`
+
+## Nota su IMPROVEMENTS.md
+
+- Inclusa nel commit anche la modifica locale gia presente su `IMPROVEMENTS.md`
+- La modifica rimuove la sezione `Fase 10 — Sync GitHub automatica` e i relativi riferimenti nella matrice/struttura proposta
+- Questa modifica non e stata generata durante i fix lint, ma viene tracciata intenzionalmente nel commit finale per mantenere il branch coerente con lo stato attuale del documento

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import { useContent } from '../../context/ContentContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useContent } from '../../context/useContent';
 import '../css/Projects.css';
 
 const handleTilt = (e) => {
@@ -19,22 +19,9 @@ const handleTiltReset = (e) => {
   e.currentTarget.style.transform = '';
 };
 
-function GithubProjectMedia({ project }) {
-  const images = Array.isArray(project.images) && project.images.length > 0
-    ? project.images
-    : project.image
-      ? [project.image]
-      : [];
-  const loopedImages = images.length > 1
-    ? [images[images.length - 1], ...images, images[0]]
-    : images;
+function GithubProjectMediaCarousel({ project, images, loopedImages }) {
   const [currentIndex, setCurrentIndex] = useState(images.length > 1 ? 1 : 0);
   const [isTransitionEnabled, setIsTransitionEnabled] = useState(true);
-
-  useEffect(() => {
-    setCurrentIndex(images.length > 1 ? 1 : 0);
-    setIsTransitionEnabled(false);
-  }, [project.slug, images.length]);
 
   useEffect(() => {
     if (images.length <= 1) return undefined;
@@ -163,6 +150,26 @@ function GithubProjectMedia({ project }) {
         </>
       )}
     </div>
+  );
+}
+
+function GithubProjectMedia({ project }) {
+  const images = Array.isArray(project.images) && project.images.length > 0
+    ? project.images
+    : project.image
+      ? [project.image]
+      : [];
+  const loopedImages = images.length > 1
+    ? [images[images.length - 1], ...images, images[0]]
+    : images;
+
+  return (
+    <GithubProjectMediaCarousel
+      key={`${project.slug}:${images.join('|')}`}
+      project={project}
+      images={images}
+      loopedImages={loopedImages}
+    />
   );
 }
 

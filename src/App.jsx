@@ -13,9 +13,9 @@ import AdminLogin from './components/jsx/AdminLogin';
 import AdminDashboard from './components/jsx/AdminDashboard';
 import RequireAdmin from './components/jsx/RequireAdmin';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { useLanguage } from './context/LanguageContext';
-import { useProfile } from './context/ProfileContext';
-import { useContent } from './context/ContentContext';
+import { useLanguage } from './context/useLanguage';
+import { useProfile } from './context/useProfile';
+import { useContent } from './context/useContent';
 
 function App() {
   const { pathname } = useLocation();
@@ -32,13 +32,16 @@ function App() {
   const shouldGateHome = pathname === '/';
 
   useEffect(() => {
-    if (dataLoading) {
-      setBootDelayDone(false);
-      return undefined;
-    }
+    if (dataLoading) return undefined;
     const timeout = setTimeout(() => setBootDelayDone(true), 450);
     return () => clearTimeout(timeout);
   }, [dataLoading]);
+
+  useEffect(() => {
+    if (!dataLoading || !bootDelayDone) return undefined;
+    const timeout = setTimeout(() => setBootDelayDone(false), 0);
+    return () => clearTimeout(timeout);
+  }, [dataLoading, bootDelayDone]);
 
   const appLoading = shouldGateHome
     ? dataLoading || !heroReady || !bootDelayDone

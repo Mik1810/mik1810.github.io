@@ -1,20 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import { useProfile } from '../../context/ProfileContext';
+import { useEffect, useState } from 'react';
+import { useLanguage } from '../../context/useLanguage';
+import { useProfile } from '../../context/useProfile';
 import icons from '../../data/icons';
 import '../css/HeroTyping.css';
 
-function HeroTyping() {
-  const { t, lang } = useLanguage();
-  const { profile } = useProfile();
-  const nameText = profile?.name || '';
-  const photo = profile?.photo || '';
-  const university = profile?.university || { logo: '', name: '' };
-  const socials = profile?.socials || [];
-  const roles = profile?.roles || [];
-  const greeting = profile?.greeting || t('hero.greeting');
-  const uniName = university.name || '';
+const EMPTY_ROLES = [];
 
+function HeroTypingAnimation({ nameText, roles, photo, university, socials, greeting, uniName, t }) {
   // Phase 1: type the name
   const [nameCharIndex, setNameCharIndex] = useState(0);
   const [nameFinished, setNameFinished] = useState(false);
@@ -23,14 +15,6 @@ function HeroTyping() {
   const [roleIndex, setRoleIndex] = useState(0);
   const [roleCharIndex, setRoleCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    setNameCharIndex(0);
-    setNameFinished(false);
-    setRoleIndex(0);
-    setRoleCharIndex(0);
-    setIsDeleting(false);
-  }, [nameText, lang]);
 
   // Type the name first
   useEffect(() => {
@@ -43,7 +27,7 @@ function HeroTyping() {
       const timeout = setTimeout(() => setNameFinished(true), 600);
       return () => clearTimeout(timeout);
     }
-  }, [nameCharIndex, nameFinished, nameText.length]);
+  }, [nameCharIndex, nameFinished, nameText]);
 
   // Then cycle through roles
   useEffect(() => {
@@ -59,8 +43,10 @@ function HeroTyping() {
     } else if (isDeleting && roleCharIndex > 0) {
       timeout = setTimeout(() => setRoleCharIndex(roleCharIndex - 1), 40);
     } else if (isDeleting && roleCharIndex === 0) {
-      setIsDeleting(false);
-      setRoleIndex((roleIndex + 1) % roles.length);
+      timeout = setTimeout(() => {
+        setIsDeleting(false);
+        setRoleIndex((roleIndex + 1) % roles.length);
+      }, 120);
     }
 
     return () => clearTimeout(timeout);
@@ -117,6 +103,33 @@ function HeroTyping() {
         </div>
       </div>
     </section>
+  );
+}
+
+function HeroTyping() {
+  const { t, lang } = useLanguage();
+  const { profile } = useProfile();
+  const nameText = profile?.name || '';
+  const photo = profile?.photo || '';
+  const university = profile?.university || { logo: '', name: '' };
+  const socials = Array.isArray(profile?.socials) ? profile.socials : [];
+  const roles = Array.isArray(profile?.roles) ? profile.roles : EMPTY_ROLES;
+  const greeting = profile?.greeting || t('hero.greeting');
+  const uniName = university.name || '';
+  const animationKey = `${lang}:${nameText}:${roles.join('|')}`;
+
+  return (
+    <HeroTypingAnimation
+      key={animationKey}
+      nameText={nameText}
+      roles={roles}
+      photo={photo}
+      university={university}
+      socials={socials}
+      greeting={greeting}
+      uniName={uniName}
+      t={t}
+    />
   );
 }
 

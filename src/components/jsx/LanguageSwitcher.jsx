@@ -1,4 +1,4 @@
-import { useLanguage } from '../../context/LanguageContext';
+import { useLanguage } from '../../context/useLanguage';
 import '../css/LanguageSwitcher.css';
 
 function LanguageSwitcher() {

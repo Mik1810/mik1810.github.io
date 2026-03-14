@@ -1,7 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useLanguage } from './LanguageContext';
-
-const ProfileContext = createContext();
+import { useCallback, useEffect, useState } from 'react';
+import { ProfileContext } from './profileContextValue';
+import { useLanguage } from './useLanguage';
 
 export function ProfileProvider({ children }) {
   const { lang } = useLanguage();
@@ -45,10 +44,4 @@ export function ProfileProvider({ children }) {
       {children}
     </ProfileContext.Provider>
   );
-}
-
-export function useProfile() {
-  const ctx = useContext(ProfileContext);
-  if (!ctx) throw new Error('useProfile must be used within ProfileProvider');
-  return ctx;
 }

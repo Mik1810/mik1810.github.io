@@ -1,6 +1,6 @@
-import { useLanguage } from '../../context/LanguageContext';
-import { useContent } from '../../context/ContentContext';
-import { useProfile } from '../../context/ProfileContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useContent } from '../../context/useContent';
+import { useProfile } from '../../context/useProfile';
 import '../css/About.css';
 
 function About() {

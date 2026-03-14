@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import { useProfile } from '../../context/ProfileContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useProfile } from '../../context/useProfile';
 import '../css/Contact.css';
 
 function Contact() {

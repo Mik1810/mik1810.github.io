@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useLanguage } from '../../context/LanguageContext';
-import { useProfile } from '../../context/ProfileContext';
-import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useProfile } from '../../context/useProfile';
+import { useAuth } from '../../context/useAuth';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import '../css/Navbar.css';

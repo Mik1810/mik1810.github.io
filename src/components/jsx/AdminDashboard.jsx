@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import '../css/AdminAuth.css';
 
 const PAGE_SIZE = 15;
+const EMPTY_PRIMARY_KEYS = [];
 
 function prettyValue(value) {
   if (value === null || value === undefined) return '';
@@ -91,10 +92,13 @@ function AdminDashboard() {
     [tables, activeTableName]
   );
 
-  const primaryKeys = activeTable?.primaryKeys || [];
+  const primaryKeys = useMemo(
+    () => activeTable?.primaryKeys || EMPTY_PRIMARY_KEYS,
+    [activeTable]
+  );
   const selectedRow = selectedIndex >= 0 ? rows[selectedIndex] : null;
 
-  const loadRows = async (tableName) => {
+  const loadRows = useCallback(async (tableName) => {
     if (!tableName) return;
     setLoadingRows(true);
     setError('');
@@ -130,7 +134,7 @@ function AdminDashboard() {
     } finally {
       setLoadingRows(false);
     }
-  };
+  }, [activeTable]);
 
   useEffect(() => {
     const loadTables = async () => {
@@ -165,7 +169,7 @@ function AdminDashboard() {
   useEffect(() => {
     if (!activeTableName) return;
     loadRows(activeTableName);
-  }, [activeTableName]);
+  }, [activeTableName, loadRows]);
 
   useEffect(() => {
     setSearchQuery('');

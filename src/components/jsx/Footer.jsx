@@ -1,5 +1,5 @@
-import { useLanguage } from '../../context/LanguageContext';
-import { useProfile } from '../../context/ProfileContext';
+import { useLanguage } from '../../context/useLanguage';
+import { useProfile } from '../../context/useProfile';
 import icons from '../../data/icons';
 import '../css/Footer.css';
 

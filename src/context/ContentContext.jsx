@@ -1,7 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useLanguage } from './LanguageContext';
-
-const ContentContext = createContext();
+import { useCallback, useEffect, useState } from 'react';
+import { ContentContext } from './contentContextValue';
+import { useLanguage } from './useLanguage';
 
 export function ContentProvider({ children }) {
   const { lang } = useLanguage();
@@ -187,10 +186,4 @@ export function ContentProvider({ children }) {
       {children}
     </ContentContext.Provider>
   );
-}
-
-export function useContent() {
-  const ctx = useContext(ContentContext);
-  if (!ctx) throw new Error('useContent must be used within ContentProvider');
-  return ctx;
 }
