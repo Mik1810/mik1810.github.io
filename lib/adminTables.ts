@@ -1,4 +1,6 @@
-export const ADMIN_TABLES = {
+import type { AdminTableConfig, AdminTablesMap } from './types/admin.js'
+
+export const ADMIN_TABLES: AdminTablesMap = {
   profile: {
     label: 'Profile',
     primaryKeys: ['id'],
@@ -151,8 +153,8 @@ export const ADMIN_TABLES = {
     primaryKeys: ['skill_item_id', 'locale'],
     defaultRow: { skill_item_id: 1, locale: 'it', label: '' },
   },
-};
+}
 
-export function getAdminTableConfig(table) {
-  return ADMIN_TABLES[table] || null;
+export function getAdminTableConfig(table: string): AdminTableConfig | null {
+  return ADMIN_TABLES[table] || null
 }

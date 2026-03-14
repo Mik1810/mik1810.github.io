@@ -485,3 +485,89 @@ function,function,function,function
 
 - Ora locale: `2026-03-14 18:20:30 +01:00`
 - Stato: `Endpoint pubblici migrati a TypeScript, backend pubblico quasi interamente tipizzato`
+
+## Migrazione TypeScript area admin/backend
+
+### Obiettivo
+
+Chiudere la migrazione TypeScript del backend server-side rimanente, convertendo configurazione admin e endpoint `api/admin/*` prima di passare ai layer architetturali successivi.
+
+### File migrati
+
+- `lib/adminTables.js` -> `lib/adminTables.ts`
+- `api/admin/login.js` -> `api/admin/login.ts`
+- `api/admin/logout.js` -> `api/admin/logout.ts`
+- `api/admin/session.js` -> `api/admin/session.ts`
+- `api/admin/table.js` -> `api/admin/table.ts`
+- `api/admin/tables.js` -> `api/admin/tables.ts`
+
+### Nuovi tipi introdotti
+
+File creato:
+- `lib/types/admin.ts`
+
+Contenuto:
+- `AdminTableConfig`
+- `AdminTablesMap`
+- `AdminSessionResponse`
+
+Scopo:
+- tipizzare configurazione admin
+- tipizzare la shape della sessione admin
+- ridurre la logica ad-hoc nei file `api/admin/*`
+
+### Cosa e stato fatto
+
+#### `lib/adminTables.ts`
+
+- tipizzata l'intera mappa `ADMIN_TABLES`
+- tipizzato `getAdminTableConfig(table: string)`
+
+#### `api/admin/login.ts`
+
+- tipizzato il body `email/password`
+- tipizzato l'utente sessione tramite `SessionUser`
+
+#### `api/admin/logout.ts`
+
+- tipizzato il flow logout mantenendo invariata la verifica `requireAdminSession`
+
+#### `api/admin/session.ts`
+
+- tipizzato il payload restituito con `AdminSessionResponse`
+
+#### `api/admin/table.ts`
+
+- tipizzati body e payload `row/keys`
+- mantenuta la logica CRUD generica
+- scelto un typing pragmatico su `applyPrimaryKeys` usando `any` nel punto di composizione del query builder Supabase, per evitare falsi vincoli del type system senza alterare il runtime
+
+#### `api/admin/tables.ts`
+
+- tipizzata la serializzazione della lista tabelle esposte al frontend admin
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+npx tsx -e "Promise.all([import('./api/admin/login.ts'), import('./api/admin/logout.ts'), import('./api/admin/session.ts'), import('./api/admin/table.ts'), import('./api/admin/tables.ts')]).then((mods) => console.log(mods.map((m) => typeof m.default).join(',')))"
+```
+
+Esito:
+- `PASS`
+- import runtime corretto per tutti gli endpoint admin migrati
+
+Output sintetico:
+
+```txt
+function,function,function,function,function
+```
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 18:28:48 +01:00`
+- Stato: `Backend server-side quasi completamente migrato a TypeScript`
