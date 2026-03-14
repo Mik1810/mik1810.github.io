@@ -1,26 +1,56 @@
 # Piccirilli Michael Portfolio
 
-Portfolio full-stack personale con frontend React/Vite e backend API TypeScript, deployato su Vercel e alimentato da PostgreSQL/Supabase.
+## Abstract
 
-Il progetto e' stato progressivamente rifattorizzato verso una struttura piu' solida:
-- frontend e backend migrati a TypeScript/TSX
-- backend organizzato come `api -> service -> repository`
-- accesso dati pubblico migrato a Drizzle ORM
-- area admin senza dipendenza runtime da `supabase-js`
-- baseline di hardening con rate limiting, error handling comune e logging strutturato
+Questa repository implementa un sistema full-stack per la pubblicazione, amministrazione e distribuzione di contenuti di tipo portfolio/curriculum strutturato. Dal punto di vista funzionale, il progetto serve a:
 
-## Stato attuale
+- rappresentare in forma digitale un profilo professionale e accademico;
+- esporre contenuti localizzati (`it`, `en`) relativi a profilo, competenze, progetti, esperienze ed education;
+- fornire un backend amministrativo per la modifica dei dati persistiti;
+- usare la stessa base dati come fonte canonica sia per la UI pubblica sia per l'area admin.
 
-- `npm run typecheck`: verde
-- `npm run lint`: verde
-- `npm run build`: verde
-- repository pubblici Drizzle: `about`, `profile`, `skills`, `experiences`, `projects`
-- repository admin:
-  - auth via Supabase Auth REST
-  - CRUD via SQL diretto con client `postgres`
-- `supabaseAdmin.ts`: rimosso dal runtime
+Il portfolio, quindi, non e' solo una landing page, ma un piccolo sistema informativo orientato a contenuti strutturati, localizzazione, consistenza dei dati e gestione operativa.
 
-## Stack tecnico
+## Scope del sistema
+
+### Dominio applicativo
+
+Il sistema modella le seguenti entita' principali:
+
+- profilo personale;
+- ruoli/claim principali mostrati nella hero section;
+- link social;
+- interessi;
+- progetti portfolio custom;
+- progetti GitHub featured con galleria immagini;
+- esperienze;
+- education;
+- categorie tecnologiche e stack tecnico;
+- categorie di skill e skill localizzate.
+
+### Obiettivo operativo
+
+L'obiettivo del sistema e' rendere interrogabile e aggiornabile un dataset personale coerente, versionato in Git e servito via API, mantenendo:
+
+- separazione tra concerns UI, logica applicativa e accesso dati;
+- supporto i18n a livello di persistenza;
+- possibilita' di amministrazione controllata lato server;
+- build riproducibile e deploy su Vercel.
+
+## Stato attuale della repository
+
+Stato della codebase al momento della stesura:
+
+- frontend runtime interamente in TypeScript/TSX;
+- backend API interamente in TypeScript;
+- pattern architetturale principale: `api -> service -> repository -> database`;
+- accesso dati pubblico su Drizzle ORM;
+- accesso dati admin via SQL parametrizzato con driver `postgres`;
+- autenticazione admin via Supabase Auth REST;
+- `supabaseAdmin.ts` assente dal runtime;
+- `npm run typecheck`, `npm run lint` e `npm run build` tutti passanti.
+
+## Stack tecnologico
 
 ### Frontend
 
@@ -28,168 +58,374 @@ Il progetto e' stato progressivamente rifattorizzato verso una struttura piu' so
 - React Router 7
 - Vite 7
 - TypeScript 5
-- CSS modulare per sezione/componente
+- CSS organizzato per componente/sezione
 
-### Backend/API
+### Backend
 
 - API handlers in `api/*.ts`
-- Runtime locale custom in `lib/devApiServer.ts`
-- TypeScript end-to-end
-- Error handling condiviso in `lib/http/apiUtils.ts`
-- Logging in `lib/logger.ts`
-- Rate limiting in `lib/http/rateLimit.ts`
+- runtime locale custom in `lib/devApiServer.ts`
+- cookie session signing lato server
+- rate limiting in-memory
+- error handling condiviso
 
 ### Data layer
 
-- PostgreSQL (Supabase)
+- PostgreSQL ospitato tramite Supabase
 - Drizzle ORM
-- `postgres` driver
-- schema Drizzle in `lib/db/schema.ts`
-- dump schema reale in `dump/dump_schema.sql`
+- driver `postgres`
+- schema applicativo descritto in `lib/db/schema.ts`
 
 ### Tooling
 
 - ESLint flat config
 - Prettier
-- `tsx` per esecuzione/watch locale del backend
-- GitHub Actions per cleanup deployments
+- `tsx` per execution/watch
+- Drizzle Kit
+- GitHub Actions
 
-## Architettura
+## Architettura logica
 
-### Flusso backend
+### Pipeline backend
 
-Per gli endpoint principali il flusso e':
+Il backend segue il seguente pipeline model:
 
 ```txt
-api handler -> service -> repository -> database
+HTTP Request
+  -> API Handler
+  -> Service Layer
+  -> Repository Layer
+  -> SQL / Drizzle
+  -> PostgreSQL
+  -> JSON Response
 ```
+
+### Responsabilita' per layer
+
+#### API layer
+
+Posizione:
+- `api/*.ts`
+- `api/admin/*.ts`
 
 Responsabilita':
+- controllo del metodo HTTP;
+- lettura di query/body;
+- wiring della cache HTTP;
+- conversione eccezioni -> errori HTTP;
+- logging contestuale.
 
-- `api/*`
-  - metodo HTTP
-  - parsing query/body
-  - cache HTTP
-  - mapping errori -> risposta HTTP
-- `lib/services/*`
-  - orchestrazione applicativa
-  - validazione di alto livello
-  - composizione tra repository
+#### Service layer
+
+Posizione:
+- `lib/services/publicContentService.ts`
+- `lib/services/adminAuthService.ts`
+- `lib/services/adminTableService.ts`
+
+Responsabilita':
+- orchestrazione di use case applicativi;
+- validazione di input a livello di servizio;
+- coordinamento tra repository;
+- separazione tra protocollo HTTP e logica di dominio.
+
+#### Repository layer
+
+Posizione:
 - `lib/db/repositories/*`
-  - accesso dati
-  - mapping record -> payload applicativo
-- `lib/db/schema.ts`
-  - modellazione tabelle/constraint Drizzle
 
-### Flusso frontend
+Responsabilita':
+- interrogazione della persistenza;
+- mapping record/tabella -> DTO applicativi;
+- aggregazione di relazioni 1:N e tabelle `*_i18n`;
+- isolamento della logica SQL dal resto del sistema.
 
-```txt
-App -> Context Providers -> route/view components -> fetch API -> render sezioni
-```
+## Architettura frontend
 
-I provider in `src/context/*` centralizzano:
-- lingua
-- tema
-- auth admin
-- profile/content data
+Il frontend e' organizzato come composizione di provider di contesto e componenti di sezione.
 
-## Struttura repository
+Pipeline tipica:
 
 ```txt
-api/
-  about.ts
-  experiences.ts
-  health.ts
-  profile.ts
-  projects.ts
-  skills.ts
-  admin/
-    login.ts
-    logout.ts
-    session.ts
-    table.ts
-    tables.ts
-
-lib/
-  adminTables.ts
-  authSession.ts
-  devApiServer.ts
-  logger.ts
-  requireAdminSession.ts
-  cache/
-    memoryCache.ts
-  db/
-    client.ts
-    schema.ts
-    repositories/
-      aboutRepository.ts
-      adminAuthRepository.ts
-      adminTableRepository.ts
-      experiencesRepository.ts
-      profileRepository.ts
-      projectsRepository.ts
-      skillsRepository.ts
-  http/
-    apiUtils.ts
-    rateLimit.ts
-  services/
-    adminAuthService.ts
-    adminTableService.ts
-    publicContentService.ts
-  types/
-    admin.ts
-    auth.ts
-    http.ts
-
-src/
-  App.tsx
-  main.tsx
-  components/
-    css/
-    jsx/
-  context/
-  data/
-  types/
-
-docs/
-  API_CONTRACT.md
-
-dump/
-  dump.sql
-  dump_schema.sql
+App
+  -> Context Providers
+  -> data fetch verso /api/*
+  -> normalizzazione payload
+  -> render delle sezioni pubbliche o dell'area admin
 ```
 
-## Dati e schema
+Provider principali:
 
-Il database e' strutturato attorno a tabelle base + tabelle `*_i18n` per il contenuto localizzato.
+- `LanguageContext`
+- `ThemeContext`
+- `AuthContext`
+- `ProfileContext`
+- `ContentContext`
 
-Pattern principali:
+Il frontend consuma il backend esclusivamente via fetch HTTP. Non esiste un client Supabase nel browser.
+
+## Modello informativo
+
+La persistenza segue un modello relazionale normalizzato con forte uso di tabelle localizzate.
+
+### Pattern generale
+
+Per molte entita' il pattern e':
+
+```txt
+base_table + base_table_i18n(locale, ...)
+```
+
+Esempi:
+
 - `profile` + `profile_i18n`
 - `hero_roles` + `hero_roles_i18n`
 - `about_interests` + `about_interests_i18n`
-- `projects` + `projects_i18n` + `project_tags`
-- `github_projects` + `github_projects_i18n` + `github_project_tags` + `github_project_images`
+- `projects` + `projects_i18n`
+- `github_projects` + `github_projects_i18n`
 - `experiences` + `experiences_i18n`
 - `education` + `education_i18n`
-- `tech_categories` + `tech_categories_i18n` + `tech_items`
-- `skill_categories` + `skill_categories_i18n` + `skill_items` + `skill_items_i18n`
+- `tech_categories` + `tech_categories_i18n`
+- `skill_categories` + `skill_categories_i18n`
+- `skill_items` + `skill_items_i18n`
+
+### Proprieta' del modello
+
+Il modello privilegia:
+
+- identificatori numerici stabili (`bigint` o `smallint`);
+- `order_index` per l'ordinamento semantico lato UI;
+- `slug` per entita' navigabili o logicamente nominabili;
+- chiavi primarie composite per localizzazioni;
+- constraint di unicita' per preservare l'ordine entro una relazione padre-figlio.
+
+### Locale
 
 Locale supportate:
+
 - `it`
 - `en`
 
-Lo schema Drizzle e' stato riallineato al dump reale del DB, inclusi:
-- `bigint` / `smallint` corretti
-- primary key composite sulle tabelle `*_i18n`
-- unique su `order_index`
-- unique su `slug`
-- unique composite su molte tabelle figlie
+La lingua di fallback lato repository e API pubbliche e' `it`.
+
+## Schema Drizzle
+
+Lo schema applicativo corrente e' in:
+
+- [schema.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts)
+
+Lo schema e' stato calibrato sul dump reale del database, non solo su ipotesi statiche. Elementi rilevanti:
+
+- uso esplicito di `bigint(..., { mode: 'number' })`;
+- `profile.id` modellato come `smallint` con check `id = 1`;
+- primary key composite nelle tabelle `*_i18n`;
+- unique su:
+  - `order_index`
+  - `slug`
+  - coppie come `(project_id, order_index)`.
+
+File di riferimento:
+
+- [dump_schema.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump_schema.sql)
+- [dump.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump.sql)
+
+Tra i due, `dump_schema.sql` e' il riferimento principale per struttura, vincoli e cardinalita'.
+
+## Database access model
+
+### Repository pubblici
+
+I repository pubblici sono implementati in Drizzle:
+
+- `aboutRepository.ts`
+- `profileRepository.ts`
+- `skillsRepository.ts`
+- `experiencesRepository.ts`
+- `projectsRepository.ts`
+
+Ogni repository produce DTO gia' compatibili con il contratto API consumato dal frontend.
+
+### Repository admin
+
+L'area admin usa un modello differente:
+
+- auth via REST HTTP verso Supabase Auth;
+- CRUD generico via SQL parametrizzato e validazione di identifier.
+
+Questo approccio e' stato scelto per mantenere:
+
+- admin dinamico su piu' tabelle;
+- indipendenza da un client Supabase ad hoc;
+- controllo esplicito sul comportamento SQL.
+
+## Sistema di autenticazione admin
+
+### Modello
+
+Il sistema admin non delega la sessione al browser tramite SDK remoto. Il modello attuale e':
+
+1. `POST /api/admin/login`
+2. verifica credenziali via `SUPABASE_URL/auth/v1/token?grant_type=password`
+3. estrazione utente
+4. creazione token locale firmato
+5. invio cookie di sessione HTTP
+
+### Implementazione
+
+File coinvolti:
+
+- `lib/db/repositories/adminAuthRepository.ts`
+- `lib/services/adminAuthService.ts`
+- `lib/authSession.ts`
+- `lib/requireAdminSession.ts`
+- `api/admin/login.ts`
+- `api/admin/logout.ts`
+- `api/admin/session.ts`
+
+### Proprieta'
+
+- il frontend non riceve un SDK auth stateful;
+- la sessione e' verificata server-side;
+- il cookie e' la fonte di verita' per l'autenticazione admin locale.
+
+## Admin generic CRUD
+
+L'endpoint:
+
+- `GET|POST|PATCH|DELETE /api/admin/table`
+
+fornisce un'interfaccia generica per l'editing delle tabelle consentite.
+
+### Vincoli di sicurezza
+
+- whitelist tabelle in `lib/adminTables.ts`;
+- validazione dei nomi colonna come SQL identifiers;
+- query parametrizzate per i valori;
+- controllo esplicito delle primary keys richieste;
+- rate limiting lato endpoint.
+
+### Implicazioni
+
+L'admin panel e' intenzionalmente schema-aware ma non schema-specific lato UI: manipola `Record<string, unknown>` mantenendo la flessibilita' necessaria a un pannello dati generico.
+
+## API surface
+
+### Endpoint pubblici
+
+- `GET /api/profile?lang=it|en`
+- `GET /api/about?lang=it|en`
+- `GET /api/projects?lang=it|en`
+- `GET /api/experiences?lang=it|en`
+- `GET /api/skills?lang=it|en`
+- `GET /api/health`
+
+### Endpoint admin
+
+- `POST /api/admin/login`
+- `POST /api/admin/logout`
+- `GET /api/admin/session`
+- `GET /api/admin/tables`
+- `GET|POST|PATCH|DELETE /api/admin/table`
+
+Contratto dettagliato:
+
+- [API_CONTRACT.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/docs/API_CONTRACT.md)
+
+## Caching e comportamento runtime
+
+### Cache applicativa
+
+Gli endpoint pubblici usano una cache in memoria TTL tramite:
+
+- `lib/cache/memoryCache.ts`
+
+Uso corrente:
+
+- `profile`
+- `about`
+- `projects`
+- `skills`
+- `experiences`
+
+### Header HTTP
+
+Gli handler pubblici impostano tipicamente:
+
+```txt
+Cache-Control: s-maxage=60, stale-while-revalidate=300
+```
+
+### Limiti del modello attuale
+
+La cache e il rate limiting sono process-local:
+
+- non condivisi tra istanze;
+- sufficienti per sviluppo e baseline deploy;
+- non equivalenti a un sistema distribuito tipo Redis.
+
+## Error handling, validation, logging
+
+### Error model
+
+Helper comuni:
+
+- `lib/http/apiUtils.ts`
+- `lib/logger.ts`
+
+Funzionalita':
+
+- enforcement del metodo HTTP;
+- `HttpError`;
+- risposta JSON uniforme;
+- logging contestuale per endpoint e metadata request.
+
+### Validation model
+
+La validazione e' oggi distribuita tra:
+
+- API handlers
+- service layer
+- whitelist admin
+- validazione identifier SQL
+
+Non e' ancora presente un framework formale di schema validation tipo Zod nel runtime.
+
+## Frontend composition
+
+### Sezioni principali
+
+Componenti pubblici:
+
+- `Navbar`
+- `HeroTyping`
+- `About`
+- `Projects`
+- `Experience`
+- `Skills`
+- `Contact`
+- `Footer`
+
+Componenti admin:
+
+- `AdminLogin`
+- `AdminDashboard`
+- `RequireAdmin`
+
+### Data ingress
+
+Il frontend carica:
+
+- `profile` da `ProfileContext`
+- `about/projects/experiences/skills` da `ContentContext`
+- etichette statiche locali da `src/data/staticI18n.json`
+
+### Comportamento di boot
+
+L'applicazione usa un boot gate nella home per evitare render prematuri prima del completamento del caricamento dati e di un breve delay di inizializzazione UI.
 
 ## Variabili ambiente
 
-Il progetto usa [`.env.local`](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/.env.local).
+La configurazione locale e' basata su [`.env.local`](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/.env.local).
 
-Variabili richieste:
+Variabili rilevanti:
 
 ```env
 SUPABASE_URL=https://<project-ref>.supabase.co
@@ -197,13 +433,15 @@ SUPABASE_SECRET_KEY=<service-role-or-secret>
 DATABASE_URL=postgresql://<user>:<password>@<host>:5432/postgres?sslmode=require
 ```
 
-Note:
-- `SUPABASE_URL` e' la URL HTTP del progetto Supabase
-- `SUPABASE_SECRET_KEY` serve al login admin via REST Auth
-- `DATABASE_URL` serve a Drizzle, `postgres` e `pg_dump`
-- `DATABASE_URL` deve essere una vera connection string Postgres, non una URL HTTP
+Semantica:
 
-## Script principali
+- `SUPABASE_URL`: endpoint HTTP del progetto Supabase
+- `SUPABASE_SECRET_KEY`: chiave usata per auth REST admin
+- `DATABASE_URL`: DSN Postgres usato da Drizzle, `postgres` e tooling SQL
+
+`DATABASE_URL` deve essere una connection string Postgres reale; una URL HTTP Supabase non e' valida per Drizzle o `pg_dump`.
+
+## Script e riproducibilita'
 
 ### Sviluppo
 
@@ -213,13 +451,13 @@ Frontend:
 npm run dev
 ```
 
-Backend API locale in watch mode:
+Backend locale in watch mode:
 
 ```bash
 npm run dev:api
 ```
 
-Frontend + backend insieme:
+Sistema completo:
 
 ```bash
 npm run dev:fast
@@ -240,7 +478,7 @@ npm run build
 npm run format
 ```
 
-### Drizzle
+### Database
 
 ```bash
 npm run db:generate
@@ -248,186 +486,85 @@ npm run db:migrate
 npm run db:studio
 ```
 
-## Runtime locale
-
-### Frontend
-
-- Vite gira di default su `http://localhost:5173`
-- il frontend proxya `/api` verso `http://localhost:3000`
-
-### Backend
-
-- il server locale custom gira su `http://localhost:3000`
-- `dev:api` usa `tsx watch`, quindi i cambi a `api/*` e `lib/*` si ricaricano automaticamente nella maggior parte dei casi
-
-## Cache, error handling e rate limiting
-
-### Cache
-
-Gli endpoint pubblici usano una cache in memoria TTL tramite:
-- [memoryCache.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/cache/memoryCache.ts)
-
-Uso attuale:
-- `profile`
-- `about`
-- `projects`
-- `skills`
-- `experiences`
-
-### Error handling
-
-Helper comuni:
-- [apiUtils.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/http/apiUtils.ts)
-- [logger.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/logger.ts)
-
-Funzioni principali:
-- enforcement del metodo HTTP
-- `HttpError`
-- risposta errore uniforme
-- logging contestualizzato
-
-### Rate limiting
-
-Implementazione:
-- [rateLimit.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/http/rateLimit.ts)
-
-Applicazioni attuali:
-- `POST /api/admin/login`: `5 req/min` per client
-- `/api/admin/table`: `120 req/min` per client
-
-Limite attuale:
-- process-local, non condiviso tra istanze
-
-## Autenticazione admin
-
-### Sessione
-
-La sessione admin e' cookie-based e firmata lato server:
-- creazione/verifica in [authSession.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/authSession.ts)
-- enforcement in [requireAdminSession.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/requireAdminSession.ts)
-
-### Login
-
-Il login admin non usa piu' `supabase-js`.
-
-Flusso:
-1. `POST /api/admin/login`
-2. `adminAuthService`
-3. `adminAuthRepository`
-4. chiamata HTTP a `SUPABASE_URL/auth/v1/token?grant_type=password`
-5. creazione cookie sessione locale firmata
-
-### CRUD admin
-
-L'endpoint generico [table.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/table.ts):
-- valida il nome tabella tramite [adminTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/adminTables.ts)
-- valida payload/limit
-- esegue CRUD dinamico tramite SQL parametrizzato
-
-Per sicurezza:
-- i nomi tabella/colonna vengono validati come identifier SQL
-- i valori sono passati come parametri
-- le tabelle ammesse sono whitelistate
-
-## API pubbliche
-
-Dettaglio completo:
-- [API_CONTRACT.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/docs/API_CONTRACT.md)
-
-Endpoint principali:
-- `GET /api/profile?lang=it|en`
-- `GET /api/about?lang=it|en`
-- `GET /api/projects?lang=it|en`
-- `GET /api/experiences?lang=it|en`
-- `GET /api/skills?lang=it|en`
-- `GET /api/health`
-
-Endpoint admin:
-- `POST /api/admin/login`
-- `POST /api/admin/logout`
-- `GET /api/admin/session`
-- `GET|POST|PATCH|DELETE /api/admin/table`
-- `GET /api/admin/tables`
-
-## Frontend
-
-Sezioni principali:
-- `Navbar`
-- `HeroTyping`
-- `About`
-- `Projects`
-- `Skills`
-- `Experience`
-- `Contact`
-- `Footer`
-
-Area admin:
-- `AdminLogin`
-- `AdminDashboard`
-
-Dati statici locali:
-- [staticI18n.json](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/data/staticI18n.json)
-- [icons.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/data/icons.tsx)
-
-## Deploy
+## Deploy model
 
 ### Vercel
 
-Il progetto e' pensato per deploy su Vercel:
+Il target di deploy e' Vercel.
+
+Caratteristiche operative:
+
 - branch di produzione: `main`
 - preview deploy su branch non-production
-- config runtime in [vercel.json](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/vercel.json)
+- configurazione runtime in `vercel.json`
 
 ### GitHub Actions
 
-Workflow presente:
-- [cleanup-deployments.yml](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/.github/workflows/cleanup-deployments.yml)
+Workflow incluso:
+
+- `.github/workflows/cleanup-deployments.yml`
 
 Scopo:
-- mantenere solo gli ultimi deployment GitHub `preview` e `production`
 
-Nota:
-- questa pulizia riguarda i record GitHub deployments
-- non sostituisce la retention interna di Vercel
+- ridurre lo storico dei GitHub Deployments mantenendo solo gli ultimi record `preview` e `production`.
 
-## Dump database
+Questo workflow non sostituisce la retention interna delle deploy Vercel.
 
-Directory:
-- [dump/](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump)
+## Struttura della repository
 
-File utili:
-- [dump_schema.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump_schema.sql)
-  - il piu' utile per modellare schema e constraint
-- [dump.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump.sql)
-  - utile se serve ispezionare anche dati reali
+```txt
+api/
+  public API handlers
+  admin API handlers
 
-## Convenzioni operative
+lib/
+  auth, dev server, cache, http helpers, services, repositories, schema
 
-- usare il path reale della repo `Piccirilli_Michael_Portfolio`, non la vecchia junction `mik1810.github.io`
-- per Git e' preferibile mantenere un solo workflow coerente per evitare problemi di line endings tra Windows e WSL
-- `SESSION.md` e' il diario tecnico delle modifiche svolte finora
-- `IMPROVEMENTS.md` contiene la roadmap evolutiva del progetto
+src/
+  app root, context providers, UI components, static client-side data
 
-## Stato roadmap
+docs/
+  API contract
 
-Completato o quasi completato:
-- setup TypeScript
-- migrazione TS/TSX app
-- repository layer
-- service layer
-- hardening backend base
-- fondazione Drizzle
-- migrazione repository pubblici a Drizzle
-- rimozione dipendenza runtime da `supabaseAdmin.ts`
+dump/
+  SQL dump and schema dump
+```
 
-Ancora aperto:
-- ulteriori improvements funzionali/UX
-- eventuale consolidamento Drizzle lato admin/schema-driven CRUD
-- evoluzioni SEO / pagina progetto singolo / refinements architetturali
+File particolarmente rilevanti:
+
+- `src/App.tsx`
+- `src/context/ContentContext.tsx`
+- `lib/services/publicContentService.ts`
+- `lib/services/adminTableService.ts`
+- `lib/db/client.ts`
+- `lib/db/schema.ts`
+- `docs/API_CONTRACT.md`
+- `SESSION.md`
+- `IMPROVEMENTS.md`
+
+## Proprieta' ingegneristiche attuali
+
+La repository, allo stato attuale, presenta le seguenti proprieta':
+
+- tipizzazione end-to-end su applicazione e API;
+- separazione chiara tra livelli applicativi;
+- schema dati esplicito e verificabile;
+- assenza di client SDK Supabase nel runtime applicativo;
+- supporto a localizzazione dei contenuti a livello DB;
+- area admin server-side con sessione firmata e controllo accessi.
+
+## Limiti e superfici aperte
+
+Pur essendo funzionalmente stabile, il sistema mantiene alcune superfici di evoluzione:
+
+- il rate limiting e la cache non sono distribuiti;
+- il CRUD admin e' generic SQL-based, non ancora schema-driven a livello di tipo;
+- la documentazione API e la UI admin possono essere ulteriormente formalizzate;
+- restano aperti miglioramenti funzionali ed evolutivi descritti in `IMPROVEMENTS.md`.
 
 ## Riferimenti interni
 
 - roadmap: [IMPROVEMENTS.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/IMPROVEMENTS.md)
 - session log: [SESSION.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/SESSION.md)
 - contratto API: [API_CONTRACT.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/docs/API_CONTRACT.md)
-- schema DB dump: [dump_schema.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump_schema.sql)
+- schema dump: [dump_schema.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/dump/dump_schema.sql)

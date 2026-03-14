@@ -1141,3 +1141,13 @@ Conclusione:
   - API surface and deployment notes
   - database dump usage and roadmap status
 - The document was written from the real codebase state plus [SESSION.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/SESSION.md) and [API_CONTRACT.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/docs/API_CONTRACT.md), so it reflects the post-Drizzle, post-`supabaseAdmin` architecture rather than the original project shape.
+## 2026-03-15 01:05 CET - README rewritten with a more technical/system-oriented tone
+
+- Rewrote [README.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/README.md) to describe the repository as a current-state software system rather than as a historical refactor narrative.
+- The new README now emphasizes:
+  - project purpose and operational role of the portfolio as a structured content system
+  - logical architecture and layer responsibilities
+  - information model and localization pattern
+  - authentication, admin CRUD, caching, validation, and deploy model
+  - engineering properties and current system limits
+- Explicitly removed the previous emphasis on refactor history and replaced it with a more formal, technical, and quasi-scientific description of the repository's present architecture.
