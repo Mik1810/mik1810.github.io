@@ -5,6 +5,7 @@ import {
   requireNonEmptyString,
   respondWithError,
 } from '../../lib/http/apiUtils.js'
+import { enforceRateLimit } from '../../lib/http/rateLimit.js'
 import { logApiError } from '../../lib/logger.js'
 import type { ApiHandler, ApiRequest } from '../../lib/types/http.js'
 
@@ -17,6 +18,12 @@ const handler: ApiHandler<LoginBody> = async (req, res) => {
   if (!enforceMethod(req, res, 'POST')) return
 
   try {
+    enforceRateLimit(req, {
+      keyPrefix: 'admin-login',
+      limit: 5,
+      windowMs: 60 * 1000,
+    })
+
     const { email, password } = (req as ApiRequest<LoginBody>).body || {}
     const safeEmail = requireNonEmptyString(email, 'Email e password obbligatorie', {
       maxLength: 320,
@@ -41,6 +48,7 @@ const handler: ApiHandler<LoginBody> = async (req, res) => {
       return respondWithError(res, error)
     }
     if (error instanceof Error && error.message) {
+      logApiError('admin.login', error, { url: req.url })
       return respondWithError(res, new HttpError(401, error.message))
     }
     logApiError('admin.login', error, { url: req.url })

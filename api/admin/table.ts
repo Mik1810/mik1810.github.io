@@ -11,6 +11,7 @@ import {
   removeAdminRow,
 } from '../../lib/services/adminTableService.js'
 import { HttpError, respondWithError } from '../../lib/http/apiUtils.js'
+import { enforceRateLimit } from '../../lib/http/rateLimit.js'
 import { logApiError } from '../../lib/logger.js'
 import type { ApiHandler, ApiRequest } from '../../lib/types/http.js'
 
@@ -22,6 +23,16 @@ interface TableBody {
 const handler: ApiHandler<TableBody> = async (req, res) => {
   const admin = requireAdminSession(req, res)
   if (!admin) return
+
+  try {
+    enforceRateLimit(req, {
+      keyPrefix: 'admin-table',
+      limit: 120,
+      windowMs: 60 * 1000,
+    })
+  } catch (error) {
+    return respondWithError(res, error)
+  }
 
   const rawTable = req.query?.table
   if (!rawTable || typeof rawTable !== 'string') {

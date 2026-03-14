@@ -17,6 +17,7 @@ interface DevApiRequest {
   query?: ApiQuery
   body?: unknown
   url?: string
+  ip?: string
 }
 
 const resolveHandlerPath = (pathname: string) => {
@@ -107,6 +108,7 @@ const server = createServer(async (req, res) => {
       query: Object.fromEntries(url.searchParams.entries()),
       body,
       url: req.url,
+      ip: req.socket.remoteAddress,
     }
     const apiRes = createRes(res)
 

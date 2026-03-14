@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:web": "vite",
-    "dev:api": "tsx lib/devApiServer.ts",
+    "dev:api": "tsx watch lib/devApiServer.ts",
     "dev:api:vercel": "vercel dev --yes -p 3000",
     "dev:fast": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "dev:vercel": "vercel dev",

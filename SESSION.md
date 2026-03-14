@@ -1054,3 +1054,15 @@ Conclusione:
 - Updated public endpoints and [health.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/health.ts) to use shared method enforcement and centralized error handling.
 - Hardened [login.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/login.ts) with explicit trimmed string validation and more predictable auth error mapping.
 - Improved [table.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/table.ts) so missing-vs-disallowed table errors are distinguished and server-side failures are logged with request metadata.
+## 2026-03-14 22:15 CET - Admin rate limiting
+
+- Added [rateLimit.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/http/rateLimit.ts) with a simple in-memory limiter keyed by client IP or forwarded headers.
+- Extended [http.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/types/http.ts) and [devApiServer.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/devApiServer.ts) so local API requests carry an `ip` field when available.
+- Applied a strict limiter to [login.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/login.ts): `5` attempts per minute per client.
+- Applied a broader limiter to [table.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/table.ts): `120` requests per minute per client.
+- This limiter is intentionally lightweight and process-local, which is enough for baseline protection now and keeps the next migration path open if we later move to a shared store.
+## 2026-03-14 22:25 CET - API dev server autoreload
+
+- Updated [package.json](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/package.json) so `dev:api` now runs `tsx watch lib/devApiServer.ts`.
+- Result: local backend changes under `api/` and `lib/` should now restart the API server automatically during development.
+- Practical impact: after switching to the new script once, future backend edits should no longer require a manual `dev:api` restart in most cases.

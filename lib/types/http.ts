@@ -17,6 +17,7 @@ export interface ApiRequest<TBody = unknown> {
   headers?: ApiHeaders
   body?: TBody
   url?: string
+  ip?: string
 }
 
 export interface ApiResponse {
