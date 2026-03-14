@@ -1160,3 +1160,24 @@ Conclusione:
   - explicit technology-selection rationale with trade-offs versus alternatives such as Next.js, Prisma, Redux/Zustand, `supabase-js`, and Redis
   - a dedicated section explaining why architecture diagrams are more useful than screenshots for this repository at the current stage
 - The README now behaves more like a technical system dossier than a generic project introduction.
+## 2026-03-15 01:40 CET - Admin SQL path hardened and README made more paper-like
+
+- Reworked [adminTableRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/adminTableRepository.ts) again to remove the remaining use of `sqlClient.unsafe(...)` from the admin CRUD path.
+- The admin SQL layer now uses:
+  - strict identifier validation
+  - `postgres` tagged-template queries
+  - parameterized values for dynamic payloads and filters
+- This keeps the generic admin model while reducing the attack surface and making the security story much easier to defend technically.
+- Important clarification captured in the README:
+  - `prepare: false` in [client.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/client.ts) affects prepared statement reuse/caching, not whether scalar values are bound safely as parameters.
+- Reworked [README.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/README.md) one more time to make it more "paper-like":
+  - added header logo and repository/deploy/API/CV badges
+  - strengthened the formal system description
+  - added explicit security discussion for dynamic SQL
+  - replaced the previous admin SQL example with the safer tagged-template version
+  - clarified why the README links to the deploy target rather than an unverifiable live public URL
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+  - admin read test on `profile` still returned one row after the SQL hardening

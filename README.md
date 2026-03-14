@@ -1,3 +1,22 @@
+<p align="center">
+  <img src="public/favicon.svg" alt="Piccirilli Michael Portfolio logo" width="96" height="96" />
+</p>
+
+<p align="center">
+  <a href="https://vercel.com/">
+    <img src="https://img.shields.io/badge/deploy-target%20Vercel-000000?style=for-the-badge&logo=vercel" alt="Deploy target Vercel" />
+  </a>
+  <a href="https://github.com/Mik1810/Piccirilli_Michael_Portfolio">
+    <img src="https://img.shields.io/badge/repository-GitHub-181717?style=for-the-badge&logo=github" alt="GitHub repository" />
+  </a>
+  <a href="./docs/API_CONTRACT.md">
+    <img src="https://img.shields.io/badge/api-contract-2563eb?style=for-the-badge" alt="API contract" />
+  </a>
+  <a href="./public/docs/Curriculum_Vitae_10_2025.pdf">
+    <img src="https://img.shields.io/badge/cv-pdf-b91c1c?style=for-the-badge" alt="Curriculum PDF" />
+  </a>
+</p>
+
 # Piccirilli Michael Portfolio
 
 ## 1. System definition
@@ -381,16 +400,20 @@ Trade-off:
 The admin CRUD repository uses validated SQL identifiers and parameterized values:
 
 ```ts
-const quoteIdentifier = (value: string) => {
+const ensureIdentifier = (value: string) => {
   if (!IDENTIFIER_PATTERN.test(value)) {
     throw new Error(`Invalid SQL identifier: ${value}`)
   }
-  return `"${value}"`
+  return value
 }
 
-const rows = await runUnsafe(
-  `update ${quoteIdentifier(table)} set ${setClause} where ${where.clause} returning *`,
-  [...setValues, ...where.values]
+const rows = await runQuery(
+  sqlClient`
+    update ${sqlClient(ensureIdentifier(table))}
+    set ${buildSetClause(row)}
+    where ${buildWhereClause(keys)}
+    returning *
+  `
 )
 ```
 
@@ -408,6 +431,47 @@ Why not expose raw SQL to the client?
 - validation;
 - controlled whitelist of mutable tables;
 - ability to preserve HTTP-level invariants and rate limiting.
+
+### 9.3 Security note on dynamic SQL
+
+The relevant distinction is not simply "prepared vs non-prepared", but:
+
+- whether untrusted values are concatenated directly into SQL text;
+- whether identifiers are validated before inclusion;
+- whether scalar values are still transmitted as protocol parameters.
+
+Current status:
+
+- table and column identifiers are validated against a strict identifier pattern;
+- table names are also constrained by an explicit admin whitelist;
+- scalar values are passed through the `postgres` tagged-template interface as parameters;
+- the previous `unsafe` path has been removed from the admin CRUD implementation.
+
+Therefore, the current admin path is not equivalent to naive raw string concatenation.
+
+### 9.4 `prepare: false` does not imply SQL injection
+
+In [client.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/client.ts), the `postgres` client is initialized with:
+
+```ts
+client = postgres(connectionString, {
+  prepare: false,
+})
+```
+
+This choice affects prepared statement reuse/caching at the driver/protocol level. It does **not** imply that interpolated values are injected as raw string concatenation.
+
+Why keep `prepare: false`?
+
+- it is compatible with pooler-oriented deployment topologies;
+- it avoids coupling the runtime to assumptions about prepared statement support in pooled environments;
+- it is a transport/runtime decision, not a waiver of parameter binding.
+
+In other words:
+
+- `prepare: false` has performance/compatibility implications;
+- unsafe string concatenation has security implications;
+- these two concerns are related to SQL execution, but they are not the same problem.
 
 ## 10. Technology choices and trade-offs
 
