@@ -114,6 +114,28 @@ export interface ProfileData {
   }>
 }
 
+export interface HeroTypingAnimationProps {
+  nameText: string
+  roles: string[]
+  photo: string
+  university: ProfileData['university']
+  socials: ProfileData['socials']
+  greeting: string
+  uniName: string
+  t: (key: string) => string
+}
+
+export interface NavbarLink {
+  href: string
+  label: string
+}
+
+export interface GithubProjectMediaCarouselProps {
+  project: GithubProjectItem
+  images: string[]
+  loopedImages: string[]
+}
+
 export interface ContentContextValue {
   loading: boolean
   about: AboutData

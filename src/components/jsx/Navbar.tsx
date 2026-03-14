@@ -1,42 +1,44 @@
-import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useLanguage } from '../../context/useLanguage';
-import { useProfile } from '../../context/useProfile';
-import { useAuth } from '../../context/useAuth';
-import ThemeToggle from './ThemeToggle';
-import LanguageSwitcher from './LanguageSwitcher';
-import '../css/Navbar.css';
+import { useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+
+import { useAuth } from '../../context/useAuth'
+import { useLanguage } from '../../context/useLanguage'
+import { useProfile } from '../../context/useProfile'
+import type { NavbarLink } from '../../types/app.js'
+import LanguageSwitcher from './LanguageSwitcher'
+import ThemeToggle from './ThemeToggle'
+import '../css/Navbar.css'
 
 function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const { t, lang } = useLanguage();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const { profile } = useProfile();
-  const { authenticated, logout } = useAuth();
-  const isAdminRoute = pathname.startsWith('/admin');
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { t, lang } = useLanguage()
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const { profile } = useProfile()
+  const { authenticated, logout } = useAuth()
+  const isAdminRoute = pathname.startsWith('/admin')
   const name = isAdminRoute
     ? profile?.email || 'email'
-    : profile?.name || 'Portfolio';
-  const cv = profile?.cv || '#';
-  const showHomeLinks = pathname === '/';
-  const loginLabel = lang === 'it' ? 'Login admin' : 'Admin login';
-  const logoutLabel = lang === 'it' ? 'Logout' : 'Logout';
+    : profile?.name || 'Portfolio'
+  const cv = profile?.cv || '#'
+  const showHomeLinks = pathname === '/'
+  const loginLabel = lang === 'it' ? 'Login admin' : 'Admin login'
+  const logoutLabel = lang === 'it' ? 'Logout' : 'Logout'
 
-  const navLinks = [
+  const navLinks: NavbarLink[] = [
     { href: '#hero', label: t('nav.home') },
     { href: '#about', label: t('nav.about') },
     { href: '#projects', label: t('nav.projects') },
     { href: '#experience', label: t('nav.experience') },
     { href: '#skills', label: t('nav.skills') },
     { href: '#contact', label: t('nav.contact') },
-  ];
+  ]
 
-  const handleClick = () => setMenuOpen(false);
+  const handleClick = () => setMenuOpen(false)
   const handleLogout = async () => {
-    navigate('/', { replace: true });
-    await logout();
-  };
+    navigate('/', { replace: true })
+    await logout()
+  }
 
   return (
     <nav className={`navbar ${isAdminRoute ? 'admin-navbar' : ''}`.trim()}>
@@ -119,7 +121,12 @@ function Navbar() {
             </Link>
           )}
           {authenticated && (
-            <button type="button" className="navbar-login-btn navbar-logout-btn" onClick={handleLogout} aria-label={logoutLabel}>
+            <button
+              type="button"
+              className="navbar-login-btn navbar-logout-btn"
+              onClick={handleLogout}
+              aria-label={logoutLabel}
+            >
               <svg
                 width="16"
                 height="16"
@@ -156,7 +163,7 @@ function Navbar() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
 
-export default Navbar;
+export default Navbar

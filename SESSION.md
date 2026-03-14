@@ -853,3 +853,80 @@ Conclusione:
 
 - Ora locale: `2026-03-14 18:54:53 +01:00`
 - Stato: `Componenti frontend medi migrati a TS/TSX`
+
+## Migrazione TS/TSX componenti frontend principali
+
+### Obiettivo
+
+Chiudere la migrazione del sito pubblico convertendo i tre componenti piu centrali lato esperienza utente:
+- `Navbar`
+- `HeroTyping`
+- `Projects`
+
+### File migrati
+
+- `src/components/jsx/Navbar.jsx` -> `src/components/jsx/Navbar.tsx`
+- `src/components/jsx/HeroTyping.jsx` -> `src/components/jsx/HeroTyping.tsx`
+- `src/components/jsx/Projects.jsx` -> `src/components/jsx/Projects.tsx`
+
+### Tipi aggiornati
+
+File toccato:
+- `src/types/app.ts`
+
+Aggiunte:
+- `HeroTypingAnimationProps`
+- `NavbarLink`
+- `GithubProjectMediaCarouselProps`
+
+Scopo:
+- evitare prop implicite o strutture dati non tipizzate nei componenti principali
+
+### Note per componente
+
+#### `Navbar.tsx`
+
+- tipizzata la lista `navLinks`
+- mantenuta invariata la logica di menu mobile, login/logout e route admin
+
+#### `HeroTyping.tsx`
+
+- tipizzate le props della subcomponent `HeroTypingAnimation`
+- mantenuta la logica keyed per il reset dell'animazione
+- riusata la mappa `icons` tipizzata
+
+#### `Projects.tsx`
+
+- tipizzati tilt handlers, media carousel e fallback image logic
+- tipizzati `safeProjects` e `featuredGithubProjects`
+- corretto il fallback DOM `nextElementSibling` come `HTMLElement | null`
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Esito:
+- `PASS`
+
+### Stato residuo dopo questo step
+
+File `.js/.jsx` rimasti:
+- `vite.config.js`
+- `eslint.config.js`
+- `src/components/jsx/AdminLogin.jsx`
+- `src/components/jsx/AdminDashboard.jsx`
+
+Conclusione:
+- il frontend pubblico e ora sostanzialmente migrato a TypeScript/TSX
+- restano solo i componenti admin e, se vogliamo chiudere proprio tutto, i due file config `vite.config.js` e `eslint.config.js`
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 19:02:30 +01:00`
+- Stato: `Frontend pubblico migrato quasi completamente a TS/TSX`
