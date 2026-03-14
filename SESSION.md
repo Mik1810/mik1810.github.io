@@ -1101,3 +1101,9 @@ Conclusione:
 - Verified the migrated repository against live data: `4` tech categories and `4` skill categories were returned for locale `it`, with `Linguaggi` and `Programmazione` as the first labels.
 - `npm run typecheck`, `npm run lint`, and `npm run build` all passed after the migration.
 - Build note: the one temporary Vite failure during verification was caused by launching the build from the old junction path `mik1810.github.io`; the real repo path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio) builds correctly and should be preferred for future commands.
+## 2026-03-15 00:05 CET - Fourth Drizzle migration: experiences repository
+
+- Updated [experiencesRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/experiencesRepository.ts) to use Drizzle for both the `experiences` and `education` flows.
+- Replaced Supabase reads with typed Drizzle selects over [experiences](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts), [experiencesI18n](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts), [education](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts), and [educationI18n](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts), preserving the existing payload shape and the rule that untranslated rows are skipped.
+- Verified the migrated repository against live data: locale `it` returned `3` experiences and `2` education entries, with `Cybersecurity National Lab` and `Università degli Studi dell'Aquila` as the first labels.
+- `npm run typecheck`, `npm run lint`, and `npm run build` all passed after this migration as well.

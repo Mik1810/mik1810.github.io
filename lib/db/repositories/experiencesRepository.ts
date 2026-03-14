@@ -1,34 +1,13 @@
-import { supabaseAdmin } from '../../supabaseAdmin.js'
+import { asc, eq } from 'drizzle-orm'
+
+import { db } from '../client.js'
+import {
+  education,
+  educationI18n,
+  experiences,
+  experiencesI18n,
+} from '../schema.js'
 import type { RepositoryLocale } from './projectsRepository.js'
-
-interface ExperienceBaseRow {
-  id: number
-  order_index?: number | null
-  logo?: string | null
-  logo_bg?: string | null
-}
-
-interface ExperienceI18nRow {
-  experience_id: number
-  role?: string | null
-  company?: string | null
-  period?: string | null
-  description?: string | null
-}
-
-interface EducationBaseRow {
-  id: number
-  order_index?: number | null
-  logo?: string | null
-}
-
-interface EducationI18nRow {
-  education_id: number
-  degree?: string | null
-  institution?: string | null
-  period?: string | null
-  description?: string | null
-}
 
 export interface ExperienceSummary {
   id: number
@@ -60,60 +39,66 @@ export const fetchExperiences = async (
   locale: RepositoryLocale
 ): Promise<ExperiencesResponse> => {
   const [
-    { data: experiencesBase, error: experiencesError },
-    { data: experiencesI18n, error: experiencesI18nError },
-    { data: educationBase, error: educationError },
-    { data: educationI18n, error: educationI18nError },
+    experienceRows,
+    experienceI18nRows,
+    educationRows,
+    educationI18nRows,
   ] = await Promise.all([
-    supabaseAdmin
-      .from('experiences')
-      .select('id, order_index, logo, logo_bg')
-      .order('order_index', { ascending: true }),
-    supabaseAdmin
-      .from('experiences_i18n')
-      .select('experience_id, role, company, period, description')
-      .eq('locale', locale),
-    supabaseAdmin
-      .from('education')
-      .select('id, order_index, logo')
-      .order('order_index', { ascending: true }),
-    supabaseAdmin
-      .from('education_i18n')
-      .select('education_id, degree, institution, period, description')
-      .eq('locale', locale),
+    db
+      .select({
+        id: experiences.id,
+        orderIndex: experiences.orderIndex,
+        logo: experiences.logo,
+        logoBg: experiences.logoBg,
+      })
+      .from(experiences)
+      .orderBy(asc(experiences.orderIndex)),
+    db
+      .select({
+        experienceId: experiencesI18n.experienceId,
+        role: experiencesI18n.role,
+        company: experiencesI18n.company,
+        period: experiencesI18n.period,
+        description: experiencesI18n.description,
+      })
+      .from(experiencesI18n)
+      .where(eq(experiencesI18n.locale, locale)),
+    db
+      .select({
+        id: education.id,
+        orderIndex: education.orderIndex,
+        logo: education.logo,
+      })
+      .from(education)
+      .orderBy(asc(education.orderIndex)),
+    db
+      .select({
+        educationId: educationI18n.educationId,
+        degree: educationI18n.degree,
+        institution: educationI18n.institution,
+        period: educationI18n.period,
+        description: educationI18n.description,
+      })
+      .from(educationI18n)
+      .where(eq(educationI18n.locale, locale)),
   ])
 
-  if (
-    experiencesError ||
-    experiencesI18nError ||
-    educationError ||
-    educationI18nError
-  ) {
-    throw new Error('Database error')
-  }
-
   const experienceTextById = new Map(
-    ((experiencesI18n || []) as ExperienceI18nRow[]).map((row) => [
-      row.experience_id,
-      row,
-    ])
+    experienceI18nRows.map((row) => [row.experienceId, row])
   )
   const educationTextById = new Map(
-    ((educationI18n || []) as EducationI18nRow[]).map((row) => [
-      row.education_id,
-      row,
-    ])
+    educationI18nRows.map((row) => [row.educationId, row])
   )
 
-  const experiences = ((experiencesBase || []) as ExperienceBaseRow[])
+  const experienceList = experienceRows
     .map((row) => {
       const i18n = experienceTextById.get(row.id)
       if (!i18n) return null
       return {
         id: row.id,
-        order_index: row.order_index ?? null,
+        order_index: row.orderIndex ?? null,
         logo: row.logo ?? null,
-        logo_bg: row.logo_bg ?? null,
+        logo_bg: row.logoBg ?? null,
         role: i18n.role || '',
         company: i18n.company || '',
         period: i18n.period || '',
@@ -122,13 +107,13 @@ export const fetchExperiences = async (
     })
     .filter(Boolean) as ExperienceSummary[]
 
-  const education = ((educationBase || []) as EducationBaseRow[])
+  const educationList = educationRows
     .map((row) => {
       const i18n = educationTextById.get(row.id)
       if (!i18n) return null
       return {
         id: row.id,
-        order_index: row.order_index ?? null,
+        order_index: row.orderIndex ?? null,
         logo: row.logo ?? null,
         degree: i18n.degree || '',
         institution: i18n.institution || '',
@@ -138,5 +123,5 @@ export const fetchExperiences = async (
     })
     .filter(Boolean) as EducationSummary[]
 
-  return { experiences, education }
+  return { experiences: experienceList, education: educationList }
 }
