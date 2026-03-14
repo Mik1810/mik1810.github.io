@@ -24,3 +24,11 @@ dist-ssr
 *.sw?
 
 claude.md
+chatgpt.md
+.env
+.vercel
+db/
+db
+
+# Exclude the vscode workspace
+*.code-workspace

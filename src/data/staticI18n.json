@@ -1,0 +1,116 @@
+{
+  "it": {
+    "nav": {
+      "home": "Home",
+      "about": "Chi Sono",
+      "projects": "Progetti",
+      "experience": "Esperienze",
+      "skills": "Competenze",
+      "contact": "Contatti",
+      "downloadCv": "Scarica CV"
+    },
+    "hero": {
+      "greeting": "Ciao, mi chiamo",
+      "btnProjects": "I miei progetti",
+      "btnContact": "Contattami"
+    },
+    "about": {
+      "title": "Chi Sono",
+      "subtitle": "Un po' su di me"
+    },
+    "projects": {
+      "title": "Progetti e Competizioni",
+      "subtitle": "Una selezione dei miei lavori più significativi",
+      "githubTitle": "Selected GitHub Projects",
+      "githubSubtitle": "Una raccolta di repository che mostra progetti web, interfacce e sperimentazione tecnica.",
+      "codeLabel": "Codice",
+      "siteLabel": "Sito",
+      "repoLabel": "Repository"
+    },
+    "experience": {
+      "title": "Esperienze",
+      "subtitle": "Il mio percorso accademico e le attività svolte",
+      "activitiesHeading": "Attività e Conferenze",
+      "educationHeading": "Formazione"
+    },
+    "skills": {
+      "title": "Competenze",
+      "subtitle": "Le tecnologie e gli strumenti con cui lavoro",
+      "pythonAiStack": "Python AI Stack"
+    },
+    "contact": {
+      "title": "Contatti",
+      "subtitle": "Hai un progetto in mente? Scrivimi, sarò felice di parlarne",
+      "location": "L'Aquila, Italia",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Il tuo nome",
+      "emailLabel": "Email",
+      "emailPlaceholder": "La tua email",
+      "messageLabel": "Messaggio",
+      "messagePlaceholder": "Scrivi il tuo messaggio...",
+      "sendBtn": "Invia messaggio",
+      "mailSubject": "Contatto da",
+      "mailFrom": "Da"
+    },
+    "footer": {
+      "rights": "Tutti i diritti riservati."
+    }
+  },
+  "en": {
+    "nav": {
+      "home": "Home",
+      "about": "About",
+      "projects": "Projects",
+      "experience": "Experience",
+      "skills": "Skills",
+      "contact": "Contact",
+      "downloadCv": "Download CV"
+    },
+    "hero": {
+      "greeting": "Hi, I'm",
+      "btnProjects": "My projects",
+      "btnContact": "Get in touch"
+    },
+    "about": {
+      "title": "About Me",
+      "subtitle": "A bit about myself"
+    },
+    "projects": {
+      "title": "Projects & Competitions",
+      "subtitle": "A selection of my most significant work",
+      "githubTitle": "Selected GitHub Projects",
+      "githubSubtitle": "A curated set of repositories showcasing web projects, interface work, and technical experimentation.",
+      "codeLabel": "Code",
+      "siteLabel": "Site",
+      "repoLabel": "Repository"
+    },
+    "experience": {
+      "title": "Experience",
+      "subtitle": "My academic path and activities",
+      "activitiesHeading": "Activities & Conferences",
+      "educationHeading": "Education"
+    },
+    "skills": {
+      "title": "Skills",
+      "subtitle": "Technologies and tools I work with",
+      "pythonAiStack": "Python AI Stack"
+    },
+    "contact": {
+      "title": "Contact",
+      "subtitle": "Have a project in mind? Drop me a message, I'd love to hear about it",
+      "location": "L'Aquila, Italy",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Your email",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Write your message...",
+      "sendBtn": "Send message",
+      "mailSubject": "Contact from",
+      "mailFrom": "From"
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
+  }
+}
