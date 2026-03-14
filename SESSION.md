@@ -1181,3 +1181,15 @@ Conclusione:
   - `npm run lint` passed
   - `npm run build` passed
   - admin read test on `profile` still returned one row after the SQL hardening
+## 2026-03-15 01:50 CET - README header enriched with stack logos
+
+- Updated the initial header of [README.md](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/README.md) to include a dedicated stack/logo strip in addition to the repository/deploy badges.
+- Added visible badges/logos for the core technologies currently used by the repository:
+  - React
+  - Vite
+  - TypeScript
+  - Drizzle ORM
+  - PostgreSQL
+  - Supabase
+  - Vercel
+- Purpose: make the initial section communicate both the software identity of the project and its concrete implementation stack without requiring the reader to scroll into the body of the document.
