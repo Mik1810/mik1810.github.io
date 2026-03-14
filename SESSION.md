@@ -1066,3 +1066,9 @@ Conclusione:
 - Updated [package.json](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/package.json) so `dev:api` now runs `tsx watch lib/devApiServer.ts`.
 - Result: local backend changes under `api/` and `lib/` should now restart the API server automatically during development.
 - Practical impact: after switching to the new script once, future backend edits should no longer require a manual `dev:api` restart in most cases.
+## 2026-03-14 22:35 CET - Cache utility and stricter admin payload validation
+
+- Added [memoryCache.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/cache/memoryCache.ts) to centralize simple TTL-based in-memory caching for public endpoints.
+- Updated [about.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/about.ts), [profile.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/profile.ts), [projects.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/projects.ts), [skills.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/skills.ts), and [experiences.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/experiences.ts) to use the shared cache utility instead of duplicating map-and-timestamp logic.
+- Hardened [adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts) so invalid `limit` values now return a `400` instead of silently falling back, and empty object payloads are rejected explicitly.
+- Updated [table.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/table.ts) so `POST`, `PATCH`, and `DELETE` reject missing or empty `row`/`keys` payloads with clearer client errors.

@@ -6,8 +6,8 @@ import {
   getAdminTableConfigOrNull,
   getAllowedAdminTable,
   hasAllPrimaryKeys,
-  normalizeAdminPayload,
   parseAdminTableLimit,
+  requireAdminPayload,
   removeAdminRow,
 } from '../../lib/services/adminTableService.js'
 import { HttpError, respondWithError } from '../../lib/http/apiUtils.js'
@@ -55,14 +55,14 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
     const body = (req as ApiRequest<TableBody>).body || {}
 
     if (req.method === 'POST') {
-      const row = normalizeAdminPayload(body.row)
+      const row = requireAdminPayload(body.row, 'Missing row payload')
       const createdRow = await createAdminRow(table, row)
       return res.status(201).json({ row: createdRow })
     }
 
     if (req.method === 'PATCH') {
-      const keys = normalizeAdminPayload(body.keys)
-      const row = normalizeAdminPayload(body.row)
+      const keys = requireAdminPayload(body.keys, 'Missing keys payload')
+      const row = requireAdminPayload(body.row, 'Missing row payload')
       if (!hasAllPrimaryKeys(config, keys)) {
         return res.status(400).json({ error: 'Missing primary key fields in keys payload' })
       }
@@ -72,7 +72,7 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
     }
 
     if (req.method === 'DELETE') {
-      const keys = normalizeAdminPayload(body.keys)
+      const keys = requireAdminPayload(body.keys, 'Missing keys payload')
       if (!hasAllPrimaryKeys(config, keys)) {
         return res.status(400).json({ error: 'Missing primary key fields in keys payload' })
       }
@@ -83,6 +83,9 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
 
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
+    if (error instanceof HttpError) {
+      return respondWithError(res, error)
+    }
     if (error instanceof Error && error.message === 'Database error') {
       logApiError('admin.table', error, { table, method: req.method, url: req.url })
       return respondWithError(res, new HttpError(500, 'Database error'))

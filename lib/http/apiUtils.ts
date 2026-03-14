@@ -54,3 +54,11 @@ export const requireNonEmptyString = (
 
   return normalized
 }
+
+export const requireRecord = (value: unknown, errorMessage: string) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new HttpError(400, errorMessage)
+  }
+
+  return value as Record<string, unknown>
+}

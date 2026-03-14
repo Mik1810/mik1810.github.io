@@ -2,6 +2,7 @@ import {
   getExperiencesContent,
   normalizeRepositoryLocale,
 } from '../lib/services/publicContentService.js'
+import { MemoryCache } from '../lib/cache/memoryCache.js'
 import type { ExperiencesResponse } from '../lib/db/repositories/experiencesRepository.js'
 import { enforceMethod, respondWithError } from '../lib/http/apiUtils.js'
 import { logApiError } from '../lib/logger.js'
@@ -9,7 +10,7 @@ import type { ApiHandler } from '../lib/types/http.js'
 
 const CACHE_TTL_MS = 60 * 1000
 
-const cache = new Map<string, { at: number; value: ExperiencesResponse }>()
+const cache = new MemoryCache<ExperiencesResponse>()
 
 const handler: ApiHandler = async (req, res) => {
   if (!enforceMethod(req, res, 'GET')) return
@@ -18,14 +19,14 @@ const handler: ApiHandler = async (req, res) => {
   const cacheKey = `experiences:${lang}`
 
   const cached = cache.get(cacheKey)
-  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+  if (cached) {
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
-    return res.status(200).json(cached.value)
+    return res.status(200).json(cached)
   }
 
   try {
     const payload = await getExperiencesContent(lang)
-    cache.set(cacheKey, { at: Date.now(), value: payload })
+    cache.set(cacheKey, payload, CACHE_TTL_MS)
 
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
     return res.status(200).json(payload)
