@@ -760,3 +760,96 @@ Conclusione:
 
 - Ora locale: `2026-03-14 18:50:48 +01:00`
 - Stato: `Prima tranche componenti frontend migrata a TS/TSX`
+
+## Migrazione TS/TSX componenti frontend medi
+
+### Obiettivo
+
+Continuare la migrazione del frontend sui componenti a complessita media, lasciando per ultimi quelli piu densi (`Navbar`, `Projects`, `HeroTyping`, `AdminLogin`, `AdminDashboard`).
+
+### File migrati
+
+- `src/components/jsx/About.jsx` -> `src/components/jsx/About.tsx`
+- `src/components/jsx/Contact.jsx` -> `src/components/jsx/Contact.tsx`
+- `src/components/jsx/Experience.jsx` -> `src/components/jsx/Experience.tsx`
+- `src/components/jsx/Footer.jsx` -> `src/components/jsx/Footer.tsx`
+- `src/components/jsx/Skills.jsx` -> `src/components/jsx/Skills.tsx`
+- `src/components/jsx/RequireAdmin.jsx` -> `src/components/jsx/RequireAdmin.tsx`
+
+### Tipi aggiornati
+
+File toccato:
+- `src/types/app.ts`
+
+Aggiunte:
+- `icon?: ReactNode` su `ExperienceItem` e `EducationItem`
+- `FooterProps`
+- `ContactFormData`
+
+Scopo:
+- evitare cast o `any` inutili nei componenti appena convertiti
+
+### Note per componente
+
+#### `About.tsx`
+
+- migrazione lineare senza cambi di comportamento
+
+#### `Contact.tsx`
+
+- tipizzati `ChangeEvent` e `FormEvent`
+- introdotto `ContactFormData`
+
+#### `Experience.tsx`
+
+- tipizzato `sectionRef`
+- tipizzato `querySelectorAll`
+- gestita la custom property CSS `--logo-bg` con `React.CSSProperties`
+
+#### `Footer.tsx`
+
+- tipizzato `className` tramite `FooterProps`
+- mantenuto il riuso del modulo `icons`
+
+#### `Skills.tsx`
+
+- tipizzato l'helper `getTechCategoryLabel`
+- tipizzata la custom property CSS `--tech-color`
+
+#### `RequireAdmin.tsx`
+
+- tipizzato `children`
+- ritorno reso esplicito con fragment React
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Esito:
+- `PASS`
+
+### Stato residuo dopo questo step
+
+File `.js/.jsx` rimasti:
+- `vite.config.js`
+- `eslint.config.js`
+- `src/components/jsx/Navbar.jsx`
+- `src/components/jsx/Projects.jsx`
+- `src/components/jsx/HeroTyping.jsx`
+- `src/components/jsx/AdminLogin.jsx`
+- `src/components/jsx/AdminDashboard.jsx`
+
+Conclusione:
+- il frontend residuo e ora concentrato solo sui componenti piu sostanziosi
+- il prossimo blocco naturale e `Navbar + HeroTyping + Projects`, lasciando `AdminLogin + AdminDashboard` per ultimi
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 18:54:53 +01:00`
+- Stato: `Componenti frontend medi migrati a TS/TSX`

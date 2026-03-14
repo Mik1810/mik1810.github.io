@@ -64,6 +64,7 @@ export interface ExperienceItem {
   company: string
   period: string
   description: string
+  icon?: ReactNode
 }
 
 export interface EducationItem {
@@ -74,6 +75,7 @@ export interface EducationItem {
   institution: string
   period: string
   description: string
+  icon?: ReactNode
 }
 
 export interface TechItem {
@@ -139,4 +141,14 @@ export interface ThemeContextValue {
 
 export interface ProviderProps {
   children: ReactNode
+}
+
+export interface FooterProps {
+  className?: string
+}
+
+export interface ContactFormData {
+  name: string
+  email: string
+  message: string
 }
