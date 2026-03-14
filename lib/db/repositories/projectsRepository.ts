@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
+import { runDbRead } from '../runDbRead.js'
 import {
   githubProjectImages,
   githubProjectTags,
@@ -46,15 +47,7 @@ export const normalizeRepositoryLocale = (value: string | undefined): Repository
 export const fetchProjects = async (
   locale: RepositoryLocale
 ): Promise<ProjectsResponse> => {
-  const [
-    projectRows,
-    projectI18nRows,
-    projectTagRows,
-    githubProjectRows,
-    githubProjectI18nRows,
-    githubProjectTagRows,
-    githubProjectImageRows,
-  ] = await Promise.all([
+  const projectRows = await runDbRead(() =>
     db
       .select({
         id: projects.id,
@@ -63,7 +56,10 @@ export const fetchProjects = async (
         liveUrl: projects.liveUrl,
       })
       .from(projects)
-      .orderBy(asc(projects.orderIndex)),
+      .orderBy(asc(projects.orderIndex))
+  )
+
+  const projectI18nRows = await runDbRead(() =>
     db
       .select({
         projectId: projectsI18n.projectId,
@@ -71,7 +67,10 @@ export const fetchProjects = async (
         description: projectsI18n.description,
       })
       .from(projectsI18n)
-      .where(eq(projectsI18n.locale, locale)),
+      .where(eq(projectsI18n.locale, locale))
+  )
+
+  const projectTagRows = await runDbRead(() =>
     db
       .select({
         projectId: projectTags.projectId,
@@ -79,7 +78,10 @@ export const fetchProjects = async (
         tag: projectTags.tag,
       })
       .from(projectTags)
-      .orderBy(asc(projectTags.orderIndex)),
+      .orderBy(asc(projectTags.orderIndex))
+  )
+
+  const githubProjectRows = await runDbRead(() =>
     db
       .select({
         id: githubProjects.id,
@@ -91,7 +93,10 @@ export const fetchProjects = async (
       })
       .from(githubProjects)
       .where(eq(githubProjects.featured, true))
-      .orderBy(asc(githubProjects.orderIndex)),
+      .orderBy(asc(githubProjects.orderIndex))
+  )
+
+  const githubProjectI18nRows = await runDbRead(() =>
     db
       .select({
         githubProjectId: githubProjectsI18n.githubProjectId,
@@ -99,7 +104,10 @@ export const fetchProjects = async (
         description: githubProjectsI18n.description,
       })
       .from(githubProjectsI18n)
-      .where(eq(githubProjectsI18n.locale, locale)),
+      .where(eq(githubProjectsI18n.locale, locale))
+  )
+
+  const githubProjectTagRows = await runDbRead(() =>
     db
       .select({
         githubProjectId: githubProjectTags.githubProjectId,
@@ -107,7 +115,10 @@ export const fetchProjects = async (
         tag: githubProjectTags.tag,
       })
       .from(githubProjectTags)
-      .orderBy(asc(githubProjectTags.orderIndex)),
+      .orderBy(asc(githubProjectTags.orderIndex))
+  )
+
+  const githubProjectImageRows = await runDbRead(() =>
     db
       .select({
         githubProjectId: githubProjectImages.githubProjectId,
@@ -115,8 +126,8 @@ export const fetchProjects = async (
         imageUrl: githubProjectImages.imageUrl,
       })
       .from(githubProjectImages)
-      .orderBy(asc(githubProjectImages.orderIndex)),
-  ])
+      .orderBy(asc(githubProjectImages.orderIndex))
+  )
 
   const textByProjectId = new Map(
     projectI18nRows.map((row) => [row.projectId, row])

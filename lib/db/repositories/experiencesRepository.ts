@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
+import { runDbRead } from '../runDbRead.js'
 import {
   education,
   educationI18n,
@@ -38,12 +39,7 @@ export interface ExperiencesResponse {
 export const fetchExperiences = async (
   locale: RepositoryLocale
 ): Promise<ExperiencesResponse> => {
-  const [
-    experienceRows,
-    experienceI18nRows,
-    educationRows,
-    educationI18nRows,
-  ] = await Promise.all([
+  const experienceRows = await runDbRead(() =>
     db
       .select({
         id: experiences.id,
@@ -52,7 +48,10 @@ export const fetchExperiences = async (
         logoBg: experiences.logoBg,
       })
       .from(experiences)
-      .orderBy(asc(experiences.orderIndex)),
+      .orderBy(asc(experiences.orderIndex))
+  )
+
+  const experienceI18nRows = await runDbRead(() =>
     db
       .select({
         experienceId: experiencesI18n.experienceId,
@@ -62,7 +61,10 @@ export const fetchExperiences = async (
         description: experiencesI18n.description,
       })
       .from(experiencesI18n)
-      .where(eq(experiencesI18n.locale, locale)),
+      .where(eq(experiencesI18n.locale, locale))
+  )
+
+  const educationRows = await runDbRead(() =>
     db
       .select({
         id: education.id,
@@ -70,7 +72,10 @@ export const fetchExperiences = async (
         logo: education.logo,
       })
       .from(education)
-      .orderBy(asc(education.orderIndex)),
+      .orderBy(asc(education.orderIndex))
+  )
+
+  const educationI18nRows = await runDbRead(() =>
     db
       .select({
         educationId: educationI18n.educationId,
@@ -80,8 +85,8 @@ export const fetchExperiences = async (
         description: educationI18n.description,
       })
       .from(educationI18n)
-      .where(eq(educationI18n.locale, locale)),
-  ])
+      .where(eq(educationI18n.locale, locale))
+  )
 
   const experienceTextById = new Map(
     experienceI18nRows.map((row) => [row.experienceId, row])

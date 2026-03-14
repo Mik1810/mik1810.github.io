@@ -1245,3 +1245,26 @@ Conclusione:
 - Expected external follow-up:
   - replace the Vercel `DATABASE_URL` with the Supabase transaction pooler connection string on port `6543`
   - redeploy production after saving the environment variable
+## 2026-03-15 00:25 CET - Reduced public DB fan-out for Vercel serverless stability
+
+- Inspected the production failure pattern after the `DATABASE_URL` fix:
+  - errors were no longer deterministic per table
+  - different requests failed on different queries within the same repository
+  - the failures consistently appeared inside `Promise.all(...)` batches in public read repositories
+- Interpreted the pattern as a likely serverless/pooler stability issue rather than a schema mismatch:
+  - one page load triggers multiple public endpoints simultaneously
+  - each endpoint previously issued 2 to 7 concurrent Drizzle reads
+  - this creates a large query burst against Supabase from short-lived Vercel functions
+- Added [runDbRead.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/runDbRead.ts):
+  - wraps read operations
+  - retries once with a short backoff
+  - suitable for idempotent public read paths
+- Updated the following repositories to stop batching all reads in `Promise.all(...)` and to execute them via `runDbRead(...)`:
+  - [aboutRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/aboutRepository.ts)
+  - [profileRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/profileRepository.ts)
+  - [skillsRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/skillsRepository.ts)
+  - [experiencesRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/experiencesRepository.ts)
+  - [projectsRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/projectsRepository.ts)
+- Goal:
+  - reduce transient pool contention on Vercel
+  - make public content reads less bursty and more tolerant of temporary connection/query instability

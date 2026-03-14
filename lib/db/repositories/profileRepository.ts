@@ -1,6 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
+import { runDbRead } from '../runDbRead.js'
 import {
   heroRoles,
   heroRolesI18n,
@@ -38,56 +39,67 @@ export { normalizeRepositoryLocale }
 export const fetchProfile = async (
   locale: RepositoryLocale
 ): Promise<ProfileResponse> => {
-  const [profileRows, profileI18nRows, socialRows, roleBaseRows, roleI18nRows] =
-    await Promise.all([
-      db
-        .select({
-          id: profile.id,
-          fullName: profile.fullName,
-          photoUrl: profile.photoUrl,
-          email: profile.email,
-          cvUrl: profile.cvUrl,
-          universityLogoUrl: profile.universityLogoUrl,
-        })
-        .from(profile)
-        .where(eq(profile.id, 1))
-        .limit(1),
-      db
-        .select({
-          locale: profileI18n.locale,
-          greeting: profileI18n.greeting,
-          location: profileI18n.location,
-          universityName: profileI18n.universityName,
-          bio: profileI18n.bio,
-        })
-        .from(profileI18n)
-        .where(and(eq(profileI18n.profileId, 1), eq(profileI18n.locale, locale)))
-        .limit(1),
-      db
-        .select({
-          orderIndex: socialLinks.orderIndex,
-          name: socialLinks.name,
-          url: socialLinks.url,
-          iconKey: socialLinks.iconKey,
-        })
-        .from(socialLinks)
-        .where(eq(socialLinks.profileId, 1))
-        .orderBy(asc(socialLinks.orderIndex)),
-      db
-        .select({
-          id: heroRoles.id,
-          orderIndex: heroRoles.orderIndex,
-        })
-        .from(heroRoles)
-        .orderBy(asc(heroRoles.orderIndex)),
-      db
-        .select({
-          heroRoleId: heroRolesI18n.heroRoleId,
-          role: heroRolesI18n.role,
-        })
-        .from(heroRolesI18n)
-        .where(eq(heroRolesI18n.locale, locale)),
-    ])
+  const profileRows = await runDbRead(() =>
+    db
+      .select({
+        id: profile.id,
+        fullName: profile.fullName,
+        photoUrl: profile.photoUrl,
+        email: profile.email,
+        cvUrl: profile.cvUrl,
+        universityLogoUrl: profile.universityLogoUrl,
+      })
+      .from(profile)
+      .where(eq(profile.id, 1))
+      .limit(1)
+  )
+
+  const profileI18nRows = await runDbRead(() =>
+    db
+      .select({
+        locale: profileI18n.locale,
+        greeting: profileI18n.greeting,
+        location: profileI18n.location,
+        universityName: profileI18n.universityName,
+        bio: profileI18n.bio,
+      })
+      .from(profileI18n)
+      .where(and(eq(profileI18n.profileId, 1), eq(profileI18n.locale, locale)))
+      .limit(1)
+  )
+
+  const socialRows = await runDbRead(() =>
+    db
+      .select({
+        orderIndex: socialLinks.orderIndex,
+        name: socialLinks.name,
+        url: socialLinks.url,
+        iconKey: socialLinks.iconKey,
+      })
+      .from(socialLinks)
+      .where(eq(socialLinks.profileId, 1))
+      .orderBy(asc(socialLinks.orderIndex))
+  )
+
+  const roleBaseRows = await runDbRead(() =>
+    db
+      .select({
+        id: heroRoles.id,
+        orderIndex: heroRoles.orderIndex,
+      })
+      .from(heroRoles)
+      .orderBy(asc(heroRoles.orderIndex))
+  )
+
+  const roleI18nRows = await runDbRead(() =>
+    db
+      .select({
+        heroRoleId: heroRolesI18n.heroRoleId,
+        role: heroRolesI18n.role,
+      })
+      .from(heroRolesI18n)
+      .where(eq(heroRolesI18n.locale, locale))
+  )
 
   const profileRow = profileRows[0] || null
   const profileI18nRow = profileI18nRows[0] || null

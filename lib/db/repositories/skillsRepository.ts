@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
+import { runDbRead } from '../runDbRead.js'
 import {
   skillCategories,
   skillCategoriesI18n,
@@ -30,15 +31,7 @@ export interface SkillsResponse {
 export const fetchSkills = async (
   locale: RepositoryLocale
 ): Promise<SkillsResponse> => {
-  const [
-    techCategoryRows,
-    techCategoryI18nRows,
-    techItemRows,
-    skillCategoryRows,
-    skillCategoryI18nRows,
-    skillItemRows,
-    skillItemI18nRows,
-  ] = await Promise.all([
+  const techCategoryRows = await runDbRead(() =>
     db
       .select({
         id: techCategories.id,
@@ -46,14 +39,20 @@ export const fetchSkills = async (
         orderIndex: techCategories.orderIndex,
       })
       .from(techCategories)
-      .orderBy(asc(techCategories.orderIndex)),
+      .orderBy(asc(techCategories.orderIndex))
+  )
+
+  const techCategoryI18nRows = await runDbRead(() =>
     db
       .select({
         techCategoryId: techCategoriesI18n.techCategoryId,
         name: techCategoriesI18n.name,
       })
       .from(techCategoriesI18n)
-      .where(eq(techCategoriesI18n.locale, locale)),
+      .where(eq(techCategoriesI18n.locale, locale))
+  )
+
+  const techItemRows = await runDbRead(() =>
     db
       .select({
         techCategoryId: techItems.techCategoryId,
@@ -63,21 +62,30 @@ export const fetchSkills = async (
         color: techItems.color,
       })
       .from(techItems)
-      .orderBy(asc(techItems.orderIndex)),
+      .orderBy(asc(techItems.orderIndex))
+  )
+
+  const skillCategoryRows = await runDbRead(() =>
     db
       .select({
         id: skillCategories.id,
         orderIndex: skillCategories.orderIndex,
       })
       .from(skillCategories)
-      .orderBy(asc(skillCategories.orderIndex)),
+      .orderBy(asc(skillCategories.orderIndex))
+  )
+
+  const skillCategoryI18nRows = await runDbRead(() =>
     db
       .select({
         skillCategoryId: skillCategoriesI18n.skillCategoryId,
         categoryName: skillCategoriesI18n.categoryName,
       })
       .from(skillCategoriesI18n)
-      .where(eq(skillCategoriesI18n.locale, locale)),
+      .where(eq(skillCategoriesI18n.locale, locale))
+  )
+
+  const skillItemRows = await runDbRead(() =>
     db
       .select({
         id: skillItems.id,
@@ -85,15 +93,18 @@ export const fetchSkills = async (
         orderIndex: skillItems.orderIndex,
       })
       .from(skillItems)
-      .orderBy(asc(skillItems.orderIndex)),
+      .orderBy(asc(skillItems.orderIndex))
+  )
+
+  const skillItemI18nRows = await runDbRead(() =>
     db
       .select({
         skillItemId: skillItemsI18n.skillItemId,
         label: skillItemsI18n.label,
       })
       .from(skillItemsI18n)
-      .where(eq(skillItemsI18n.locale, locale)),
-  ])
+      .where(eq(skillItemsI18n.locale, locale))
+  )
 
   const techNameById = new Map(
     techCategoryI18nRows.map((row) => [row.techCategoryId, row.name || ''])

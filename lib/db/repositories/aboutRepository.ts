@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
+import { runDbRead } from '../runDbRead.js'
 import { aboutInterests, aboutInterestsI18n } from '../schema.js'
 import type { RepositoryLocale } from './projectsRepository.js'
 
@@ -11,22 +12,25 @@ export interface AboutResponse {
 export const fetchAbout = async (
   locale: RepositoryLocale
 ): Promise<AboutResponse> => {
-  const [baseRows, i18nRows] = await Promise.all([
+  const baseRows = await runDbRead(() =>
     db
       .select({
         id: aboutInterests.id,
         orderIndex: aboutInterests.orderIndex,
       })
       .from(aboutInterests)
-      .orderBy(asc(aboutInterests.orderIndex)),
+      .orderBy(asc(aboutInterests.orderIndex))
+  )
+
+  const i18nRows = await runDbRead(() =>
     db
       .select({
         aboutInterestId: aboutInterestsI18n.aboutInterestId,
         interest: aboutInterestsI18n.interest,
       })
       .from(aboutInterestsI18n)
-      .where(eq(aboutInterestsI18n.locale, locale)),
-  ])
+      .where(eq(aboutInterestsI18n.locale, locale))
+  )
 
   const labelById = new Map(
     i18nRows.map((row) => [row.aboutInterestId, row.interest || ''])
