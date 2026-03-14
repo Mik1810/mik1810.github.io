@@ -25,14 +25,6 @@ const hasAllPrimaryKeys = (
   keys: Record<string, unknown>
 ) => config.primaryKeys.every((key) => keys[key] !== undefined && keys[key] !== null)
 
-const applyPrimaryKeys = (query: any, keys: Record<string, unknown>) => {
-  let current = query
-  for (const [key, value] of Object.entries(keys)) {
-    current = current.eq(key, value)
-  }
-  return current
-}
-
 const handler: ApiHandler<TableBody> = async (req, res) => {
   const admin = requireAdminSession(req, res)
   if (!admin) return
@@ -80,8 +72,13 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
         return res.status(400).json({ error: 'Missing primary key fields in keys payload' })
       }
 
-      let query = supabaseAdmin.from(table).update(row)
-      query = applyPrimaryKeys(query, keys)
+      // Supabase's builder types become impractical when composing dynamic keys.
+      // Keeping this local avoids leaking `any` into the rest of the endpoint.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let query: any = supabaseAdmin.from(table).update(row)
+      for (const [key, value] of Object.entries(keys)) {
+        query = query.eq(key, value)
+      }
       const { data, error } = await query.select('*').limit(1).maybeSingle()
       if (error) {
         return res.status(500).json({ error: error.message || 'Database error' })
@@ -95,8 +92,11 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
         return res.status(400).json({ error: 'Missing primary key fields in keys payload' })
       }
 
-      let query = supabaseAdmin.from(table).delete()
-      query = applyPrimaryKeys(query, keys)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let query: any = supabaseAdmin.from(table).delete()
+      for (const [key, value] of Object.entries(keys)) {
+        query = query.eq(key, value)
+      }
       const { error } = await query
       if (error) {
         return res.status(500).json({ error: error.message || 'Database error' })

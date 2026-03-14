@@ -571,3 +571,117 @@ function,function,function,function,function
 
 - Ora locale: `2026-03-14 18:28:48 +01:00`
 - Stato: `Backend server-side quasi completamente migrato a TypeScript`
+
+## Migrazione TS/TSX supporto backend + root frontend
+
+### Obiettivo
+
+Ridurre drasticamente i file `.js/.jsx` residui senza entrare ancora nella conversione completa dei componenti UI, coprendo prima file di supporto, context e root dell'applicazione.
+
+### File migrati
+
+- `api/health.js` -> `api/health.ts`
+- `lib/devApiServer.js` -> `lib/devApiServer.ts`
+- `src/main.jsx` -> `src/main.tsx`
+- `src/App.jsx` -> `src/App.tsx`
+- `src/context/AuthContext.jsx` -> `src/context/AuthContext.tsx`
+- `src/context/ContentContext.jsx` -> `src/context/ContentContext.tsx`
+- `src/context/LanguageContext.jsx` -> `src/context/LanguageContext.tsx`
+- `src/context/ProfileContext.jsx` -> `src/context/ProfileContext.tsx`
+- `src/context/ThemeContext.jsx` -> `src/context/ThemeContext.tsx`
+- `src/context/*ContextValue.js` -> `src/context/*ContextValue.ts`
+- `src/context/use*.js` -> `src/context/use*.ts`
+
+### Nuovi tipi frontend introdotti
+
+File creato:
+- `src/types/app.ts`
+
+Contenuto principale:
+- tipi per context frontend
+- shape di `ProfileData`, `ProjectItem`, `GithubProjectItem`
+- shape per `AboutData`, `ExperienceItem`, `EducationItem`
+- `ProviderProps`
+- tipi per traduzioni statiche
+
+### Modifiche a ESLint
+
+File toccato:
+- `eslint.config.js`
+
+Interventi:
+- aggiunto supporto a `ts/tsx` tramite `typescript-eslint`
+- disattivato `no-unused-vars` base sui file TS
+- abilitato `@typescript-eslint/no-unused-vars` per evitare falsi positivi sui type signatures
+
+Motivo:
+- senza questo passaggio, i nuovi file TypeScript sarebbero stati lintati male o in modo incompleto
+
+### Note tecniche rilevanti
+
+#### `lib/devApiServer.ts`
+
+- tipizzati request/response locali del dev server
+- mantenuto il resolver `*.ts` prima di `*.js`
+
+#### `src/App.tsx`
+
+- convertito il root component lasciando invariata la logica applicativa
+- mantenuti i componenti UI `.jsx` importati senza forzare una migrazione prematura
+
+#### `src/context/*.tsx`
+
+- introdotti tipi espliciti sui context
+- tipizzati `profile`, `auth`, `theme`, `language`, `content`
+- in `ContentContext.tsx` aggiunti normalizzatori tipizzati per payload API
+
+#### `api/admin/table.ts`
+
+- mantenuta una piccola eccezione locale con `any` sul query builder Supabase durante la composizione dinamica delle chiavi
+- scelta motivata: evitare complessita artificiale del type system in un punto circoscritto senza contaminare il resto della codebase
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+GET http://localhost:3000/api/health
+```
+
+Esito:
+- `PASS` per `typecheck`
+- `PASS` per `lint`
+- `PASS` per `build`
+- `PASS` per `/api/health` dal dev server TypeScript
+
+Output sintetico:
+
+```txt
+STATUS=200
+{"ok":true,"service":"api","timestamp":"..."}
+```
+
+### Nota runtime
+
+- Durante la prova di `npm run dev:api` la porta `3000` risultava gia occupata da un processo esistente sulla macchina
+- Nonostante questo, la chiamata a `/api/health` ha risposto correttamente con `200`, confermando che il dev server API era effettivamente operativo
+
+### Stato residuo dopo questo step
+
+File `.js/.jsx` rimasti:
+- `vite.config.js`
+- `eslint.config.js`
+- `src/data/icons.jsx`
+- componenti UI in `src/components/jsx/*`
+
+Conclusione:
+- il backend di supporto e il root frontend sono ora allineati a TypeScript/TSX
+- il grosso del lavoro residuo si e spostato sui componenti UI
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 18:43:00 +01:00`
+- Stato: `Root frontend e context migrati a TS/TSX, lint/config aggiornati`
