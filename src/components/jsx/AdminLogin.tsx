@@ -1,40 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/useAuth';
-import '../css/AdminAuth.css';
+import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-const AdminLogin = () => {
-  const navigate = useNavigate();
-  const { authenticated, authLoading, login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+import { useAuth } from '../../context/useAuth'
+import '../css/AdminAuth.css'
+
+function AdminLogin() {
+  const navigate = useNavigate()
+  const { authenticated, authLoading, login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!authLoading && authenticated) {
-      navigate('/admin', { replace: true });
+      navigate('/admin', { replace: true })
     }
-  }, [authLoading, authenticated, navigate]);
+  }, [authLoading, authenticated, navigate])
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setLoading(true)
+    setError(null)
 
     try {
-      const result = await login(email, password);
+      const result = await login(email, password)
       if (!result.ok) {
-        setError(result.error || 'Login fallito');
+        setError(result.error || 'Login fallito')
       } else {
-        navigate('/admin', { replace: true });
+        navigate('/admin', { replace: true })
       }
     } catch {
-      setError('Errore di rete durante il login');
+      setError('Errore di rete durante il login')
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   return (
     <main className="admin-page admin-page-login">
@@ -51,7 +52,7 @@ const AdminLogin = () => {
               autoComplete="username"
               placeholder="name@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </label>
@@ -65,7 +66,7 @@ const AdminLogin = () => {
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </label>
@@ -76,7 +77,7 @@ const AdminLogin = () => {
         </form>
       </section>
     </main>
-  );
-};
+  )
+}
 
-export default AdminLogin;
+export default AdminLogin

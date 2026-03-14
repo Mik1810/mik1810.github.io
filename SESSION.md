@@ -930,3 +930,87 @@ Conclusione:
 
 - Ora locale: `2026-03-14 19:02:30 +01:00`
 - Stato: `Frontend pubblico migrato quasi completamente a TS/TSX`
+
+## Migrazione TS/TSX componenti admin frontend
+
+### Obiettivo
+
+Chiudere la migrazione dei componenti React rimanenti convertendo anche l'area admin UI.
+
+### File migrati
+
+- `src/components/jsx/AdminLogin.jsx` -> `src/components/jsx/AdminLogin.tsx`
+- `src/components/jsx/AdminDashboard.jsx` -> `src/components/jsx/AdminDashboard.tsx`
+
+### Tipi aggiornati
+
+File toccato:
+- `src/types/app.ts`
+
+Aggiunte:
+- `AdminTableDefinition`
+- `AdminTablesResponse`
+- `AdminRowsResponse`
+- `AdminRowResponse`
+- `AdminOkResponse`
+
+Scopo:
+- tipizzare le chiamate fetch dell'admin dashboard
+- evitare payload impliciti o `any` lato frontend admin
+
+### Note per componente
+
+#### `AdminLogin.tsx`
+
+- tipizzato `FormEvent`
+- tipizzato `error` come `string | null`
+- mantenuto invariato il flusso:
+  - redirect automatico se gia autenticato
+  - submit login
+  - redirect su `/admin`
+
+#### `AdminDashboard.tsx`
+
+- tipizzati:
+  - tabelle disponibili
+  - righe tabella
+  - risposte API CRUD
+  - `draftRow`
+  - `selectedRow`
+- mantenuta invariata la UX:
+  - lista tabelle
+  - ricerca/paginazione
+  - insert/update/delete
+  - modal editor e conferma delete
+
+Nota:
+- il dashboard resta volutamente generico su `Record<string, unknown>` perche manipola tabelle eterogenee
+- in questo caso e un buon compromesso: tipizzato dove serve, senza introdurre una falsa rigidita schema-specific
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Esito:
+- `PASS`
+
+### Stato residuo dopo questo step
+
+File `.js/.jsx` rimasti:
+- `vite.config.js`
+- `eslint.config.js`
+
+Conclusione:
+- tutta l'applicazione runtime principale e ora migrata a TypeScript/TSX
+- restano solo i due file di configurazione toolchain
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 19:17:07 +01:00`
+- Stato: `Componenti admin migrati, restano solo i file config JS`

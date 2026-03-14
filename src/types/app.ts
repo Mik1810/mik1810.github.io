@@ -174,3 +174,30 @@ export interface ContactFormData {
   email: string
   message: string
 }
+
+export interface AdminTableDefinition {
+  name: string
+  label: string
+  primaryKeys: string[]
+  defaultRow: Record<string, unknown>
+}
+
+export interface AdminTablesResponse {
+  tables: AdminTableDefinition[]
+  error?: string
+}
+
+export interface AdminRowsResponse {
+  rows: Record<string, unknown>[]
+  error?: string
+}
+
+export interface AdminRowResponse {
+  row: Record<string, unknown> | null
+  error?: string
+}
+
+export interface AdminOkResponse {
+  ok: boolean
+  error?: string
+}
