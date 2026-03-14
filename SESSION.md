@@ -1089,3 +1089,8 @@ Conclusione:
 - Updated [aboutRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/aboutRepository.ts) to use Drizzle instead of the Supabase query builder.
 - The pilot uses [client.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/client.ts), [schema.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts), and typed Drizzle filters/order clauses (`eq`, `asc`).
 - Chosen pilot scope: `about` because it is small enough to validate the Drizzle path without opening the higher-complexity `projects` flow immediately.
+## 2026-03-14 23:35 CET - Second Drizzle migration: profile repository
+
+- Updated [profileRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/profileRepository.ts) to use Drizzle for profile, profile_i18n, social links, and hero roles.
+- Replaced Supabase query builder calls with typed Drizzle selects, filters, and order clauses while keeping the public `ProfileResponse` payload unchanged.
+- This second migration gives us a better signal than `about` because it spans multiple tables and preserves aggregation logic for socials and localized hero roles.

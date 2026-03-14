@@ -1,42 +1,17 @@
-import { supabaseAdmin } from '../../supabaseAdmin.js'
+import { and, asc, eq } from 'drizzle-orm'
+
+import { db } from '../client.js'
+import {
+  heroRoles,
+  heroRolesI18n,
+  profile,
+  profileI18n,
+  socialLinks,
+} from '../schema.js'
 import {
   normalizeRepositoryLocale,
   type RepositoryLocale,
 } from './projectsRepository.js'
-
-interface ProfileRow {
-  id: number
-  full_name?: string | null
-  photo_url?: string | null
-  email?: string | null
-  cv_url?: string | null
-  university_logo_url?: string | null
-}
-
-interface ProfileI18nRow {
-  locale?: RepositoryLocale
-  greeting?: string | null
-  location?: string | null
-  university_name?: string | null
-  bio?: string | null
-}
-
-interface SocialRow {
-  order_index?: number | null
-  name?: string | null
-  url?: string | null
-  icon_key?: string | null
-}
-
-interface HeroRoleBaseRow {
-  id: number
-  order_index?: number | null
-}
-
-interface HeroRoleI18nRow {
-  hero_role_id: number
-  role?: string | null
-}
 
 export interface ProfileResponse {
   name: string
@@ -63,87 +38,84 @@ export { normalizeRepositoryLocale }
 export const fetchProfile = async (
   locale: RepositoryLocale
 ): Promise<ProfileResponse> => {
-  const [
-    { data: profileRow, error: profileError },
-    profileI18nResult,
-    { data: socialRows, error: socialError },
-    { data: roleBaseRows, error: roleBaseError },
-    { data: roleI18nRows, error: roleI18nError },
-  ] = await Promise.all([
-    supabaseAdmin
-      .from('profile')
-      .select('id, full_name, photo_url, email, cv_url, university_logo_url')
-      .eq('id', 1)
-      .single(),
-    supabaseAdmin
-      .from('profile_i18n')
-      .select('locale, greeting, location, university_name, bio')
-      .eq('profile_id', 1)
-      .eq('locale', locale),
-    supabaseAdmin
-      .from('social_links')
-      .select('order_index, name, url, icon_key')
-      .eq('profile_id', 1)
-      .order('order_index', { ascending: true }),
-    supabaseAdmin
-      .from('hero_roles')
-      .select('id, order_index')
-      .order('order_index', { ascending: true }),
-    supabaseAdmin
-      .from('hero_roles_i18n')
-      .select('hero_role_id, role')
-      .eq('locale', locale),
-  ])
+  const [profileRows, profileI18nRows, socialRows, roleBaseRows, roleI18nRows] =
+    await Promise.all([
+      db
+        .select({
+          id: profile.id,
+          fullName: profile.fullName,
+          photoUrl: profile.photoUrl,
+          email: profile.email,
+          cvUrl: profile.cvUrl,
+          universityLogoUrl: profile.universityLogoUrl,
+        })
+        .from(profile)
+        .where(eq(profile.id, 1))
+        .limit(1),
+      db
+        .select({
+          locale: profileI18n.locale,
+          greeting: profileI18n.greeting,
+          location: profileI18n.location,
+          universityName: profileI18n.universityName,
+          bio: profileI18n.bio,
+        })
+        .from(profileI18n)
+        .where(and(eq(profileI18n.profileId, 1), eq(profileI18n.locale, locale)))
+        .limit(1),
+      db
+        .select({
+          orderIndex: socialLinks.orderIndex,
+          name: socialLinks.name,
+          url: socialLinks.url,
+          iconKey: socialLinks.iconKey,
+        })
+        .from(socialLinks)
+        .where(eq(socialLinks.profileId, 1))
+        .orderBy(asc(socialLinks.orderIndex)),
+      db
+        .select({
+          id: heroRoles.id,
+          orderIndex: heroRoles.orderIndex,
+        })
+        .from(heroRoles)
+        .orderBy(asc(heroRoles.orderIndex)),
+      db
+        .select({
+          heroRoleId: heroRolesI18n.heroRoleId,
+          role: heroRolesI18n.role,
+        })
+        .from(heroRolesI18n)
+        .where(eq(heroRolesI18n.locale, locale)),
+    ])
 
-  let profileI18nRows = profileI18nResult.data as ProfileI18nRow[] | null
-  let profileI18nError = profileI18nResult.error
+  const profileRow = profileRows[0] || null
+  const profileI18nRow = profileI18nRows[0] || null
 
-  if (profileI18nError?.code === '42703') {
-    const fallback = await supabaseAdmin
-      .from('profile_i18n')
-      .select('locale, greeting, location, university_name')
-      .eq('profile_id', 1)
-      .eq('locale', locale)
-    profileI18nRows = fallback.data as ProfileI18nRow[] | null
-    profileI18nError = fallback.error
-  }
-
-  if (
-    profileError ||
-    profileI18nError ||
-    socialError ||
-    roleBaseError ||
-    roleI18nError
-  ) {
-    throw new Error('Database error')
-  }
-
-  const profile = profileRow as ProfileRow | null
-  const profileI18n = (profileI18nRows || [])[0] || {}
   const roleById = new Map(
-    ((roleI18nRows || []) as HeroRoleI18nRow[]).map((row) => [row.hero_role_id, row.role || ''])
+    roleI18nRows.map((row) => [row.heroRoleId, row.role || ''])
   )
-  const roles = ((roleBaseRows || []) as HeroRoleBaseRow[])
+  const roles = roleBaseRows
     .map((row) => roleById.get(row.id))
     .filter(Boolean) as string[]
 
   return {
-    name: profile?.full_name || '',
-    photo: profile?.photo_url || '',
-    email: profile?.email || '',
-    cv: profile?.cv_url || '',
-    greeting: profileI18n.greeting || '',
-    location: profileI18n.location || '',
-    bio: profileI18n.bio || '',
+    name: profileRow?.fullName || '',
+    photo: profileRow?.photoUrl || '',
+    email: profileRow?.email || '',
+    cv: profileRow?.cvUrl || '',
+    greeting: profileI18nRow?.greeting || '',
+    location: profileI18nRow?.location || '',
+    bio: profileI18nRow?.bio || '',
     university: {
-      name: profileI18n.university_name || '',
-      logo: profile?.university_logo_url || '',
+      name: profileI18nRow?.universityName || '',
+      logo: profileRow?.universityLogoUrl || '',
     },
     roles,
-    socials: ((socialRows || []) as SocialRow[]).map((row) => ({
+    socials: socialRows.map((row) => ({
       name: row.name || '',
       url: row.url || '',
-      icon: row.icon_key || '',
+      icon: row.iconKey || '',
     })),
   }
 }
