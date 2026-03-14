@@ -685,3 +685,78 @@ Conclusione:
 
 - Ora locale: `2026-03-14 18:43:00 +01:00`
 - Stato: `Root frontend e context migrati a TS/TSX, lint/config aggiornati`
+
+## Migrazione TS/TSX frontend leggero
+
+### Obiettivo
+
+Iniziare la migrazione dei componenti UI partendo dai file a rischio basso e ad alto riuso, senza entrare ancora nei componenti più densi come `Navbar`, `Projects` o `AdminDashboard`.
+
+### File migrati
+
+- `src/data/icons.jsx` -> `src/data/icons.tsx`
+- `src/components/jsx/ThemeToggle.jsx` -> `src/components/jsx/ThemeToggle.tsx`
+- `src/components/jsx/LanguageSwitcher.jsx` -> `src/components/jsx/LanguageSwitcher.tsx`
+- `src/components/jsx/ScrollToTop.jsx` -> `src/components/jsx/ScrollToTop.tsx`
+- `src/components/jsx/ScrollProgress.jsx` -> `src/components/jsx/ScrollProgress.tsx`
+
+### Nuovi tipi introdotti
+
+File creato:
+- `src/types/icons.ts`
+
+Contenuto:
+- `IconRenderer`
+- `IconMap`
+
+Nota:
+- inizialmente il tipo usava `JSX.Element`, poi corretto a `ReactElement` per compatibilita piena col typecheck del progetto
+
+### Decisione su `src/data/icons`
+
+- valutato se eliminare il modulo
+- scelta: per ora mantenerlo
+
+Motivo:
+- e referenziato almeno da `HeroTyping` e `Footer`
+- centralizza bene la mappa `icon key -> renderer SVG`
+- rimuoverlo adesso avrebbe mescolato refactor concettuale e migrazione tecnica
+
+### Verifiche eseguite
+
+Comandi:
+
+```bash
+npm run typecheck
+npm run lint
+npm run build
+```
+
+Esito:
+- `PASS`
+
+### Stato residuo dopo questo step
+
+File `.js/.jsx` rimasti:
+- `vite.config.js`
+- `eslint.config.js`
+- `src/components/jsx/About.jsx`
+- `src/components/jsx/AdminDashboard.jsx`
+- `src/components/jsx/AdminLogin.jsx`
+- `src/components/jsx/Contact.jsx`
+- `src/components/jsx/Experience.jsx`
+- `src/components/jsx/Footer.jsx`
+- `src/components/jsx/HeroTyping.jsx`
+- `src/components/jsx/Navbar.jsx`
+- `src/components/jsx/Projects.jsx`
+- `src/components/jsx/RequireAdmin.jsx`
+- `src/components/jsx/Skills.jsx`
+
+Conclusione:
+- il blocco frontend leggero e stato chiuso senza richiedere ulteriori cambi alle regole ESLint
+- i prossimi candidati migliori sono i componenti medi (`About`, `Contact`, `Footer`, `Experience`, `Skills`)
+
+## Ultimo aggiornamento
+
+- Ora locale: `2026-03-14 18:50:48 +01:00`
+- Stato: `Prima tranche componenti frontend migrata a TS/TSX`
