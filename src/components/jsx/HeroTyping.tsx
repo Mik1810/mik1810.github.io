@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { useLanguage } from '../../context/useLanguage'
 import { useProfile } from '../../context/useProfile'
@@ -49,9 +49,19 @@ function HeroTypingAnimation({
   const [isDeleting, setIsDeleting] = useState(false)
   const [hasRoleRendered, setHasRoleRendered] = useState(false)
   const [photoLoaded, setPhotoLoaded] = useState(false)
+  const photoRef = useRef<HTMLImageElement | null>(null)
 
   useEffect(() => {
     setPhotoLoaded(false)
+  }, [photo])
+
+  useEffect(() => {
+    const image = photoRef.current
+    if (!photo || !image) return
+
+    if (image.complete && image.naturalWidth > 0) {
+      setPhotoLoaded(true)
+    }
   }, [photo])
 
   useEffect(() => {
@@ -145,12 +155,14 @@ function HeroTypingAnimation({
         >
           {photo ? (
             <img
+              ref={photoRef}
               className="float-animation"
               src={photo}
               alt={nameText}
               decoding="async"
               fetchPriority="high"
               onLoad={() => setPhotoLoaded(true)}
+              onError={() => setPhotoLoaded(true)}
             />
           ) : null}
         </div>

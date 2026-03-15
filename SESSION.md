@@ -2785,3 +2785,15 @@ Conclusione:
 - Expected result:
   - the browser can start fetching the hero portrait during HTML parsing
   - the circular hero placeholder should clear faster without reintroducing partial-image painting.
+
+## 2026-03-16 01:48 CET - Fixed cached hero image refreshes that could leave the portrait hidden
+
+- Investigated the case where Chrome could refresh the page, keep the hero image in cache, and still leave the circular hero placeholder visible instead of revealing the portrait.
+- Updated:
+  - [HeroTyping.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/HeroTyping.tsx)
+- Changes:
+  - added a direct image ref check for `complete` and `naturalWidth` after mount
+  - kept the `onLoad` path for cold loads
+  - added an `onError` escape hatch so the placeholder does not stay indefinitely if the image fails
+- Result:
+  - the hero portrait should reveal correctly both on first load and on refreshes that hit the browser cache path.
