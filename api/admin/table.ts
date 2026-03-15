@@ -1,6 +1,7 @@
 import { requireAdminSession } from '../../lib/requireAdminSession.js'
 import {
   createAdminRow,
+  createAdminRows,
   editAdminRow,
   getAdminRows,
   getAdminTableConfigOrNull,
@@ -17,6 +18,7 @@ import type { ApiHandler, ApiRequest } from '../../lib/types/http.js'
 
 interface TableBody {
   row?: Record<string, unknown>
+  rows?: Record<string, unknown>[]
   keys?: Record<string, unknown>
 }
 
@@ -55,6 +57,14 @@ const handler: ApiHandler<TableBody> = async (req, res) => {
     const body = (req as ApiRequest<TableBody>).body || {}
 
     if (req.method === 'POST') {
+      if (Array.isArray(body.rows) && body.rows.length > 0) {
+        const createdRows = await createAdminRows(
+          table,
+          body.rows.map((row) => requireAdminPayload(row, 'Missing row payload'))
+        )
+        return res.status(201).json({ rows: createdRows })
+      }
+
       const row = requireAdminPayload(body.row, 'Missing row payload')
       const createdRow = await createAdminRow(table, row)
       return res.status(201).json({ row: createdRow })

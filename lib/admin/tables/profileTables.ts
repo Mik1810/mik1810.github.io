@@ -10,11 +10,14 @@ import {
   requiredTextRule,
   requiredUrlRule,
   withEditor,
+  withRelationSelect,
 } from '../rules.js'
 
 export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   profile: createAdminTableConfig({
     label: 'Profile',
+    subgroup: 'profile',
+    subgroupLabel: 'Profile',
     table: schema.profile,
     primaryKeys: ['id'],
     defaultRow: { id: 1 },
@@ -29,11 +32,17 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   }),
   profile_i18n: createAdminTableConfig({
     label: 'Profile i18n',
+    subgroup: 'profile',
+    subgroupLabel: 'Profile',
     table: schema.profileI18n,
     primaryKeys: ['profile_id', 'locale'],
     defaultRow: { profile_id: 1, locale: 'it' },
     fieldRules: {
-      profile_id: positiveIdRule,
+      profile_id: withRelationSelect(positiveIdRule, {
+        table: 'profile',
+        labelColumns: ['full_name'],
+        emptyLabel: 'Seleziona il profilo',
+      }),
       locale: localeRule(),
       greeting: requiredTextRule(),
       location: requiredTextRule(),
@@ -43,12 +52,18 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   }),
   social_links: createAdminTableConfig({
     label: 'Social links',
+    subgroup: 'social_links',
+    subgroupLabel: 'Social links',
     table: schema.socialLinks,
     primaryKeys: ['profile_id', 'order_index'],
     defaultRow: { profile_id: 1, order_index: 1, name: '', url: '', icon_key: '' },
     fieldRules: {
       id: positiveIdRule,
-      profile_id: positiveIdRule,
+      profile_id: withRelationSelect(positiveIdRule, {
+        table: 'profile',
+        labelColumns: ['full_name'],
+        emptyLabel: 'Seleziona il profilo',
+      }),
       order_index: orderIndexRule,
       name: requiredTextRule(),
       url: requiredUrlRule(),
@@ -63,6 +78,10 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   }),
   hero_roles: createAdminTableConfig({
     label: 'Hero roles',
+    description:
+      'Definisce solo l’ordine dei ruoli mostrati nella hero. Il testo vero di ogni ruolo si gestisce in Hero roles i18n.',
+    subgroup: 'hero_roles',
+    subgroupLabel: 'Hero roles',
     table: schema.heroRoles,
     primaryKeys: ['id'],
     defaultRow: { order_index: 1 },
@@ -73,17 +92,27 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   }),
   hero_roles_i18n: createAdminTableConfig({
     label: 'Hero roles i18n',
+    subgroup: 'hero_roles',
+    subgroupLabel: 'Hero roles',
     table: schema.heroRolesI18n,
     primaryKeys: ['hero_role_id', 'locale'],
     defaultRow: { hero_role_id: 1, locale: 'it', role: '' },
     fieldRules: {
-      hero_role_id: positiveIdRule,
+      hero_role_id: withRelationSelect(positiveIdRule, {
+        table: 'hero_roles',
+        labelColumns: ['order_index'],
+        emptyLabel: 'Seleziona il ruolo',
+      }),
       locale: localeRule(),
       role: requiredTextRule(),
     },
   }),
   about_interests: createAdminTableConfig({
     label: 'About interests',
+    description:
+      'Definisce l’ordine degli interessi mostrati nella sezione About. Il testo localizzato si gestisce in About interests i18n.',
+    subgroup: 'about_interests',
+    subgroupLabel: 'About interests',
     table: schema.aboutInterests,
     primaryKeys: ['id'],
     defaultRow: { order_index: 1 },
@@ -94,11 +123,17 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   }),
   about_interests_i18n: createAdminTableConfig({
     label: 'About interests i18n',
+    subgroup: 'about_interests',
+    subgroupLabel: 'About interests',
     table: schema.aboutInterestsI18n,
     primaryKeys: ['about_interest_id', 'locale'],
     defaultRow: { about_interest_id: 1, locale: 'it', interest: '' },
     fieldRules: {
-      about_interest_id: positiveIdRule,
+      about_interest_id: withRelationSelect(positiveIdRule, {
+        table: 'about_interests',
+        labelColumns: ['order_index'],
+        emptyLabel: 'Seleziona l’interesse',
+      }),
       locale: localeRule(),
       interest: requiredTextRule(),
     },

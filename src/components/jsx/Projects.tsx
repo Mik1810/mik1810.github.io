@@ -184,12 +184,7 @@ function GithubProjectMediaCarousel({
 }
 
 function GithubProjectMedia({ project }: { project: GithubProjectItem }) {
-  const images =
-    Array.isArray(project.images) && project.images.length > 0
-      ? project.images
-      : project.image
-        ? [project.image]
-        : []
+  const images = Array.isArray(project.images) ? project.images : []
   const loopedImages =
     images.length > 1 ? [images[images.length - 1], ...images, images[0]] : images
 

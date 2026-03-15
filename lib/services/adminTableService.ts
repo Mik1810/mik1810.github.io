@@ -3,6 +3,7 @@ import { ADMIN_TABLE_GROUPS } from '../admin/groups.js'
 import { ADMIN_TABLES, getAdminTableConfig } from '../adminTables.js'
 import {
   deleteAdminRow,
+  insertAdminRows,
   insertAdminRow,
   listAdminRows,
   updateAdminRow,
@@ -161,8 +162,11 @@ export const getAdminTablesList = () =>
         .map(([name, config]) => ({
           name,
           label: config.label,
+          description: config.description,
           group: config.group,
           groupLabel: group.label,
+          subgroup: config.subgroup,
+          subgroupLabel: config.subgroupLabel,
           primaryKeys: config.primaryKeys,
           defaultRow: config.defaultRow || {},
           fields: config.fields,
@@ -181,6 +185,21 @@ export const createAdminRow = async (
 ) => {
   const config = requireAdminTableConfig(table)
   return insertAdminRow(config, normalizeAdminRowPayload(table, config, row, 'create'))
+}
+
+export const createAdminRows = async (
+  table: string,
+  rows: Record<string, unknown>[]
+) => {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new HttpError(400, 'Missing rows payload')
+  }
+
+  const config = requireAdminTableConfig(table)
+  return insertAdminRows(
+    config,
+    rows.map((row) => normalizeAdminRowPayload(table, config, row, 'create'))
+  )
 }
 
 export const editAdminRow = async (

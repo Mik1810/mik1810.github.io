@@ -15,10 +15,12 @@ function Navbar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const { profile } = useProfile()
-  const { authenticated, logout } = useAuth()
+  const { authLoading, authenticated, user, logout } = useAuth()
   const isAdminRoute = pathname.startsWith('/admin')
+  const adminIdentity = user?.email || profile?.email || ''
+  const isAdminIdentityLoading = isAdminRoute && authLoading && adminIdentity.length === 0
   const name = isAdminRoute
-    ? profile?.email || 'email'
+    ? adminIdentity || ' '
     : profile?.name || 'Portfolio'
   const cv = profile?.cv || '#'
   const showHomeLinks = pathname === '/'
@@ -44,7 +46,14 @@ function Navbar() {
     <nav className={`navbar ${isAdminRoute ? 'admin-navbar' : ''}`.trim()}>
       <div className="navbar-container">
         <a href={showHomeLinks ? '#hero' : '/'} className="navbar-logo">
-          {name}
+          {isAdminIdentityLoading ? (
+            <span
+              className="navbar-logo-skeleton"
+              aria-hidden="true"
+            />
+          ) : (
+            name
+          )}
         </a>
         {showHomeLinks && (
           <ul className={`navbar-menu ${menuOpen ? 'open' : ''}`}>

@@ -9,12 +9,15 @@ import {
   positiveIdRule,
   requiredTextRule,
   requiredUrlRule,
+  withRelationSelect,
   withEditor,
 } from '../rules.js'
 
 export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
   projects: createAdminTableConfig({
     label: 'Projects',
+    subgroup: 'projects',
+    subgroupLabel: 'Projects',
     table: schema.projects,
     primaryKeys: ['id'],
     defaultRow: { order_index: 1, slug: '' },
@@ -27,6 +30,8 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
   }),
   github_projects: createAdminTableConfig({
     label: 'GitHub projects',
+    subgroup: 'github_projects',
+    subgroupLabel: 'GitHub projects',
     table: schema.githubProjects,
     primaryKeys: ['id'],
     defaultRow: {
@@ -34,7 +39,6 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
       slug: '',
       github_url: '',
       live_url: '',
-      image_url: '',
       featured: true,
     },
     fieldRules: {
@@ -43,17 +47,22 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
       order_index: orderIndexRule,
       github_url: requiredUrlRule(),
       live_url: optionalUrlRule(),
-      image_url: optionalUrlRule(),
       featured: booleanRule(),
     },
   }),
   projects_i18n: createAdminTableConfig({
     label: 'Projects i18n',
+    subgroup: 'projects',
+    subgroupLabel: 'Projects',
     table: schema.projectsI18n,
     primaryKeys: ['project_id', 'locale'],
     defaultRow: { project_id: 1, locale: 'it', title: '', description: '' },
     fieldRules: {
-      project_id: positiveIdRule,
+      project_id: withRelationSelect(positiveIdRule, {
+        table: 'projects',
+        labelColumns: ['slug'],
+        emptyLabel: 'Seleziona il progetto',
+      }),
       locale: localeRule(),
       title: requiredTextRule(),
       description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
@@ -61,11 +70,17 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
   }),
   github_projects_i18n: createAdminTableConfig({
     label: 'GitHub projects i18n',
+    subgroup: 'github_projects',
+    subgroupLabel: 'GitHub projects',
     table: schema.githubProjectsI18n,
     primaryKeys: ['github_project_id', 'locale'],
     defaultRow: { github_project_id: 1, locale: 'it', title: '', description: '' },
     fieldRules: {
-      github_project_id: positiveIdRule,
+      github_project_id: withRelationSelect(positiveIdRule, {
+        table: 'github_projects',
+        labelColumns: ['slug'],
+        emptyLabel: 'Seleziona il progetto GitHub',
+      }),
       locale: localeRule(),
       title: requiredTextRule(),
       description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
@@ -73,36 +88,54 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
   }),
   project_tags: createAdminTableConfig({
     label: 'Project tags',
+    subgroup: 'projects',
+    subgroupLabel: 'Projects',
     table: schema.projectTags,
     primaryKeys: ['project_id', 'order_index'],
     defaultRow: { project_id: 1, order_index: 1, tag: '' },
     fieldRules: {
       id: positiveIdRule,
-      project_id: positiveIdRule,
+      project_id: withRelationSelect(positiveIdRule, {
+        table: 'projects',
+        labelColumns: ['slug'],
+        emptyLabel: 'Seleziona il progetto',
+      }),
       order_index: orderIndexRule,
       tag: requiredTextRule(),
     },
   }),
   github_project_tags: createAdminTableConfig({
     label: 'GitHub project tags',
+    subgroup: 'github_projects',
+    subgroupLabel: 'GitHub projects',
     table: schema.githubProjectTags,
     primaryKeys: ['github_project_id', 'order_index'],
     defaultRow: { github_project_id: 1, order_index: 1, tag: '' },
     fieldRules: {
       id: positiveIdRule,
-      github_project_id: positiveIdRule,
+      github_project_id: withRelationSelect(positiveIdRule, {
+        table: 'github_projects',
+        labelColumns: ['slug'],
+        emptyLabel: 'Seleziona il progetto GitHub',
+      }),
       order_index: orderIndexRule,
       tag: requiredTextRule(),
     },
   }),
   github_project_images: createAdminTableConfig({
     label: 'GitHub project images',
+    subgroup: 'github_projects',
+    subgroupLabel: 'GitHub projects',
     table: schema.githubProjectImages,
     primaryKeys: ['id'],
     defaultRow: { github_project_id: 1, order_index: 1, image_url: '', alt_text: '' },
     fieldRules: {
       id: positiveIdRule,
-      github_project_id: positiveIdRule,
+      github_project_id: withRelationSelect(positiveIdRule, {
+        table: 'github_projects',
+        labelColumns: ['slug'],
+        emptyLabel: 'Seleziona il progetto GitHub',
+      }),
       order_index: orderIndexRule,
       image_url: requiredUrlRule(),
       alt_text: optionalTextRule(),

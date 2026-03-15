@@ -147,7 +147,6 @@ export const githubProjects = pgTable(
     orderIndex: integer('order_index').notNull(),
     githubUrl: text('github_url').notNull(),
     liveUrl: text('live_url'),
-    imageUrl: text('image_url'),
     featured: boolean('featured').default(true).notNull(),
   },
   (table) => [

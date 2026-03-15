@@ -1,4 +1,8 @@
-import type { AdminFieldEditorConfig, AdminFieldRule } from '../types/admin.js'
+import type {
+  AdminFieldEditorConfig,
+  AdminFieldRelationConfig,
+  AdminFieldRule,
+} from '../types/admin.js'
 
 const SUPPORTED_LOCALES = new Set(['it', 'en'])
 const LOCALE_OPTIONS = [
@@ -165,4 +169,16 @@ export const withEditor = (
 ): AdminFieldRule => ({
   ...rule,
   editor,
+})
+
+export const withRelationSelect = (
+  rule: AdminFieldRule,
+  relation: AdminFieldRelationConfig
+): AdminFieldRule => ({
+  ...rule,
+  editor: {
+    ...(rule.editor || { kind: 'select' }),
+    kind: 'select',
+    relation,
+  },
 })

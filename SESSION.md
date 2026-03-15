@@ -1124,6 +1124,65 @@ Conclusione:
   - `npm run typecheck` passed
   - `npm run lint` passed
   - `npm run build` passed
+
+## 2026-03-15 18:24 CET - Aligned admin table headers with centered visual columns
+
+- Refined the admin table header alignment so column titles now follow the same visual logic as their cells.
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- Changes:
+  - introduced header alignment classes derived from the existing per-column layout helper
+  - media, icon, and color-swatch columns now center their headers
+  - textual columns keep left alignment
+- Result:
+  - column headers now feel visually anchored to the content beneath them
+  - compact visual columns no longer have left-aligned titles over centered content
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 18:34 CET - Refined admin grid alignment for URLs, icons, and order columns
+
+- Improved the admin table rendering to better align `Social links` and other compact visual tables.
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- Changes:
+  - plain `url` columns are now treated like other media/link columns, so their headers and cells are centered consistently
+  - `order_index` now uses its own compact centered column profile
+  - `icon_key` cells now render as compact icon-only previews with hover label instead of mixed icon/text sizing
+  - link/PDF icon sizes were increased to match the other compact visual previews
+- Result:
+  - `Social links` now reads more coherently
+  - compact numeric ordering columns no longer float visually with left-aligned content
+  - icon and link columns feel uniform across tables
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+
+## 2026-03-15 18:47 CET - Removed deprecated github_projects.image_url from app/runtime schema
+
+- Removed the legacy `image_url` column from the `github_projects` runtime model and switched the GitHub projects flow to rely only on `github_project_images`.
+- Updated:
+  - [schema.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts)
+  - [projectsRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/projectsRepository.ts)
+  - [Projects.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Projects.tsx)
+  - [app.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/types/app.ts)
+  - [projectTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/projectTables.ts)
+  - [0000_drop_github_projects_image_url.sql](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/drizzle/0000_drop_github_projects_image_url.sql)
+  - [drizzle meta journal](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/drizzle/meta/_journal.json)
+- Notes:
+  - `github_projects.image_url` was only acting as a legacy placeholder/fallback
+  - public GitHub project rendering now uses only `github_project_images`
+  - the admin editor for `GitHub projects` no longer exposes `image_url`
+  - `image-processing` keeps using the existing title fallback because it has no linked images yet
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+  - direct runtime check of `fetchProjects('it')` confirmed GitHub projects still resolve `images` correctly from `github_project_images`
   - live admin table read test returned one `profile` row
   - invalid admin sign-in test failed cleanly with `Invalid login credentials`
 - Remaining mentions of `supabaseAdmin` now live only in historical notes/documentation (`SESSION.md`, `IMPROVEMENTS.md`), not in runtime code.
@@ -1666,3 +1725,403 @@ Conclusione:
   - the admin now mirrors the public-side loading language
   - route bootstrap, sidebar loading and row loading all feel materially more polished
   - admin users see structure first, not abrupt text-only placeholders
+
+## 2026-03-15 14:48 CET - Added relation-aware selects for admin foreign keys
+
+- Extended the schema-driven admin metadata so editable foreign-key fields can carry relation information instead of behaving like plain numeric inputs.
+- Added `relation` metadata to the admin field editor contracts in:
+  - [lib/types/admin.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/types/admin.ts)
+  - [src/types/app.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/types/app.ts)
+- Added a reusable helper in [rules.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/rules.ts) to decorate existing validation rules as relation-backed selects via `withRelationSelect(...)`.
+- Updated the admin table registries so foreign-key fields now declare the target table and label strategy, for example:
+  - `project_id -> projects.slug`
+  - `github_project_id -> github_projects.slug`
+  - `experience_id -> experiences.slug`
+  - `education_id -> education.slug`
+  - `tech_category_id -> tech_categories.slug`
+  - `profile_id -> profile.full_name`
+- Reworked [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so:
+  - foreign keys are still hidden from the list grid
+  - but they are now visible in the editor
+  - relation-backed fields automatically fetch options from `/api/admin/table`
+  - the editor renders them as real `<select>` controls instead of free numeric text inputs
+- Result:
+  - editing localized/child rows is less error-prone
+  - users no longer need to remember numeric parent ids manually
+  - the admin remains generic, but its UX is now meaningfully more schema-aware
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 14:55 CET - Vertically centered admin sidebar item labels
+
+- Refined the sidebar table-item styling in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css) so item labels are vertically centered inside the left admin menu.
+- Updated `.admin-table-item` to use a flex row with `align-items: center`, a stable minimum height, and tighter line-height control.
+- Result:
+  - sidebar labels now sit visually centered inside each table button
+  - the left admin navigation feels more consistent with the rest of the dashboard controls
+
+## 2026-03-15 14:58 CET - Aligned admin group labels with their count badges
+
+- Refined the grouped sidebar toggle layout in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css).
+- Updated `.admin-group-toggle-main` from a plain flex row with `align-items: flex-start` to a two-column grid with centered cross-axis alignment.
+- Result:
+  - group labels now align visually with the circular table-count badge
+  - multi-line labels like `Esperienze e Formazione` still wrap correctly without pulling the badge upward
+
+## 2026-03-15 15:04 CET - Exposed relation-backed key fields in the admin editor
+
+- While validating the new foreign-key selects, found that the admin editor was still filtering out all primary-key fields.
+- This meant relation-backed fields such as `project_id` in `projects_i18n` were correctly described in the registry, but still invisible in the modal because they are also part of a composite primary key.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so:
+  - editable key fields now remain visible in the editor
+  - primary-key fields become read-only when editing an existing row
+  - create flows can still populate the required composite-key values
+- Result:
+  - relation-backed selects are now actually visible in the admin UI
+  - composite-key tables remain safe because key fields cannot be mutated during updates
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 15:11 CET - Split the admin editor into reference and editable-content sections
+
+- Refined the admin row modal in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so the form is no longer a single flat list of fields.
+- The editor now separates:
+  - `Riferimenti relazionali e chiavi`
+  - `Contenuto e proprietà modificabili`
+- Added supporting styles in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css) for:
+  - section headers
+  - explanatory helper text
+  - a visual divider between references and editable content
+- Result:
+  - relation/key fields are easier to distinguish from the real editable payload
+  - composite-key and foreign-key rows are much clearer to edit
+
+## 2026-03-15 15:22 CET - Added bilingual create mode for `*_i18n` admin tables
+
+- Extended the admin create flow so translation tables with a composite key including `locale` can be inserted in both languages at once.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so create mode for `*_i18n` tables now:
+  - keeps shared relation/key fields in the top reference section
+  - hides the single-locale selector during creation
+  - renders two locale cards for the localized content:
+    - `Italiano`
+    - `English`
+  - submits a single dual payload that creates the `it` and `en` rows together
+- Updated [api/admin/table.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/api/admin/table.ts), [adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts), and [adminTableRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/adminTableRepository.ts) so the admin create endpoint now supports `rows: [...]` bulk insert payloads in addition to the legacy single-row payload.
+- Refined relation-select fallback labels in the editor so a loading foreign-key field no longer degrades to a bare `1`, but shows a clearer "record collegato" placeholder while options are still loading.
+- Added the supporting modal layout styles in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css).
+- Result:
+  - `projects_i18n`, `github_projects_i18n`, `profile_i18n`, `experiences_i18n`, `education_i18n`, and similar translation tables can now be created in both locales in one pass
+  - the relation dropdown UX is less ambiguous while option lists are still bootstrapping
+
+## 2026-03-15 15:29 CET - Added icon previews next to admin `icon_key` values
+
+- Extended the admin cell renderer in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so icon fields such as `icon_key` now show a visual preview next to the stored key, in the same spirit as the color swatch previews already present for hex color fields.
+- Reused the shared icon map from [icons.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/data/icons.tsx) so the admin preview matches the same SVGs used elsewhere in the app.
+- Added the related styling in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css), including an empty-state fallback when the key does not resolve to a known icon.
+- Result:
+  - `github` and `linkedin` values are immediately recognizable in the admin grid
+  - icon-like fields are easier to scan, just like color fields
+
+## 2026-03-15 15:36 CET - Added PDF and image previews for admin URL fields
+
+- Extended the admin URL rendering in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so URL-like fields now detect common previewable assets:
+  - PDF URLs show a compact PDF badge/icon
+  - image URLs show a thumbnail preview
+- Applied the preview logic both to:
+  - admin table cells
+  - admin editor URL inputs
+- In the editor the input remains textual, but image and PDF previews are now displayed alongside the field so the user can validate the asset without leaving the modal.
+- Added the related styles in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css), including:
+  - thumbnail preview cards for images
+  - PDF badges
+  - responsive stacking in the editor on narrow screens
+- Result:
+  - `photo_url`, `logo`, `image_url`, `cv_url`, and similar fields are much easier to inspect
+  - media-heavy tables now communicate their content visually instead of only exposing raw URLs
+
+## 2026-03-15 15:42 CET - Compacted admin media cells to preview-only with hover path
+
+- Refined the admin grid media rendering so image and PDF URL cells no longer show the raw path inline when a visual preview is already available.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so image/PDF cells now:
+  - render only the thumbnail/document preview in the table
+  - expose the full underlying path through the hover `title`
+- Also simplified the PDF badge to a pure document icon, removing the explicit `PDF` text.
+- Result:
+  - `photo_url`, `cv_url`, and `university_logo_url` style fields are more compact in the grid
+  - the full path remains inspectable on hover without making the table visually noisy
+
+## 2026-03-15 16:06 CET - Added nested admin submenus and compact icon/media previews
+
+- Completed the admin table metadata refactor so every registry entry now exposes both a top-level `group` and a domain-specific `subgroup`, reusing the existing Drizzle-backed registry while making the sidebar navigation deeper and easier to scan.
+- Updated the admin table definitions in:
+  - [profileTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/profileTables.ts)
+  - [projectTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/projectTables.ts)
+  - [experienceTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/experienceTables.ts)
+  - [skillTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/skillTables.ts)
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so the left sidebar now renders a two-step navigation:
+  - top-level groups such as `Profilo e About`
+  - nested submenus such as `Profile`, `Hero roles`, `About interests`
+  - individual tables under each submenu, e.g. `Profile i18n`
+- Simplified relation-field fallback labels so unresolved references no longer show the verbose `record collegato ... (caricamento...)` placeholder and instead degrade to a minimal `#id` until the label is resolved.
+- Added devicon-aware rendering to the admin grid/editor:
+  - `devicon` values now render as the actual icon using the same CDN path convention already used in the public `Skills` section
+  - the stored devicon path/name remains inspectable via hover tooltip
+- Reduced the visual size of admin previews:
+  - image/PDF thumbnails were compacted
+  - icon previews were reduced
+  - editor preview rows were tightened without removing the textual inputs
+- Added the supporting nested-menu and compact-preview styling in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css).
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repo path `c:\Users\micha\Desktop\Piccirilli_Michael_Portfolio`
+
+## 2026-03-15 16:18 CET - Reworked admin submenus around root table families
+
+- Refined the nested admin sidebar so submenus are no longer modeled as a generic label plus a duplicate first child such as `Projects -> Projects`.
+- The sidebar now treats each submenu as the root entity family inferred from the foreign-key structure:
+  - clicking the submenu itself selects the root/base table
+  - nested items only render the related child tables, such as `Projects i18n`, `Project tags`, `GitHub project images`, or `Social links`
+- Realigned the `Skills e Tech Stack` domain so submenus are now based on real data roots instead of broad topical buckets:
+  - `Tech categories`
+  - `Skill categories`
+- Updated:
+  - [skillTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/skillTables.ts)
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+- Result:
+  - the submenu hierarchy now reads like entity family -> related tables
+  - duplicated labels such as `Projects -> Projects` are gone
+  - the structure is more obviously tied to the actual foreign-key graph
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+
+## 2026-03-15 16:27 CET - Bound submenu labels to root table families
+
+- Refined the nested admin sidebar so submenu titles are now taken from the actual root table of each family rather than from a parallel subgroup label string.
+- This makes the hierarchy more robust and better aligned with the foreign-key graph:
+  - the submenu title always matches the selected root table
+  - child tables remain the dependent/translation tables under that root
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- Result:
+  - submenu labels no longer risk rendering blank or drifting away from the real root entity
+  - the left navigation reads more consistently across all admin groups
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 16:36 CET - Aligned admin submenus with semantic table families
+
+- Refined the submenu grouping logic so it no longer forces every foreign-key descendant under the same root family.
+- The admin navigation now prefers semantic table families:
+  - a base entity stays paired with its natural extension tables, such as its `*_i18n` rows
+  - standalone child collections with their own distinct role stay separate, even if they still reference another table through a foreign key
+- Updated:
+  - [profileTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/profileTables.ts)
+  - [skillTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/skillTables.ts)
+- Result:
+  - `Profile` now pairs only with `Profile i18n`
+  - `Social links` is now its own submenu
+  - `Tech items` and `Skill items` are also separated into their own families instead of being folded into category roots
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 16:45 CET - Moved leaf-only admin submenus to the bottom of each group
+
+- Refined the nested admin sidebar ordering so submenu roots that do not expose any child tables are now rendered after the submenus that do have nested items.
+- This keeps each parent group easier to scan:
+  - first the expandable entity families
+  - then the standalone/leaf submenu roots
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) to sort subgroup entries by child-table count while preserving the existing order inside each category.
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 16:54 CET - Restricted accent highlighting to the actually selected admin entry
+
+- Refined the admin sidebar visual states so expansion and selection are no longer conflated.
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- Changes:
+  - a submenu root now gets the active accent state only when its own root table is the selected table
+  - child table buttons keep the accent state only when that exact table is selected
+  - expanded but non-selected groups/subgroups now use a neutral visual state instead of the accent color
+- Result:
+  - the accent color now communicates selection instead of mere openness
+  - it is easier to spot the currently selected submenu/table at a glance
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:02 CET - Made top-level admin groups navigate to a real selection
+
+- Refined the admin sidebar group behavior so clicking a top-level group no longer just expands/collapses the section while leaving the previous table selected.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so clicking a top-level group now:
+  - opens the group
+  - selects the first root table in that group
+  - expands the corresponding subgroup
+- Result:
+  - the active accent/border now move with the user’s navigation intent
+  - switching from one domain to another immediately updates the selected admin context
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+
+## 2026-03-15 17:10 CET - Split admin sidebar navigation from open/close toggling
+
+- Refined the admin sidebar interaction model so expanding/collapsing and navigating are no longer coupled on the same click target.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx):
+  - clicking the main body of a parent group or submenu still navigates to its root table
+  - clicking the chevron arrow now only expands/collapses that level
+- Result:
+  - parent groups and submenus can now be closed even when a table inside them is currently selected
+  - navigation intent and disclosure intent are easier to control
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:16 CET - Restricted submenu closing to the chevron toggle only
+
+- Refined the submenu root click behavior in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so clicking the submenu body no longer collapses it when its root table is already selected.
+- Submenu roots now behave consistently:
+  - body click: navigate/select the root table and keep the submenu open
+  - chevron click: expand/collapse the submenu
+- Result:
+  - collapsing is now reserved to the dedicated `v` toggle
+  - navigation clicks do not unexpectedly close the current submenu
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:23 CET - Prevented top-level group clicks from auto-selecting child tables
+
+- Refined the top-level admin group behavior in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so clicking a grandparent group no longer auto-selects the first root table of the first submenu.
+- The interaction model is now:
+  - group body click: open the group only
+  - group chevron click: expand/collapse the group
+  - submenu body click: select the submenu root table
+  - submenu chevron click: expand/collapse the submenu
+- Result:
+  - opening a top-level domain no longer forces the user into a child table immediately
+  - selection remains a submenu/table concern instead of a grandparent concern
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:31 CET - Kept admin parent groups collapsed on first entry
+
+- Refined the initial admin dashboard state in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so top-level parent groups and subgroups no longer auto-expand on first load.
+- The dashboard now starts with:
+  - the default table still loaded in the content panel
+  - all grandparent groups collapsed in the sidebar
+  - all submenu levels collapsed as well
+- Result:
+  - entering `/admin` no longer opens the left navigation automatically
+  - expansion is now entirely user-driven from the first interaction onward
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:38 CET - Fixed grandparent chevron clicks so groups can collapse without changing content
+
+- Fixed the admin sidebar chevron click detection in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx).
+- Root cause:
+  - chevron clicks often originate from SVG nodes (`svg` / `path`)
+  - the previous guard only recognized `HTMLElement`, so those clicks were incorrectly treated as body clicks
+- The guard now accepts any DOM `Element`, which means clicking the grandparent chevron correctly toggles the group open/closed.
+- Result:
+  - top-level groups can now be closed again
+  - the central content panel keeps showing the previously selected table
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 17:52 CET - Polished admin table readability, link icons, and navbar identity loading
+
+- Added descriptive metadata to the admin table registry so content-light helper tables can explain their role directly in the admin UI.
+- Updated:
+  - [lib/types/admin.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/types/admin.ts)
+  - [lib/admin/registry.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/registry.ts)
+  - [lib/services/adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts)
+  - [src/types/app.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/types/app.ts)
+  - [profileTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/profileTables.ts)
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+  - [Navbar.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Navbar.tsx)
+  - [Navbar.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/Navbar.css)
+- Result:
+  - `Hero roles` and `About interests` now explain in the header that they only manage ordering while localized text lives in the corresponding `*_i18n` tables
+  - `live_url` cells now render as a generic link icon with hover tooltip
+  - `github_url` cells now render as a GitHub icon with hover tooltip
+  - admin image/PDF previews, color swatches, icons, and action buttons were resized to feel more coherent in the grid
+  - table rows are vertically centered more consistently
+  - the admin navbar now shows a skeleton placeholder while the identity/email is still loading, instead of the raw `email` placeholder text
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+
+## 2026-03-15 18:00 CET - Clarified structural skill tables in the admin UI
+
+- Extended the same “structural table” treatment already used for `Hero roles` and `About interests` to the skill scaffolding tables.
+- Updated [skillTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/skillTables.ts) so:
+  - `Skill categories` now explains that it only controls ordering, while the visible category names live in `Skill categories i18n`
+  - `Skill items` now explains that it controls ordering inside a category, while the visible labels live in `Skill items i18n`
+- Result:
+  - these tables are less confusing when they mostly expose structural fields such as `order_index`
+  - the admin now communicates more clearly which companion table contains the visible content
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 18:09 CET - Rebalanced admin table column widths by content type
+
+- Refined the admin table layout so columns no longer all share the same generic width profile.
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- The table now assigns width classes by content type:
+  - short keys / ids
+  - media and link/icon cells
+  - swatch/icon columns
+  - title/name fields
+  - long copy fields such as `description` and `bio`
+  - email fields
+- Result:
+  - wide textual columns have more room
+  - compact visual columns no longer waste horizontal space
+  - the grid reads more proportionally across different admin tables
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed
+
+## 2026-03-15 18:17 CET - Unified visual-cell sizing and moved color codes to hover
+
+- Refined the admin grid rendering so purely visual cells behave consistently:
+  - text remains left-aligned
+  - visual-only cells are centered
+- Updated:
+  - [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx)
+  - [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css)
+- Changes:
+  - color cells now render only the swatch in the grid
+  - the hex color value is available through hover `title`, not inline text
+  - devicon previews now use the larger visual size already used by the other compact admin previews
+  - large swatches/devicons are centered in their table cells
+- Result:
+  - color and icon cells feel more coherent with media and action controls
+  - visual columns are easier to scan without exposing redundant raw values inline
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed

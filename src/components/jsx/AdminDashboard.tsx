@@ -1,25 +1,54 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react'
 
 import type {
+  SupportedLocale,
   AdminFieldDefinition,
+  AdminFieldEditorOption,
+  AdminCreateResponse,
   AdminOkResponse,
   AdminRowResponse,
   AdminRowsResponse,
   AdminTableDefinition,
   AdminTablesResponse,
 } from '../../types/app.js'
+import icons from '../../data/icons.js'
 import AdminDashboardSkeleton from './AdminDashboardSkeleton'
 import '../css/AdminAuth.css'
 
 const PAGE_SIZE = 15
 const EMPTY_PRIMARY_KEYS: string[] = []
 const ADMIN_TABLE_SKELETON_ROWS = 6
+const BILINGUAL_LOCALES: SupportedLocale[] = ['it', 'en']
+const DEVICON_BASE = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons'
+
+const buildSubgroupStateKey = (groupKey: string, subgroupKey: string) =>
+  `${groupKey}:${subgroupKey}`
 
 const buildInitialExpandedGroups = (nextTables: AdminTableDefinition[]) => {
   const groups = Array.from(new Set(nextTables.map((table) => table.group)))
-  return Object.fromEntries(
-    groups.map((group, index) => [group, index === 0])
-  ) as Record<string, boolean>
+  return Object.fromEntries(groups.map((group) => [group, false])) as Record<
+    string,
+    boolean
+  >
+}
+
+const buildInitialExpandedSubgroups = (nextTables: AdminTableDefinition[]) => {
+  const subgroupKeys = Array.from(
+    new Set(
+      nextTables.map((table) => buildSubgroupStateKey(table.group, table.subgroup))
+    )
+  )
+
+  return Object.fromEntries(subgroupKeys.map((key) => [key, false])) as Record<
+    string,
+    boolean
+  >
 }
 
 const prettyValue = (value: unknown) => {
@@ -70,9 +99,231 @@ const isValidUrlLike = (value: unknown) => {
   }
 }
 
+const getUrlPreviewType = (
+  fieldName: string,
+  value: unknown
+): 'image' | 'pdf' | null => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const normalized = trimmed.toLowerCase().split('#')[0]?.split('?')[0] || ''
+  if (normalized.endsWith('.pdf')) return 'pdf'
+  if (/\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i.test(normalized)) return 'image'
+
+  const loweredField = fieldName.toLowerCase()
+  if (
+    loweredField.includes('image') ||
+    loweredField.includes('photo') ||
+    loweredField === 'logo' ||
+    loweredField.endsWith('_logo')
+  ) {
+    return 'image'
+  }
+
+  return null
+}
+
 const isHexColorValue = (value: unknown) =>
   typeof value === 'string' &&
   /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim())
+
+const isIconField = (fieldName: string) =>
+  fieldName === 'icon_key' || fieldName.endsWith('_icon_key')
+
+const isDeviconField = (fieldName: string) =>
+  fieldName === 'devicon' || fieldName.endsWith('_devicon')
+
+const getColumnLayoutClass = (
+  column: string,
+  field: AdminFieldDefinition | undefined
+) => {
+  const normalized = column.toLowerCase()
+
+  if (field?.primaryKey || field?.foreignKey) {
+    return 'admin-col-key'
+  }
+
+  if (
+    field?.editor.kind === 'color' ||
+    normalized.includes('color')
+  ) {
+    return 'admin-col-swatch'
+  }
+
+  if (normalized === 'order_index') {
+    return 'admin-col-order'
+  }
+
+  if (isIconField(normalized) || isDeviconField(normalized)) {
+    return 'admin-col-icon'
+  }
+
+  if (
+    normalized === 'url' ||
+    normalized === 'live_url' ||
+    normalized === 'github_url' ||
+    normalized === 'cv_url' ||
+    normalized.endsWith('_url') ||
+    normalized === 'logo'
+  ) {
+    return 'admin-col-media'
+  }
+
+  if (normalized === 'email') {
+    return 'admin-col-email'
+  }
+
+  if (
+    normalized.includes('description') ||
+    normalized.includes('bio')
+  ) {
+    return 'admin-col-copy'
+  }
+
+  if (
+    normalized.includes('title') ||
+    normalized.includes('name') ||
+    normalized.includes('label') ||
+    normalized === 'slug'
+  ) {
+    return 'admin-col-title'
+  }
+
+  return 'admin-col-data'
+}
+
+const getColumnHeaderAlignmentClass = (
+  column: string,
+  field: AdminFieldDefinition | undefined
+) => {
+  const layoutClass = getColumnLayoutClass(column, field)
+
+  if (
+    layoutClass === 'admin-col-media' ||
+    layoutClass === 'admin-col-icon' ||
+    layoutClass === 'admin-col-swatch'
+  ) {
+    return 'admin-column-header-center'
+  }
+
+  return 'admin-column-header-left'
+}
+
+const getColumnCellAlignmentClass = (
+  column: string,
+  field: AdminFieldDefinition | undefined
+) => {
+  const layoutClass = getColumnLayoutClass(column, field)
+
+  if (
+    layoutClass === 'admin-col-media' ||
+    layoutClass === 'admin-col-icon' ||
+    layoutClass === 'admin-col-swatch' ||
+    layoutClass === 'admin-col-order'
+  ) {
+    return 'admin-column-cell-center'
+  }
+
+  return 'admin-column-cell-left'
+}
+
+const getSubgroupRootTable = (subgroup: {
+  key: string
+  tables: AdminTableDefinition[]
+}) =>
+  subgroup.tables.find((table) => table.name === subgroup.key) ||
+  subgroup.tables.find((table) => !table.fields.some((field) => field.foreignKey)) ||
+  subgroup.tables[0]
+
+const isArrowToggleClick = (event: ReactMouseEvent<HTMLButtonElement>) =>
+  event.target instanceof Element &&
+  Boolean(event.target.closest('[data-admin-toggle-arrow="true"]'))
+
+const getDeviconPreviewUrl = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^(https?:)?\/\//i.test(trimmed) || trimmed.startsWith('/')) {
+    return trimmed
+  }
+  const normalized = trimmed.replace(/\.svg$/i, '').replace(/^\/+/, '')
+  return `${DEVICON_BASE}/${normalized}.svg`
+}
+
+const buildRelationOptionLabel = (
+  row: Record<string, unknown>,
+  valueColumn: string,
+  labelColumns: string[]
+) => {
+  const valueText = prettyValue(row[valueColumn])
+  const labelParts = labelColumns
+    .map((column) => prettyValue(row[column]).trim())
+    .filter(Boolean)
+
+  if (labelParts.length === 0) {
+    return valueText
+  }
+
+  if (!labelColumns.includes(valueColumn) && valueText) {
+    return `${labelParts.join(' · ')} · #${valueText}`
+  }
+
+  return labelParts.join(' · ')
+}
+
+const PdfPreviewIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+    <path
+      d="M7 3H14L19 8V20C19 20.5523 18.5523 21 18 21H7C6.44772 21 6 20.5523 6 20V4C6 3.44772 6.44772 3 7 3Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14 3V8H19"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9 14H15"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <path
+      d="M9 17H13.5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+const LinkPreviewIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+    <path
+      d="M10 14L14 10"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <path
+      d="M7.5 13.5L5.8 15.2C4.4 16.6 4.4 18.8 5.8 20.2C7.2 21.6 9.4 21.6 10.8 20.2L12.5 18.5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16.5 10.5L18.2 8.8C19.6 7.4 19.6 5.2 18.2 3.8C16.8 2.4 14.6 2.4 13.2 3.8L11.5 5.5"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
 
 function AdminDashboard() {
   const [tables, setTables] = useState<AdminTableDefinition[]>([])
@@ -89,6 +340,19 @@ function AdminDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+  const [expandedSubgroups, setExpandedSubgroups] = useState<Record<string, boolean>>({})
+  const [localeDraftRows, setLocaleDraftRows] = useState<
+    Record<SupportedLocale, Record<string, unknown>>
+  >({
+    it: {},
+    en: {},
+  })
+  const [relationOptionsByTable, setRelationOptionsByTable] = useState<
+    Record<string, AdminFieldEditorOption[]>
+  >({})
+  const [loadingRelationTables, setLoadingRelationTables] = useState<
+    Record<string, boolean>
+  >({})
 
   const activeTable = useMemo(
     () => tables.find((item) => item.name === activeTableName) || null,
@@ -112,13 +376,22 @@ function AdminDashboard() {
     [fieldDefinitions]
   )
   const selectedRow = selectedIndex >= 0 ? rows[selectedIndex] : null
+  const localeField = useMemo(
+    () => fieldDefinitions.find((field) => field.name === 'locale') || null,
+    [fieldDefinitions]
+  )
+  const isLocaleTranslationTable = Boolean(localeField) && primaryKeys.includes('locale')
   const groupedTables = useMemo(() => {
     const groupMap = new Map<
       string,
       {
         key: string
         label: string
-        tables: AdminTableDefinition[]
+        subgroups: Array<{
+          key: string
+          label: string
+          tables: AdminTableDefinition[]
+        }>
       }
     >()
 
@@ -127,14 +400,49 @@ function AdminDashboard() {
         groupMap.set(table.group, {
           key: table.group,
           label: table.groupLabel,
-          tables: [],
+          subgroups: [],
         })
       }
-      groupMap.get(table.group)?.tables.push(table)
+      const group = groupMap.get(table.group)
+      if (!group) continue
+
+      let subgroup = group.subgroups.find((item) => item.key === table.subgroup)
+      if (!subgroup) {
+        subgroup = {
+          key: table.subgroup,
+          label: table.subgroupLabel,
+          tables: [],
+        }
+        group.subgroups.push(subgroup)
+      }
+
+      subgroup.tables.push(table)
     }
 
-    return Array.from(groupMap.values())
+    return Array.from(groupMap.values()).map((group) => ({
+      ...group,
+      subgroups: [...group.subgroups].sort((left, right) => {
+        const leftChildCount =
+          left.tables.filter((table) => table.name !== getSubgroupRootTable(left)?.name)
+            .length
+        const rightChildCount =
+          right.tables.filter((table) => table.name !== getSubgroupRootTable(right)?.name)
+            .length
+
+        if (leftChildCount === 0 && rightChildCount > 0) return 1
+        if (leftChildCount > 0 && rightChildCount === 0) return -1
+        return 0
+      }),
+    }))
   }, [tables])
+  const tableLabelsByName = useMemo(
+    () =>
+      Object.fromEntries(tables.map((table) => [table.name, table.label])) as Record<
+        string,
+        string
+      >,
+    [tables]
+  )
 
   const loadRows = useCallback(
     async (tableName: string) => {
@@ -201,6 +509,7 @@ function AdminDashboard() {
         const nextTables = Array.isArray(data?.tables) ? data.tables : []
         setTables(nextTables)
         setExpandedGroups(buildInitialExpandedGroups(nextTables))
+        setExpandedSubgroups(buildInitialExpandedSubgroups(nextTables))
         if (nextTables.length > 0) {
           setActiveTableName(nextTables[0].name)
         }
@@ -220,18 +529,85 @@ function AdminDashboard() {
   }, [activeTableName, loadRows])
 
   useEffect(() => {
-    if (!activeTable?.group) return
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [activeTable.group]: true,
-    }))
-  }, [activeTable])
-
-  useEffect(() => {
     setSearchQuery('')
     setShowDeleteConfirm(false)
     setEditorOpen(false)
+    setLocaleDraftRows({ it: {}, en: {} })
   }, [activeTableName])
+
+  useEffect(() => {
+    const relationConfigs = fieldDefinitions
+      .map((field) => field.editor.relation)
+      .filter((relation): relation is NonNullable<AdminFieldDefinition['editor']['relation']> =>
+        Boolean(relation)
+      )
+      .filter(
+        (relation, index, items) =>
+          items.findIndex((item) => item.table === relation.table) === index
+      )
+
+    if (relationConfigs.length === 0) return
+
+    let cancelled = false
+
+    setLoadingRelationTables((prev) => ({
+      ...prev,
+      ...Object.fromEntries(relationConfigs.map((relation) => [relation.table, true])),
+    }))
+
+    void Promise.all(
+      relationConfigs.map(async (relation) => {
+        try {
+          const response = await fetch(
+            `/api/admin/table?table=${encodeURIComponent(relation.table)}&limit=500`,
+            {
+              method: 'GET',
+              credentials: 'include',
+            }
+          )
+          const data = (await response.json()) as AdminRowsResponse
+          if (!response.ok) {
+            return [relation.table, []] as const
+          }
+
+          const valueColumn = relation.valueColumn || 'id'
+          const options = (Array.isArray(data?.rows) ? data.rows : [])
+            .map((row) => {
+              const optionValue = prettyValue(row[valueColumn]).trim()
+              if (!optionValue) return null
+              return {
+                value: optionValue,
+                label: buildRelationOptionLabel(
+                  row,
+                  valueColumn,
+                  relation.labelColumns
+                ),
+              }
+            })
+            .filter(Boolean) as AdminFieldEditorOption[]
+
+          return [relation.table, options] as const
+        } catch {
+          return [relation.table, []] as const
+        }
+      })
+    ).then((results) => {
+      if (cancelled) return
+
+      setRelationOptionsByTable((prev) => ({
+        ...prev,
+        ...Object.fromEntries(results),
+      }))
+      setLoadingRelationTables((prev) => ({
+        ...prev,
+        ...Object.fromEntries(results.map(([table]) => [table, false])),
+      }))
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [fieldDefinitions])
 
   const handleSelectRow = (index: number) => {
     const nextRow = rows[index]
@@ -256,11 +632,73 @@ function AdminDashboard() {
     }))
   }
 
-  const toggleGroup = (groupKey: string) => {
+  const handleLocaleDraftFieldChange = (
+    locale: SupportedLocale,
+    key: string,
+    value: unknown
+  ) => {
+    setLocaleDraftRows((prev) => ({
+      ...prev,
+      [locale]: {
+        ...prev[locale],
+        [key]: value,
+      },
+    }))
+  }
+
+  const handleGroupClick = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    group: {
+      key: string
+      subgroups: Array<{
+        key: string
+        tables: AdminTableDefinition[]
+      }>
+    }
+  ) => {
+    if (isArrowToggleClick(event)) {
+      setExpandedGroups((prev) => ({
+        ...prev,
+        [group.key]: !prev[group.key],
+      }))
+      return
+    }
+
     setExpandedGroups((prev) => ({
       ...prev,
-      [groupKey]: !prev[groupKey],
+      [group.key]: true,
     }))
+  }
+
+  const openSubgroupRoot = (
+    groupKey: string,
+    subgroupKey: string,
+    rootTableName: string
+  ) => {
+    const stateKey = buildSubgroupStateKey(groupKey, subgroupKey)
+    setActiveTableName(rootTableName)
+    setExpandedSubgroups((prev) => ({
+      ...prev,
+      [stateKey]: true,
+    }))
+  }
+
+  const handleSubgroupClick = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    groupKey: string,
+    subgroupKey: string,
+    rootTableName: string
+  ) => {
+    if (isArrowToggleClick(event)) {
+      const stateKey = buildSubgroupStateKey(groupKey, subgroupKey)
+      setExpandedSubgroups((prev) => ({
+        ...prev,
+        [stateKey]: !prev[stateKey],
+      }))
+      return
+    }
+
+    openSubgroupRoot(groupKey, subgroupKey, rootTableName)
   }
 
   const handleCreateNew = () => {
@@ -268,11 +706,40 @@ function AdminDashboard() {
     const inheritedForeignKeys = Object.fromEntries(
       Object.entries(sourceRow).filter(([key]) => isForeignKeyColumn(key))
     )
-    setSelectedIndex(-1)
-    setDraftRow({
+    const nextDraftRow = {
       ...inheritedForeignKeys,
       ...(activeTable?.defaultRow || {}),
-    })
+    }
+
+    setSelectedIndex(-1)
+    setDraftRow(nextDraftRow)
+    if (isLocaleTranslationTable) {
+      const localeFieldNames = fieldDefinitions
+        .filter(
+          (field) =>
+            field.editable &&
+            !field.system &&
+            !field.primaryKey &&
+            !field.foreignKey &&
+            !field.editor.relation
+        )
+        .map((field) => field.name)
+
+      const buildLocaleDraft = () =>
+        Object.fromEntries(
+          localeFieldNames.map((fieldName) => [
+            fieldName,
+            sourceRow?.[fieldName] ?? activeTable?.defaultRow?.[fieldName] ?? '',
+          ])
+        )
+
+      setLocaleDraftRows({
+        it: buildLocaleDraft(),
+        en: buildLocaleDraft(),
+      })
+    } else {
+      setLocaleDraftRows({ it: {}, en: {} })
+    }
     setShowDeleteConfirm(false)
     setError('')
     setEditorOpen(true)
@@ -303,9 +770,48 @@ function AdminDashboard() {
     }
   }
 
+  const validateLocaleDraftRows = () => {
+    for (const locale of BILINGUAL_LOCALES) {
+      for (const [key, value] of Object.entries(localeDraftRows[locale] || {})) {
+        if (!isLikelyUrlField(key)) continue
+        if (value === null || value === undefined || value === '') continue
+        if (!isValidUrlLike(value)) {
+          throw new Error(`Campo URL non valido (${locale}): ${key}`)
+        }
+      }
+    }
+  }
+
   const handleInsert = () =>
     runAction('insert', async () => {
       validateDraftRow()
+      if (isLocaleTranslationTable) {
+        validateLocaleDraftRows()
+
+        const sharedRow = Object.fromEntries(
+          Object.entries(draftRow).filter(([key]) => key !== 'locale')
+        )
+        const rowsPayload = BILINGUAL_LOCALES.map((locale) => ({
+          ...sharedRow,
+          locale,
+          ...(localeDraftRows[locale] || {}),
+        }))
+
+        const response = await fetch(
+          `/api/admin/table?table=${encodeURIComponent(activeTableName)}`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rows: rowsPayload }),
+          }
+        )
+        const data = (await response.json()) as AdminCreateResponse
+        if (!response.ok) throw new Error(data?.error || 'Insert bilingue fallita')
+        setEditorOpen(false)
+        return
+      }
+
       const response = await fetch(
         `/api/admin/table?table=${encodeURIComponent(activeTableName)}`,
         {
@@ -315,7 +821,7 @@ function AdminDashboard() {
           body: JSON.stringify({ row: draftRow }),
         }
       )
-      const data = (await response.json()) as AdminRowResponse
+      const data = (await response.json()) as AdminCreateResponse
       if (!response.ok) throw new Error(data?.error || 'Insert fallita')
       setEditorOpen(false)
     })
@@ -396,8 +902,28 @@ function AdminDashboard() {
   )
 
   const editorFields = useMemo(
-    () => visibleColumns.map((column) => fieldsByName[column]).filter(Boolean),
-    [fieldsByName, visibleColumns]
+    () => fieldDefinitions.filter((field) => field.editable && !field.system),
+    [fieldDefinitions]
+  )
+  const referenceEditorFields = useMemo(
+    () =>
+      editorFields.filter(
+        (field) =>
+          (field.primaryKey || field.foreignKey || Boolean(field.editor.relation)) &&
+          !(isLocaleTranslationTable && field.name === 'locale' && selectedIndex < 0)
+      ),
+    [editorFields, isLocaleTranslationTable, selectedIndex]
+  )
+  const contentEditorFields = useMemo(
+    () =>
+      editorFields.filter(
+        (field) =>
+          !field.primaryKey &&
+          !field.foreignKey &&
+          !field.editor.relation &&
+          !(isLocaleTranslationTable && field.name === 'locale')
+      ),
+    [editorFields, isLocaleTranslationTable]
   )
 
   const filteredRows = useMemo(() => {
@@ -441,6 +967,7 @@ function AdminDashboard() {
 
   const renderEditorField = (field: AdminFieldDefinition) => {
     const value = draftRow?.[field.name]
+    const isReadOnlyField = selectedIndex >= 0 && field.primaryKey
 
     if (field.editor.kind === 'textarea') {
       return (
@@ -450,24 +977,54 @@ function AdminDashboard() {
           onChange={(event) =>
             handleEditorFieldChange(field, event.target.value)
           }
-          disabled={busyAction !== ''}
+          disabled={busyAction !== '' || isReadOnlyField}
           rows={field.editor.rows || 4}
         />
       )
     }
 
     if (field.editor.kind === 'select') {
+      const relationOptions = field.editor.relation
+        ? relationOptionsByTable[field.editor.relation.table] || []
+        : field.editor.options || []
+      const currentValue = toInputValue(value)
+      const isLoadingRelationOptions = field.editor.relation
+        ? loadingRelationTables[field.editor.relation.table] === true
+        : false
+      const hasCurrentValue =
+        currentValue.length > 0 &&
+        relationOptions.some((option) => option.value === currentValue)
+      const options = hasCurrentValue
+        ? relationOptions
+        : currentValue.length > 0
+          ? [
+              {
+                value: currentValue,
+                label: `#${currentValue}`,
+              },
+              ...relationOptions,
+            ]
+          : relationOptions
       return (
         <select
           className="admin-input admin-select"
-          value={toInputValue(value)}
+          value={currentValue}
           onChange={(event) =>
             handleEditorFieldChange(field, event.target.value)
           }
-          disabled={busyAction !== ''}
+          disabled={
+            busyAction !== '' ||
+            isReadOnlyField ||
+            (isLoadingRelationOptions && options.length === 0)
+          }
         >
-          <option value="">Seleziona...</option>
-          {(field.editor.options || []).map((option) => (
+          <option value="">
+            {isLoadingRelationOptions
+              ? 'Caricamento opzioni...'
+              : field.editor.relation?.emptyLabel ||
+                `Seleziona ${tableLabelsByName[field.editor.relation?.table || ''] || '...'}`}
+          </option>
+          {options.map((option) => (
             <option key={`${field.name}-${option.value}`} value={option.value}>
               {option.label}
             </option>
@@ -485,7 +1042,7 @@ function AdminDashboard() {
             onChange={(event) =>
               handleEditorFieldChange(field, event.target.checked)
             }
-            disabled={busyAction !== ''}
+            disabled={busyAction !== '' || isReadOnlyField}
           />
           <span>{value === true ? 'True' : 'False'}</span>
         </label>
@@ -505,7 +1062,7 @@ function AdminDashboard() {
             onChange={(event) =>
               handleEditorFieldChange(field, event.target.value)
             }
-            disabled={busyAction !== ''}
+            disabled={busyAction !== '' || isReadOnlyField}
           />
           <input
             className="admin-input"
@@ -514,9 +1071,78 @@ function AdminDashboard() {
             onChange={(event) =>
               handleEditorFieldChange(field, event.target.value)
             }
-            disabled={busyAction !== ''}
+            disabled={busyAction !== '' || isReadOnlyField}
             placeholder="#RRGGBB"
           />
+        </div>
+      )
+    }
+
+    if (field.editor.kind === 'url') {
+      const rawValue = toInputValue(value)
+      const previewType = getUrlPreviewType(field.name, rawValue)
+
+      return (
+        <div className="admin-url-field">
+          <input
+            className="admin-input"
+            type="url"
+            value={rawValue}
+            onChange={(event) =>
+              handleEditorFieldChange(field, event.target.value)
+            }
+            disabled={busyAction !== '' || isReadOnlyField}
+          />
+          {previewType === 'image' && rawValue && (
+            <a
+              className="admin-url-preview admin-url-preview-image"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Anteprima immagine ${field.label}`}
+            >
+              <img src={rawValue} alt="" loading="lazy" />
+            </a>
+          )}
+          {previewType === 'pdf' && rawValue && (
+            <a
+              className="admin-url-preview admin-url-preview-pdf"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri PDF ${field.label}`}
+            >
+              <PdfPreviewIcon />
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    if (isDeviconField(field.name)) {
+      const rawValue = toInputValue(value)
+      const previewUrl = rawValue ? getDeviconPreviewUrl(rawValue) : ''
+
+      return (
+        <div className="admin-icon-field">
+          <input
+            className="admin-input"
+            type="text"
+            value={rawValue}
+            onChange={(event) =>
+              handleEditorFieldChange(field, event.target.value)
+            }
+            disabled={busyAction !== '' || isReadOnlyField}
+          />
+          {previewUrl && (
+            <span
+              className="admin-icon-preview admin-icon-preview-devicon"
+              aria-hidden="true"
+              title={rawValue}
+            >
+              <img src={previewUrl} alt="" loading="lazy" />
+            </span>
+          )}
         </div>
       )
     }
@@ -528,6 +1154,80 @@ function AdminDashboard() {
         value={toInputValue(value)}
         onChange={(event) =>
           handleEditorFieldChange(field, event.target.value)
+        }
+        disabled={busyAction !== '' || isReadOnlyField}
+      />
+    )
+  }
+
+  const renderLocaleEditorField = (
+    field: AdminFieldDefinition,
+    locale: SupportedLocale
+  ) => {
+    const value = localeDraftRows[locale]?.[field.name]
+
+    if (field.editor.kind === 'textarea') {
+      return (
+        <textarea
+          className="admin-input admin-textarea"
+          value={toInputValue(value)}
+          onChange={(event) =>
+            handleLocaleDraftFieldChange(locale, field.name, event.target.value)
+          }
+          disabled={busyAction !== ''}
+          rows={field.editor.rows || 4}
+        />
+      )
+    }
+
+    if (field.editor.kind === 'url') {
+      const rawValue = toInputValue(value)
+      const previewType = getUrlPreviewType(field.name, rawValue)
+
+      return (
+        <div className="admin-url-field">
+          <input
+            className="admin-input"
+            type="url"
+            value={rawValue}
+            onChange={(event) =>
+              handleLocaleDraftFieldChange(locale, field.name, event.target.value)
+            }
+            disabled={busyAction !== ''}
+          />
+          {previewType === 'image' && rawValue && (
+            <a
+              className="admin-url-preview admin-url-preview-image"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Anteprima immagine ${field.label} ${locale}`}
+            >
+              <img src={rawValue} alt="" loading="lazy" />
+            </a>
+          )}
+          {previewType === 'pdf' && rawValue && (
+            <a
+              className="admin-url-preview admin-url-preview-pdf"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri PDF ${field.label} ${locale}`}
+            >
+              <PdfPreviewIcon />
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    return (
+      <input
+        className="admin-input"
+        type={field.editor.kind}
+        value={toInputValue(value)}
+        onChange={(event) =>
+          handleLocaleDraftFieldChange(locale, field.name, event.target.value)
         }
         disabled={busyAction !== ''}
       />
@@ -541,14 +1241,129 @@ function AdminDashboard() {
       const rawValue = prettyValue(value)
       const isValidColor = isHexColorValue(rawValue)
 
+      if (!isValidColor) return rawValue
+
       return (
-        <span className="admin-color-cell">
+        <span
+          className="admin-color-cell admin-color-cell-compact"
+          title={rawValue}
+        >
           <span
-            className={`admin-color-swatch ${isValidColor ? '' : 'is-empty'}`.trim()}
-            style={isValidColor ? { backgroundColor: rawValue } : undefined}
+            className="admin-color-swatch admin-color-swatch-large"
+            style={{ backgroundColor: rawValue }}
             aria-hidden="true"
           />
-          <span>{rawValue}</span>
+        </span>
+      )
+    }
+
+    if (field && field.editor.kind === 'url') {
+      const rawValue = prettyValue(value).trim()
+      const previewType = getUrlPreviewType(field.name, rawValue)
+
+      if (previewType === 'image') {
+        return (
+          <span className="admin-url-cell admin-url-cell-compact">
+            <a
+              className="admin-url-preview admin-url-preview-image"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Anteprima immagine ${field.label}`}
+              title={rawValue}
+            >
+              <img src={rawValue} alt="" loading="lazy" />
+            </a>
+          </span>
+        )
+      }
+
+      if (previewType === 'pdf') {
+        return (
+          <span className="admin-url-cell admin-url-cell-compact">
+            <a
+              className="admin-url-preview admin-url-preview-pdf"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri PDF ${field.label}`}
+              title={rawValue}
+            >
+              <PdfPreviewIcon />
+            </a>
+          </span>
+        )
+      }
+
+      if (rawValue && field.name === 'github_url') {
+        return (
+          <span className="admin-url-cell admin-url-cell-compact">
+            <a
+              className="admin-url-preview admin-url-preview-icon"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri link GitHub ${field.label}`}
+              title={rawValue}
+            >
+              {icons.github(15)}
+            </a>
+          </span>
+        )
+      }
+
+      if (rawValue && isValidUrlLike(rawValue)) {
+        return (
+          <span className="admin-url-cell admin-url-cell-compact">
+            <a
+              className="admin-url-preview admin-url-preview-icon"
+              href={rawValue}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Apri link ${field.label}`}
+              title={rawValue}
+            >
+              <LinkPreviewIcon />
+            </a>
+          </span>
+        )
+      }
+    }
+
+    if (field && isIconField(field.name)) {
+      const rawValue = prettyValue(value).trim()
+      const iconRenderer = rawValue ? icons[rawValue.toLowerCase()] : undefined
+
+      if (!iconRenderer) {
+        return rawValue
+      }
+
+      return (
+        <span className="admin-icon-cell admin-icon-cell-compact">
+          <span
+            className="admin-icon-preview admin-icon-preview-large"
+            aria-hidden="true"
+            title={rawValue}
+          >
+            {iconRenderer(16)}
+          </span>
+        </span>
+      )
+    }
+
+    if (field && isDeviconField(field.name)) {
+      const rawValue = prettyValue(value).trim()
+      const previewUrl = rawValue ? getDeviconPreviewUrl(rawValue) : ''
+
+      return (
+        <span className="admin-icon-cell admin-icon-cell-compact">
+          <span
+            className={`admin-icon-preview admin-icon-preview-devicon admin-icon-preview-large ${previewUrl ? '' : 'is-empty'}`.trim()}
+            aria-hidden="true"
+            title={rawValue || 'Devicon non disponibile'}
+          >
+            {previewUrl ? <img src={previewUrl} alt="" loading="lazy" /> : null}
+          </span>
         </span>
       )
     }
@@ -572,18 +1387,26 @@ function AdminDashboard() {
             <div className="admin-table-groups">
               {groupedTables.map((group) => {
                 const isExpanded = expandedGroups[group.key] ?? false
+                const groupTableCount = group.subgroups.reduce(
+                  (total, subgroup) => total + subgroup.tables.length,
+                  0
+                )
                 return (
                   <section key={group.key} className="admin-table-group">
                     <button
                       type="button"
                       className={`admin-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
-                      onClick={() => toggleGroup(group.key)}
+                      onClick={(event) => handleGroupClick(event, group)}
                     >
                       <span className="admin-group-toggle-main">
                         <span className="admin-group-label">{group.label}</span>
-                        <span className="admin-group-count">{group.tables.length}</span>
+                        <span className="admin-group-count">{groupTableCount}</span>
                       </span>
-                      <span className="admin-group-arrow" aria-hidden="true">
+                      <span
+                        className="admin-group-arrow"
+                        aria-hidden="true"
+                        data-admin-toggle-arrow="true"
+                      >
                         <svg
                           width="16"
                           height="16"
@@ -602,16 +1425,91 @@ function AdminDashboard() {
                       </span>
                     </button>
                     {isExpanded && (
-                      <div className="admin-table-list">
-                        {group.tables.map((table) => (
-                          <button
-                            key={table.name}
-                            className={`admin-table-item ${table.name === activeTableName ? 'is-active' : ''}`}
-                            onClick={() => setActiveTableName(table.name)}
-                          >
-                            {table.label}
-                          </button>
-                        ))}
+                      <div className="admin-subgroup-list">
+                        {group.subgroups.map((subgroup) => {
+                          const subgroupStateKey = buildSubgroupStateKey(
+                            group.key,
+                            subgroup.key
+                          )
+                          const rootTable = getSubgroupRootTable(subgroup)
+                          const childTables = subgroup.tables.filter(
+                            (table) => table.name !== rootTable?.name
+                          )
+                          const subgroupLabel = rootTable?.label || subgroup.label
+                          const isSubgroupExpanded =
+                            expandedSubgroups[subgroupStateKey] ?? false
+                          const isSubgroupRootActive =
+                            rootTable.name === activeTableName
+
+                          return (
+                            <section
+                              key={subgroupStateKey}
+                              className="admin-table-subgroup"
+                            >
+                              <button
+                                type="button"
+                                className={`admin-subgroup-toggle ${isSubgroupExpanded ? 'is-expanded' : ''} ${isSubgroupRootActive ? 'is-active' : ''}`.trim()}
+                                onClick={(event) =>
+                                  handleSubgroupClick(
+                                    event,
+                                    group.key,
+                                    subgroup.key,
+                                    rootTable.name
+                                  )
+                                }
+                              >
+                                <span className="admin-subgroup-toggle-main">
+                                  <span className="admin-subgroup-label">
+                                    {subgroupLabel}
+                                  </span>
+                                  {childTables.length > 0 && (
+                                    <span className="admin-subgroup-count">
+                                      {childTables.length}
+                                    </span>
+                                  )}
+                                </span>
+                                {childTables.length > 0 && (
+                                  <span
+                                    className="admin-subgroup-arrow"
+                                    aria-hidden="true"
+                                    data-admin-toggle-arrow="true"
+                                  >
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M9 6L15 12L9 18"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  </span>
+                                )}
+                              </button>
+                              {isSubgroupExpanded && childTables.length > 0 && (
+                                <div className="admin-table-list">
+                                  {childTables.map((table) => (
+                                    <button
+                                      key={table.name}
+                                      className={`admin-table-item ${table.name === activeTableName ? 'is-active' : ''}`}
+                                      onClick={() =>
+                                        setActiveTableName(table.name)
+                                      }
+                                    >
+                                      {table.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </section>
+                          )
+                        })}
                       </div>
                     )}
                   </section>
@@ -622,7 +1520,14 @@ function AdminDashboard() {
 
           <section className="admin-content">
             <div className="admin-content-header">
-              <h4>{activeTable?.label || 'Tabella'}</h4>
+              <div className="admin-content-heading">
+                <h4>{activeTable?.label || 'Tabella'}</h4>
+                {activeTable?.description && (
+                  <p className="admin-table-description">
+                    {activeTable.description}
+                  </p>
+                )}
+              </div>
               <div className="admin-content-actions">
                 <button className="admin-btn admin-btn-inline" onClick={handleCreateNew}>
                   Insert
@@ -669,12 +1574,7 @@ function AdminDashboard() {
                   {visibleColumns.map((column) => (
                     <col
                       key={`col-${column}`}
-                      className={
-                        fieldsByName[column]?.primaryKey ||
-                        fieldsByName[column]?.foreignKey
-                          ? 'admin-col-key'
-                          : 'admin-col-data'
-                      }
+                      className={getColumnLayoutClass(column, fieldsByName[column])}
                     />
                   ))}
                   <col className="admin-col-action" />
@@ -686,12 +1586,15 @@ function AdminDashboard() {
                     {visibleColumns.map((column) => (
                       <th
                         key={column}
-                        className={
+                        className={`${
                           fieldsByName[column]?.primaryKey ||
                           fieldsByName[column]?.foreignKey
                             ? 'admin-key-col'
                             : 'admin-data-col'
-                        }
+                        } ${getColumnHeaderAlignmentClass(
+                          column,
+                          fieldsByName[column],
+                        )}`}
                       >
                         {fieldsByName[column]?.label || column}
                       </th>
@@ -757,12 +1660,15 @@ function AdminDashboard() {
                           {visibleColumns.map((column) => (
                             <td
                               key={`${absoluteIndex}-${column}`}
-                              className={
+                              className={`${
                                 fieldsByName[column]?.primaryKey ||
                                 fieldsByName[column]?.foreignKey
                                   ? 'admin-key-cell'
                                   : 'admin-data-cell'
-                              }
+                              } ${getColumnCellAlignmentClass(
+                                column,
+                                fieldsByName[column],
+                              )}`}
                             >
                               {renderCellValue(column, row?.[column])}
                             </td>
@@ -886,17 +1792,85 @@ function AdminDashboard() {
               </div>
 
               <div className="admin-editor">
-                {visibleColumns.length === 0 && (
+                {editorFields.length === 0 && (
                   <p className="admin-small-text">
                     Nessun campo modificabile disponibile
                   </p>
                 )}
-                {editorFields.map((field) => (
-                  <label key={`field-${field.name}`} className="admin-label">
-                    {field.label}
-                    {renderEditorField(field)}
-                  </label>
-                ))}
+                {referenceEditorFields.length > 0 && (
+                  <section className="admin-editor-section">
+                    <div className="admin-editor-section-header">
+                      <h5 className="admin-editor-section-title">
+                        Riferimenti relazionali e chiavi
+                      </h5>
+                      <p className="admin-editor-section-note">
+                        Collegano questa riga al record corretto.
+                        {selectedIndex >= 0
+                          ? ' In modifica restano bloccati per evitare cambi di chiave.'
+                          : ' In creazione vanno impostati prima di salvare.'}
+                      </p>
+                    </div>
+                    <div className="admin-editor-fields">
+                      {referenceEditorFields.map((field) => (
+                        <label key={`field-reference-${field.name}`} className="admin-label">
+                          {field.label}
+                          {renderEditorField(field)}
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {contentEditorFields.length > 0 && (
+                  <section className="admin-editor-section admin-editor-section-divider">
+                    <div className="admin-editor-section-header">
+                      <h5 className="admin-editor-section-title">
+                        {isLocaleTranslationTable && selectedIndex < 0
+                          ? 'Contenuto localizzato'
+                          : 'Contenuto e proprietà modificabili'}
+                      </h5>
+                      <p className="admin-editor-section-note">
+                        {isLocaleTranslationTable && selectedIndex < 0
+                          ? 'Compila insieme la versione italiana e quella inglese della stessa voce.'
+                          : 'Campi che definiscono il contenuto visibile o il comportamento della riga.'}
+                      </p>
+                    </div>
+                    {isLocaleTranslationTable && selectedIndex < 0 ? (
+                      <div className="admin-locale-grid">
+                        {BILINGUAL_LOCALES.map((locale) => (
+                          <section key={`locale-${locale}`} className="admin-locale-card">
+                            <div className="admin-locale-card-header">
+                              <h6 className="admin-locale-card-title">
+                                {locale === 'it' ? 'Italiano' : 'English'}
+                              </h6>
+                              <span className="admin-locale-chip">{locale.toUpperCase()}</span>
+                            </div>
+                            <div className="admin-editor-fields">
+                              {contentEditorFields.map((field) => (
+                                <label
+                                  key={`field-content-${locale}-${field.name}`}
+                                  className="admin-label"
+                                >
+                                  {field.label}
+                                  {renderLocaleEditorField(field, locale)}
+                                </label>
+                              ))}
+                            </div>
+                          </section>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="admin-editor-fields">
+                        {contentEditorFields.map((field) => (
+                          <label key={`field-content-${field.name}`} className="admin-label">
+                            {field.label}
+                            {renderEditorField(field)}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                )}
               </div>
 
               <div className="admin-modal-actions">
@@ -915,7 +1889,11 @@ function AdminDashboard() {
                     onClick={handleInsert}
                     disabled={busyAction === 'insert'}
                   >
-                    {busyAction === 'insert' ? 'Salvataggio...' : 'Crea riga'}
+                    {busyAction === 'insert'
+                      ? 'Salvataggio...'
+                      : isLocaleTranslationTable
+                        ? 'Crea IT + EN'
+                        : 'Crea riga'}
                   </button>
                 )}
               </div>

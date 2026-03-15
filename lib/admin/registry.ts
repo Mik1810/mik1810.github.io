@@ -14,6 +14,9 @@ type AdminTableConfigWithoutGroup = Omit<AdminTableConfig, 'group'>
 
 export interface AdminTableDefinitionInput {
   label: string
+  description?: string
+  subgroup: string
+  subgroupLabel: string
   table: AnyPgTable
   primaryKeys: string[]
   defaultRow?: Record<string, unknown>
@@ -81,6 +84,9 @@ const ensureKnownColumns = (
 
 export const createAdminTableConfig = ({
   label,
+  description,
+  subgroup,
+  subgroupLabel,
   table,
   primaryKeys,
   defaultRow,
@@ -113,6 +119,9 @@ export const createAdminTableConfig = ({
 
   return {
     label,
+    description,
+    subgroup,
+    subgroupLabel,
     table,
     primaryKeys,
     defaultRow,

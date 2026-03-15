@@ -71,19 +71,29 @@ export const insertAdminRow = async (
   config: AdminTableConfig,
   row: Record<string, unknown>
 ) => {
-  const propertyPayload = toPropertyPayload(
-    config,
-    row,
-    'Unknown column in row payload'
+  const rows = await insertAdminRows(config, [row])
+  return rows[0] || null
+}
+
+export const insertAdminRows = async (
+  config: AdminTableConfig,
+  inputRows: Record<string, unknown>[]
+) => {
+  if (inputRows.length === 0) {
+    return []
+  }
+
+  const propertyPayloads = inputRows.map((row) =>
+    toPropertyPayload(config, row, 'Unknown column in row payload')
   )
   const rows = (await runQuery(
     db
       .insert(config.table)
-      .values(propertyPayload as never)
+      .values(propertyPayloads as never)
       .returning()
   )) as Record<string, unknown>[]
 
-  return rows[0] ? toDbRow(config, rows[0]) : null
+  return rows.map((resultRow) => toDbRow(config, resultRow))
 }
 
 export const updateAdminRow = async (

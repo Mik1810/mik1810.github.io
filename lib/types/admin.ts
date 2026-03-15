@@ -28,10 +28,18 @@ export interface AdminFieldEditorOption {
   label: string
 }
 
+export interface AdminFieldRelationConfig {
+  table: string
+  valueColumn?: string
+  labelColumns: string[]
+  emptyLabel?: string
+}
+
 export interface AdminFieldEditorConfig {
   kind: AdminFieldEditorKind
   rows?: number
   options?: AdminFieldEditorOption[]
+  relation?: AdminFieldRelationConfig
 }
 
 export type AdminPayloadKind = 'keys' | 'row'
@@ -62,7 +70,10 @@ export interface AdminTableFieldDefinition {
 
 export interface AdminTableConfig {
   group: AdminTableGroupKey
+  subgroup: string
+  subgroupLabel: string
   label: string
+  description?: string
   table: AnyPgTable
   primaryKeys: string[]
   defaultRow?: Record<string, unknown>

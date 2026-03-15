@@ -31,7 +31,6 @@ export interface GithubProjectSummary {
   tags: string[]
   githubUrl: string | null
   liveUrl: string | null
-  image: string | null
   images: string[]
 }
 
@@ -81,7 +80,6 @@ export const fetchProjects = async (
       orderIndex: githubProjects.orderIndex,
       githubUrl: githubProjects.githubUrl,
       liveUrl: githubProjects.liveUrl,
-      imageUrl: githubProjects.imageUrl,
     })
     .from(githubProjects)
     .where(eq(githubProjects.featured, true))
@@ -169,7 +167,6 @@ export const fetchProjects = async (
       tags: githubTagsByProjectId.get(row.id) || [],
       githubUrl: row.githubUrl || null,
       liveUrl: row.liveUrl || null,
-      image: row.imageUrl || null,
       images: githubImagesByProjectId.get(row.id) || [],
     }
   })

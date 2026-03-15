@@ -44,6 +44,23 @@
   text-overflow: ellipsis;
 }
 
+.navbar-logo-skeleton {
+  display: inline-block;
+  width: min(20rem, 42vw);
+  max-width: 100%;
+  height: 1.45rem;
+  border-radius: 0.45rem;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-input-bg) 92%, var(--color-bg-primary)) 0%,
+      color-mix(in srgb, var(--color-bg-primary) 75%, white 25%) 50%,
+      color-mix(in srgb, var(--color-input-bg) 92%, var(--color-bg-primary)) 100%
+    );
+  background-size: 220% 100%;
+  animation: navbar-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
 .navbar-right {
   display: flex;
   align-items: center;
@@ -186,6 +203,15 @@
 }
 .navbar-toggle.active span:nth-child(3) {
   transform: rotate(-45deg) translate(5px, -5px);
+}
+
+@keyframes navbar-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @media (max-width: 1080px) {

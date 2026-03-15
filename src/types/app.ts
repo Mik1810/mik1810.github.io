@@ -51,7 +51,6 @@ export interface GithubProjectItem {
   tags: string[]
   githubUrl: string | null
   liveUrl: string | null
-  image: string | null
   images: string[]
 }
 
@@ -178,8 +177,11 @@ export interface ContactFormData {
 export interface AdminTableDefinition {
   name: string
   label: string
+  description?: string
   group: string
   groupLabel: string
+  subgroup: string
+  subgroupLabel: string
   primaryKeys: string[]
   defaultRow: Record<string, unknown>
   fields: AdminFieldDefinition[]
@@ -200,10 +202,18 @@ export interface AdminFieldEditorOption {
   label: string
 }
 
+export interface AdminFieldRelationConfig {
+  table: string
+  valueColumn?: string
+  labelColumns: string[]
+  emptyLabel?: string
+}
+
 export interface AdminFieldEditorConfig {
   kind: AdminFieldEditorKind
   rows?: number
   options?: AdminFieldEditorOption[]
+  relation?: AdminFieldRelationConfig
 }
 
 export interface AdminFieldDefinition {
@@ -228,6 +238,12 @@ export interface AdminRowsResponse {
 
 export interface AdminRowResponse {
   row: Record<string, unknown> | null
+  error?: string
+}
+
+export interface AdminCreateResponse {
+  row?: Record<string, unknown> | null
+  rows?: Record<string, unknown>[]
   error?: string
 }
 
