@@ -1370,3 +1370,31 @@ Conclusione:
   - runtime validation checks confirmed that invalid admin inputs are now rejected before hitting the DB, e.g.:
     - invalid `email`
     - unsupported `locale`
+## 2026-03-15 12:12 CET - Split the admin Drizzle registry into domain modules
+
+- Refactored the now-large [adminTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/adminTables.ts) into a modular structure under [lib/admin/](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/).
+- New shared modules:
+  - [registry.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/registry.ts)
+    - centralizes the schema-driven `createAdminTableConfig(...)` builder
+    - keeps the Drizzle-column discovery / `columnsByDbName` generation in one place
+  - [rules.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/rules.ts)
+    - centralizes reusable admin field rules such as:
+      - `positiveIdRule`
+      - `orderIndexRule`
+      - `localeRule`
+      - URL/email/color validators
+      - required/optional text normalizers
+- Split table definitions by domain:
+  - [profileTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/profileTables.ts)
+  - [projectTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/projectTables.ts)
+  - [experienceTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/experienceTables.ts)
+  - [skillTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/tables/skillTables.ts)
+- [adminTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/adminTables.ts) is now only a thin aggregator that merges the domain registries and exposes `getAdminTableConfig(...)`.
+- Effect:
+  - no behavior change in the admin API or dashboard
+  - the admin schema-driven layer is now much easier to read and extend
+  - future improvements can target one domain module at a time instead of editing a single monolithic file
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
