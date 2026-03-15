@@ -1,7 +1,7 @@
 {
-  "name": "mik1810.github.io",
+  "name": "piccirilli_michael_portfolio",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -47,5 +47,8 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^7.3.1"
+  },
+  "overrides": {
+    "flatted": "^3.4.1"
   }
 }

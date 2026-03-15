@@ -3035,6 +3035,17 @@ Conclusione:
 - Expected result:
   - the GitHub Actions run summary should now render entirely from markdown content, without mixing in HTML tags.
 
+## 2026-03-15 21:33 CET - Tightened the spacing around fenced code blocks in the CI summary
+
+- The markdown-only summary still left unnecessary blank lines around the fenced log sections, which made the run output look looser than intended.
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - removed the extra blank line between each section heading and its opening code fence
+  - kept only the trailing separator newline after each fenced block
+- Expected result:
+  - the GitHub Actions summary should now render each log section more compactly, without extra empty rows above or below the fenced blocks.
+
 ## 2026-03-15 21:18 CET - Consolidated the admin route code behind a single lazy entry point
 
 - The public build was still emitting several small admin JavaScript chunks because `/login` and `/admin` each had their own `lazy()` entry, plus the admin guard and skeleton split points.
@@ -3051,3 +3062,48 @@ Conclusione:
 - Expected result:
   - Vite should stop emitting multiple admin route entry chunks
   - the admin JavaScript should now be grouped much more coherently as one lazily loaded admin asset family, while remaining excluded from the public bundle.
+
+## 2026-03-15 21:37 CET - Simplified the admin build artifact names to `admin-*`
+
+- After consolidating the admin into one lazy subtree, the generated asset names were still tied to component names such as `AdminApp-*`, which made the build output noisier than necessary.
+- Updated:
+  - [vite.config.js](/c:/Users/micha/Desktop/mik1810.github.io/vite.config.js)
+- Changes:
+  - added a small naming helper in the Vite config to detect admin-related asset names
+  - configured Rollup output naming so that:
+    - admin JavaScript chunks become `assets/admin-[hash].js`
+    - admin CSS assets become `assets/admin-[hash].css`
+  - left the public bundle naming unchanged for non-admin assets
+- Expected result:
+  - the `dist/assets` output should now label the lazy admin payload more cleanly, while preserving the public/admin split already introduced earlier.
+
+## 2026-03-15 21:46 CET - Reduced CI install noise and patched the transitive `flatted` vulnerability
+
+- The GitHub CI install step was still printing low-signal npm notices (`funding`, `audit fix`) and the dependency tree still contained `flatted@3.3.4`, which was the only readily patchable vulnerability from the previous audit output.
+- Updated:
+  - [package.json](/c:/Users/micha/Desktop/mik1810.github.io/package.json)
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - added an `overrides` entry to force `flatted` to `^3.4.1`
+  - updated the CI install step to use:
+    - `npm ci --no-fund --no-audit`
+  - updated the markdown summary checklist so it reflects the exact install command now used in CI
+- Expected result:
+  - the install section of the GitHub Actions log should be cleaner
+  - the previous high-severity `flatted` advisory should disappear once the lockfile is refreshed and the workflow reruns.
+
+## 2026-03-15 21:17 CET - Renamed the npm package metadata to match the repository identity
+
+- The package metadata still used the old repository-era name `mik1810.github.io` and a placeholder version `0.0.0`, which no longer matched the project identity.
+- Updated:
+  - [package.json](/c:/Users/micha/Desktop/mik1810.github.io/package.json)
+  - [package-lock.json](/c:/Users/micha/Desktop/mik1810.github.io/package-lock.json)
+- Changes:
+  - renamed the npm package from `mik1810.github.io` to `piccirilli_michael_portfolio`
+  - bumped the package version from `0.0.0` to `1.0.0`
+  - mirrored the same metadata changes into the lockfile root entry
+- Notes:
+  - the package name was normalized to lowercase to stay compatible with npm package naming rules
+  - the version was set to `1.0.0` rather than raw `1` because npm expects semantic versioning
+- Expected result:
+  - local scripts, CI logs, and package metadata should now identify the project with a name closer to the repository name and a real initial release version.

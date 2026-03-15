@@ -46,7 +46,7 @@ jobs:
             echo
           } | tee -a logs/ci.log
           set -o pipefail
-          npm ci 2>&1 | tee -a logs/ci.log
+          npm ci --no-fund --no-audit 2>&1 | tee -a logs/ci.log
 
       # Catch style issues, unused code, and hook-rule violations early.
       - name: Lint
@@ -96,7 +96,7 @@ jobs:
             echo "- The downloadable artifact is still kept as a backup, even though GitHub serves artifacts as zip files."
             echo
             echo "### Checks"
-            echo "- \`npm ci\`"
+            echo "- \`npm ci --no-fund --no-audit\`"
             echo "- \`npm run lint\`"
             echo "- \`npm run typecheck\`"
             echo "- \`npm run build\`"
@@ -106,7 +106,6 @@ jobs:
           for section in "Install dependencies" "Lint" "Typecheck" "Build"; do
             {
               echo "### ${section}"
-              echo
               echo '```text'
               awk -v target="$section" '
                 $0 == "===== " target " =====" {
