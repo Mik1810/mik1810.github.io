@@ -14,6 +14,13 @@
   margin-bottom: 1.5rem;
 }
 
+.about-skeleton-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
 .about-interests {
   display: flex;
   flex-wrap: wrap;

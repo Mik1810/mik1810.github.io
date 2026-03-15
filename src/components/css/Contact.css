@@ -46,6 +46,10 @@
   gap: 1.25rem;
 }
 
+.contact-wrapper-skeleton {
+  pointer-events: none;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

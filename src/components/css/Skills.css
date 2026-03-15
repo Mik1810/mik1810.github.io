@@ -45,6 +45,11 @@
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
+.tech-item-skeleton,
+.skill-category-skeleton {
+  pointer-events: none;
+}
+
 .tech-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
@@ -55,6 +60,10 @@
   width: 32px;
   height: 32px;
   object-fit: contain;
+}
+
+.tech-item-skeleton .ui-skeleton-line {
+  border-radius: 999px;
 }
 
 .tech-name {

@@ -1,0 +1,54 @@
+.ui-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ui-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  animation: ui-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.ui-skeleton-line {
+  display: block;
+  border-radius: 999px;
+}
+
+.ui-skeleton-chip {
+  display: inline-block;
+  width: 92px;
+  height: 30px;
+  border-radius: 999px;
+}
+
+.ui-skeleton-button {
+  display: inline-block;
+  width: 140px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.ui-skeleton-circle {
+  display: inline-block;
+  border-radius: 999px;
+}
+
+.ui-skeleton-block {
+  display: block;
+  border-radius: 16px;
+}
+
+@keyframes ui-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

@@ -1427,3 +1427,144 @@ Conclusione:
   - `npm run lint` passed
   - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
   - direct runtime check of `getAdminTablesList()` confirmed grouped metadata is returned correctly for the admin UI
+## 2026-03-15 12:26 CET - Added a hero skeleton to avoid empty public content during bootstrap
+
+- While checking the local DX flow, noticed that the public page could briefly show an empty-looking hero before the `profile` payload finished loading, especially when the API process was not already warm.
+- Updated [HeroTyping.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/HeroTyping.tsx) to render a dedicated `HeroTypingSkeleton` while `profile` is still loading and no profile data is available yet.
+- The skeleton mirrors the real hero layout instead of falling back to a blank role line:
+  - greeting placeholder
+  - name placeholder
+  - role placeholder
+  - university badge placeholder
+  - CTA button placeholders
+  - social icon placeholders
+  - circular portrait placeholder
+- Added the corresponding shimmer styles in [HeroTyping.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/HeroTyping.css), including responsive sizing so the skeleton matches both desktop and mobile hero layouts.
+- Intent:
+  - keep the first paint visually stable
+  - avoid the perception that the public hero is “empty” while local/public bootstrap is still fetching `profile`
+  - let the typing animation start only once real data is present
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 12:41 CET - Added inline hero placeholders during the typing bootstrap phase
+
+- After the first skeleton pass, noticed a second UX gap: once `profile` arrived, the hero immediately switched to the typing animation, which could still leave the page visually half-empty for a moment because only the greeting rendered first.
+- Refined [HeroTyping.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/HeroTyping.tsx) so the hero now shows inline shimmer placeholders while the typing animation is warming up:
+  - name placeholder until the first visible name characters are present
+  - role placeholder until the role animation becomes visible
+  - university badge placeholder until the hero header is ready
+  - CTA and socials placeholders until the name phase completes
+- Reused the shimmer system in [HeroTyping.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/HeroTyping.css) with inline variants sized specifically for the name/role/badge rows, so the page no longer looks empty between fetch completion and the first typed frames.
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 12:49 CET - Removed the global home loading gate so hero skeletons render immediately
+
+- Found that the remaining reason the hero skeleton was not visible "right at page load" was not inside the hero component anymore, but in [App.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/App.tsx): the home route was still being blocked by a full-screen `Caricamento contenuti...` gate while profile/content providers bootstrapped.
+- Removed the global home loading gate and the related boot-delay logic, so the public route mounts immediately and lets section-level placeholders/fallbacks render as soon as the page is painted.
+- Kept the reveal observer logic, but scoped it directly to the home route instead of waiting for the old full-screen gate to release.
+- Result:
+  - the hero skeleton can now appear immediately on refresh
+  - the page no longer hides the public UI behind a global blocking loader
+  - later section-specific placeholders can now be added incrementally without fighting a route-level gate
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 12:57 CET - Made the hero skeleton depend on actual hero data instead of the loading flag
+
+- After removing the route-level gate, local refreshes still showed a brief `Hi, I'm` frame before the skeleton, which meant the user-visible issue was no longer the global loader but the hero deciding too early to render fallback text.
+- Updated [HeroTyping.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/HeroTyping.tsx) so the hero now renders the skeleton whenever the critical hero payload is not available yet, using `profile.name` as the readiness boundary instead of relying only on `loading`.
+- This makes the initial paint deterministic:
+  - no fallback greeting-only frame
+  - skeleton first
+  - then typed hero once the actual profile payload is present
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 13:10 CET - Extended section-level skeletons across the public landing page
+
+- After confirming the hero skeleton behavior, extended the same loading-language to the rest of the public sections so the homepage no longer drops from "real content" to empty boxes while the page bootstrap finishes.
+- Added a shared skeleton base stylesheet in [SectionSkeletons.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/SectionSkeletons.css) and imported it from [App.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/App.tsx) to keep shimmer behavior and placeholder primitives consistent across sections.
+- Updated public sections with section-appropriate placeholders:
+  - [About.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/About.tsx): bio paragraph skeleton lines + interest chip skeletons
+  - [Projects.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Projects.tsx): project card skeletons + featured GitHub card skeletons with media placeholders
+  - [Experience.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Experience.tsx): timeline item skeletons for both work experience and education
+  - [Skills.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Skills.tsx): tech stack blocks + skill category card skeletons
+  - [Contact.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Contact.tsx): contact info + form field skeletons while profile contact data is still unavailable
+- Added the related section-specific layout tweaks in:
+  - [About.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/About.css)
+  - [Projects.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/Projects.css)
+  - [Experience.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/Experience.css)
+  - [Skills.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/Skills.css)
+  - [Contact.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/Contact.css)
+- Result:
+  - the homepage now mounts immediately
+  - hero, content sections and contact block all communicate loading state visually
+  - layout shifts are reduced because each section reserves a shape close to the final rendered content
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 13:18 CET - Simplified hero reveal so static hero content appears together
+
+- The previous hero logic still staged the loaded content too aggressively: even after the skeleton ended, the user could see the greeting first and wait for the name/badge/actions/socials to catch up.
+- Updated [HeroTyping.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/HeroTyping.tsx) so the loaded hero now behaves like this:
+  - the full name is rendered immediately once profile data is present
+  - university badge, CTA buttons and social links appear together with the name
+  - only the role line keeps the typing animation
+- Also slightly sped up the role typing timings to make the hero feel less sluggish after the skeleton phase.
+- Result:
+  - `Hi, I'm`
+  - `Michael Piccirilli`
+  - university badge
+  - buttons
+  - socials
+  are now visible together as soon as the hero leaves skeleton mode
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 13:24 CET - Fixed About section to use a real bio-data boundary instead of a missing i18n fallback key
+
+- While validating the new section-level skeletons, noticed that the About section could briefly render the literal string `about.bio` before the profile query completed.
+- Root cause:
+  - [About.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/About.tsx) still fell back to `t('about.bio')`
+  - that translation key does not exist in [staticI18n.json](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/data/staticI18n.json)
+  - so the UI showed the raw key instead of keeping the bio skeleton visible
+- Updated the About section to treat `profile.bio` itself as the readiness signal:
+  - no more missing-key fallback
+  - the bio skeleton stays visible until the real bio text is available
+  - once the profile payload arrives, the section swaps directly from skeleton to actual content
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 13:31 CET - Moved all public section skeletons to data-readiness boundaries
+
+- After fixing About, applied the same approach to the rest of the public landing page so skeleton visibility is driven by the actual section payloads instead of by provider loading flags alone.
+- Updated the public sections as follows:
+  - [About.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/About.tsx): interests now stay in skeleton mode until actual interest data exists
+  - [Projects.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Projects.tsx): project and featured GitHub skeletons now depend on the presence of loaded project arrays
+  - [Experience.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Experience.tsx): experience and education skeletons now depend on real timeline data instead of the shared content loading flag
+  - [Skills.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Skills.tsx): tech stack and skill-category skeletons now wait for their own actual data collections
+  - [Contact.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Contact.tsx): the contact block remains in skeleton mode until profile email and location are both present, instead of falling back to placeholder copy too early
+- Intent:
+  - avoid literal fallback text appearing before API data arrives
+  - keep section rendering deterministic on refresh
+  - make the full public page behave like the hero: skeleton first, real content only when the section is actually ready
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)

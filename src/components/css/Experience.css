@@ -35,6 +35,10 @@
   position: relative;
 }
 
+.timeline-dot-skeleton {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 .timeline-item:not(:last-child) .timeline-dot::after {
   content: '';
   position: absolute;
@@ -86,6 +90,29 @@
   flex-shrink: 0;
   overflow: hidden;
   transition: transform 0.2s, background 0.2s;
+}
+
+.timeline-item-skeleton {
+  pointer-events: none;
+}
+
+.timeline-copy-skeleton {
+  min-width: 0;
+}
+
+.timeline-description-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.timeline-icon-skeleton {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-icon-skeleton-inner {
+  width: 22px;
+  height: 22px;
 }
 
 .timeline-icon img {

@@ -67,6 +67,17 @@
   box-shadow: var(--shadow-md);
 }
 
+.project-card-skeleton,
+.github-project-card-skeleton {
+  pointer-events: none;
+}
+
+.project-card-skeleton:hover,
+.github-project-card-skeleton:hover {
+  transform: none;
+  box-shadow: inherit;
+}
+
 .project-card-content {
   padding: 1.75rem;
 }
@@ -104,6 +115,10 @@
 .project-links {
   display: flex;
   gap: 1.25rem;
+}
+
+.project-links-skeleton {
+  align-items: center;
 }
 
 .project-link {
@@ -157,6 +172,18 @@
     radial-gradient(circle at top left, rgba(102, 163, 255, 0.32), transparent 55%),
     linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.78));
   overflow: hidden;
+}
+
+.github-project-media-skeleton {
+  padding: 1rem;
+  background:
+    radial-gradient(circle at top left, rgba(102, 163, 255, 0.18), transparent 55%),
+    linear-gradient(135deg, rgba(17, 24, 39, 0.85), rgba(31, 41, 55, 0.68));
+}
+
+.github-project-media-skeleton-block {
+  width: 100%;
+  height: 100%;
 }
 
 .github-project-media-track {

@@ -23,6 +23,11 @@
   flex: 1;
 }
 
+.hero-skeleton-text {
+  display: grid;
+  align-content: center;
+}
+
 .hero-typing-greeting {
   font-size: 1.05rem;
   color: rgba(255, 255, 255, 0.75);
@@ -80,6 +85,125 @@
   flex-shrink: 0;
 }
 
+.hero-university-badge-placeholder {
+  min-width: min(290px, 62%);
+}
+
+.hero-skeleton-line,
+.hero-skeleton-badge,
+.hero-skeleton-btn,
+.hero-skeleton-icon,
+.hero-skeleton-image,
+.hero-inline-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.hero-skeleton-line::after,
+.hero-skeleton-badge::after,
+.hero-skeleton-btn::after,
+.hero-skeleton-icon::after,
+.hero-skeleton-image::after,
+.hero-inline-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  animation: hero-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.hero-inline-skeleton {
+  display: inline-block;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.hero-inline-skeleton-name {
+  width: min(520px, 92%);
+  height: 0.95em;
+}
+
+.hero-inline-skeleton-role {
+  width: min(320px, 72%);
+  height: 0.9em;
+}
+
+.hero-inline-skeleton-badge {
+  display: block;
+  width: min(260px, 56vw);
+  height: 14px;
+}
+
+.hero-skeleton-line {
+  border-radius: 999px;
+  margin-bottom: 0.8rem;
+}
+
+.hero-skeleton-line-sm {
+  width: 160px;
+  height: 16px;
+}
+
+.hero-skeleton-line-xl {
+  width: min(520px, 88%);
+  height: 58px;
+}
+
+.hero-skeleton-line-md {
+  width: min(320px, 70%);
+  height: 28px;
+  margin-bottom: 1rem;
+}
+
+.hero-skeleton-badge {
+  width: min(290px, 62%);
+  height: 34px;
+  border-radius: 999px;
+  margin-bottom: 2rem;
+}
+
+.hero-typing-actions-placeholder,
+.hero-typing-socials-placeholder {
+  pointer-events: none;
+}
+
+.hero-skeleton-btn {
+  display: inline-block;
+  width: 156px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.hero-skeleton-btn-outline {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-skeleton-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.hero-skeleton-image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-skeleton-image {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.12);
+}
+
 .typed-text {
   border-right: none;
 }
@@ -95,6 +219,12 @@
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+@keyframes hero-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .hero-typing-actions {
@@ -166,4 +296,36 @@
   .hero-typing-actions { justify-content: center; }
   .hero-typing-socials { justify-content: center; }
   .hero-typing-image img { width: 220px; height: 220px; }
+  .hero-skeleton-line-sm {
+    margin-inline: auto;
+  }
+  .hero-skeleton-line-xl {
+    width: min(100%, 340px);
+    height: 44px;
+    margin-inline: auto;
+  }
+  .hero-skeleton-line-md {
+    width: min(78%, 220px);
+    height: 22px;
+    margin-inline: auto;
+    margin-bottom: 1rem;
+  }
+  .hero-skeleton-badge {
+    width: min(82%, 260px);
+    margin-inline: auto;
+    margin-bottom: 2rem;
+  }
+  .hero-inline-skeleton-name {
+    width: min(100%, 340px);
+  }
+  .hero-inline-skeleton-role {
+    width: min(76%, 220px);
+  }
+  .hero-inline-skeleton-badge {
+    width: min(76%, 200px);
+  }
+  .hero-skeleton-image {
+    width: 220px;
+    height: 220px;
+  }
 }

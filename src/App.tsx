@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
 import About from './components/jsx/About'
@@ -14,17 +14,15 @@ import RequireAdmin from './components/jsx/RequireAdmin'
 import ScrollProgress from './components/jsx/ScrollProgress'
 import ScrollToTop from './components/jsx/ScrollToTop'
 import Skills from './components/jsx/Skills'
+import './components/css/SectionSkeletons.css'
 import { useContent } from './context/useContent'
-import { useLanguage } from './context/useLanguage'
 import { useProfile } from './context/useProfile'
 
 function App() {
   const { pathname } = useLocation()
   const isAdminRoute = pathname.startsWith('/admin')
-  const { loading: languageLoading } = useLanguage()
-  const { loading: profileLoading, refreshProfile } = useProfile()
+  const { refreshProfile } = useProfile()
   const {
-    loading: contentLoading,
     projects,
     githubProjects,
     skillCategories,
@@ -32,26 +30,6 @@ function App() {
     refreshContent,
   } = useContent()
   const previousPathnameRef = useRef(pathname)
-  const [bootDelayDone, setBootDelayDone] = useState(false)
-
-  const dataLoading = languageLoading || profileLoading || contentLoading
-  const shouldGateHome = pathname === '/'
-
-  useEffect(() => {
-    if (dataLoading) return undefined
-    const timeout = setTimeout(() => setBootDelayDone(true), 450)
-    return () => clearTimeout(timeout)
-  }, [dataLoading])
-
-  useEffect(() => {
-    if (!dataLoading || !bootDelayDone) return undefined
-    const timeout = setTimeout(() => setBootDelayDone(false), 0)
-    return () => clearTimeout(timeout)
-  }, [dataLoading, bootDelayDone])
-
-  const appLoading = shouldGateHome
-    ? dataLoading || !bootDelayDone
-    : dataLoading
 
   useEffect(() => {
     const previousPath = previousPathnameRef.current
@@ -63,7 +41,7 @@ function App() {
   }, [pathname, refreshProfile, refreshContent])
 
   useEffect(() => {
-    if (appLoading) return undefined
+    if (pathname !== '/') return undefined
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -82,20 +60,12 @@ function App() {
     })
     return () => observer.disconnect()
   }, [
-    appLoading,
+    pathname,
     projects.length,
     githubProjects.length,
     skillCategories.length,
     techStack.length,
   ])
-
-  if (appLoading) {
-    return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        <p>Caricamento contenuti...</p>
-      </main>
-    )
-  }
 
   return (
     <>

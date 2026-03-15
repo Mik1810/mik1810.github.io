@@ -8,6 +8,32 @@ import '../css/HeroTyping.css'
 
 const EMPTY_ROLES: string[] = []
 
+function HeroTypingSkeleton() {
+  return (
+    <section id="hero" className="hero-typing">
+      <div className="hero-typing-container hero-animate">
+        <div className="hero-typing-text hero-skeleton-text">
+          <div className="hero-skeleton-line hero-skeleton-line-sm" />
+          <div className="hero-skeleton-line hero-skeleton-line-xl" />
+          <div className="hero-skeleton-line hero-skeleton-line-md" />
+          <div className="hero-skeleton-badge" />
+          <div className="hero-typing-actions">
+            <span className="hero-skeleton-btn" />
+            <span className="hero-skeleton-btn hero-skeleton-btn-outline" />
+          </div>
+          <div className="hero-typing-socials">
+            <span className="hero-skeleton-icon" />
+            <span className="hero-skeleton-icon" />
+          </div>
+        </div>
+        <div className="hero-typing-image photo-glow hero-skeleton-image-wrap">
+          <div className="hero-skeleton-image" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function HeroTypingAnimation({
   nameText,
   roles,
@@ -18,36 +44,21 @@ function HeroTypingAnimation({
   uniName,
   t,
 }: HeroTypingAnimationProps) {
-  const [nameCharIndex, setNameCharIndex] = useState(0)
-  const [nameFinished, setNameFinished] = useState(false)
   const [roleIndex, setRoleIndex] = useState(0)
   const [roleCharIndex, setRoleCharIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
-    if (!nameText) return
-    if (nameFinished) return
-    if (nameCharIndex < nameText.length) {
-      const timeout = setTimeout(() => setNameCharIndex(nameCharIndex + 1), 100)
-      return () => clearTimeout(timeout)
-    }
-
-    const timeout = setTimeout(() => setNameFinished(true), 600)
-    return () => clearTimeout(timeout)
-  }, [nameCharIndex, nameFinished, nameText])
-
-  useEffect(() => {
-    if (!nameFinished) return
     const currentRole = roles[roleIndex]
     if (!currentRole) return
     let timeout: number | ReturnType<typeof setTimeout> | undefined
 
     if (!isDeleting && roleCharIndex < currentRole.length) {
-      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex + 1), 80)
+      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex + 1), 65)
     } else if (!isDeleting && roleCharIndex === currentRole.length) {
-      timeout = setTimeout(() => setIsDeleting(true), 2000)
+      timeout = setTimeout(() => setIsDeleting(true), 1800)
     } else if (isDeleting && roleCharIndex > 0) {
-      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex - 1), 40)
+      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex - 1), 32)
     } else if (isDeleting && roleCharIndex === 0) {
       timeout = setTimeout(() => {
         setIsDeleting(false)
@@ -56,13 +67,12 @@ function HeroTypingAnimation({
     }
 
     return () => clearTimeout(timeout)
-  }, [roleCharIndex, isDeleting, roleIndex, nameFinished, roles])
+  }, [roleCharIndex, isDeleting, roleIndex, roles])
 
-  const displayName = nameText.substring(0, nameCharIndex)
-  const displayRole =
-    nameFinished && roles[roleIndex]
-      ? roles[roleIndex].substring(0, roleCharIndex)
-      : ''
+  const displayRole = roles[roleIndex]
+    ? roles[roleIndex].substring(0, roleCharIndex)
+    : ''
+  const showRolePlaceholder = roles.length > 0 && displayRole.length === 0
 
   return (
     <section id="hero" className="hero-typing">
@@ -70,25 +80,29 @@ function HeroTypingAnimation({
         <div className="hero-typing-text">
           <p className="hero-typing-greeting">{greeting}</p>
           <h1 className="hero-typing-name">
-            <span className="typed-text">{displayName}</span>
-            {!nameFinished && <span className="cursor">|</span>}
+            <span className="typed-text">{nameText}</span>
           </h1>
           <h2 className="hero-typing-role">
-            {nameFinished && (
+            {showRolePlaceholder ? (
+              <span
+                className="hero-inline-skeleton hero-inline-skeleton-role"
+                aria-hidden="true"
+              />
+            ) : (
               <>
                 <span className="typed-text">{displayRole}</span>
                 <span className="cursor">|</span>
               </>
             )}
           </h2>
-          {nameFinished && (
+          {uniName ? (
             <div className="hero-university-badge">
               {university.logo ? (
                 <img src={university.logo} alt={uniName} className="hero-university-logo" />
               ) : null}
               <span>{uniName}</span>
             </div>
-          )}
+          ) : null}
           <div className="hero-typing-actions">
             <a href="#projects" className="btn btn-primary">
               {t('hero.btnProjects')}
@@ -130,6 +144,10 @@ function HeroTyping() {
   const greeting = profile?.greeting || t('hero.greeting')
   const uniName = university.name || ''
   const animationKey = `${lang}:${nameText}:${roles.join('|')}`
+
+  if (!nameText.trim()) {
+    return <HeroTypingSkeleton />
+  }
 
   return (
     <HeroTypingAnimation
