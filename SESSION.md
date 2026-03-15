@@ -1346,3 +1346,27 @@ Conclusione:
     - `profile`
     - `profile_i18n`
   - `npm run build` passed when executed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio); the old [mik1810.github.io](/c:/Users/micha/Desktop/mik1810.github.io) path still behaves like the previously noted junction/alias and can trigger a Vite output-path error unrelated to this admin change
+## 2026-03-15 12:06 CET - Added per-table payload adapters and validators to the admin Drizzle registry
+
+- Extended [adminTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/adminTables.ts) again so the admin registry is no longer just table-aware, but also payload-aware.
+- Added field-level rules in the registry for each admin table, covering the main input classes used by the dashboard:
+  - positive integer IDs and `order_index`
+  - locale validation (`it`, `en`)
+  - required trimmed text fields
+  - nullable text fields normalized from `''` to `null`
+  - URL/path validation for media and link columns
+  - boolean coercion/validation
+  - optional email validation
+  - optional hex color validation (e.g. `logo_bg`, `color`)
+- Hardened [adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts) to consume those registry rules before delegating to the repository:
+  - `keys` payloads are now restricted to declared primary keys only
+  - `row` payloads are normalized and validated column by column using the per-table rules
+  - `PATCH` requests now strip primary key columns from the update payload, so keys are used only in `WHERE` and not accidentally propagated into `SET`
+- This keeps the admin UI generic, but moves more semantic knowledge about the data model into the backend registry, which is a better fit for a future fully schema-driven admin layer.
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+  - runtime validation checks confirmed that invalid admin inputs are now rejected before hitting the DB, e.g.:
+    - invalid `email`
+    - unsupported `locale`

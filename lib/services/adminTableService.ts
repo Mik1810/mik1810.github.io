@@ -6,7 +6,11 @@ import {
   listAdminRows,
   updateAdminRow,
 } from '../db/repositories/adminTableRepository.js'
-import type { AdminTableConfig } from '../types/admin.js'
+import type {
+  AdminPayloadKind,
+  AdminPayloadOperation,
+  AdminTableConfig,
+} from '../types/admin.js'
 
 const requireAdminTableConfig = (table: string) => {
   const config = getAdminTableConfig(table)
@@ -31,6 +35,90 @@ const ensureKnownAdminColumns = (
       `Unknown columns in ${payloadLabel}: ${unknownColumns.join(', ')}`
     )
   }
+}
+
+const applyAdminFieldRules = (
+  table: string,
+  config: AdminTableConfig,
+  payload: Record<string, unknown>,
+  payloadKind: AdminPayloadKind,
+  operation: AdminPayloadOperation
+) =>
+  Object.fromEntries(
+    Object.entries(payload).map(([dbName, value]) => {
+      const column = config.columnsByDbName[dbName]
+      if (!column) {
+        throw new HttpError(400, `Unknown column in ${payloadKind} payload: ${dbName}`)
+      }
+
+      const rule = config.fieldRules[dbName]
+      const context = {
+        column,
+        tableName: table,
+        payloadKind,
+        operation,
+      }
+
+      const normalizedValue = rule?.normalize
+        ? rule.normalize(value, context)
+        : value
+
+      rule?.validate?.(normalizedValue, context)
+
+      return [dbName, normalizedValue]
+    })
+  )
+
+const normalizeAdminKeysPayload = (
+  table: string,
+  config: AdminTableConfig,
+  payload: Record<string, unknown>,
+  operation: Extract<AdminPayloadOperation, 'update' | 'delete'>
+) => {
+  ensureKnownAdminColumns(config, payload, 'keys payload')
+
+  const extraKeys = Object.keys(payload).filter(
+    (column) => !config.primaryKeys.includes(column)
+  )
+  if (extraKeys.length > 0) {
+    throw new HttpError(
+      400,
+      `Keys payload can only contain primary keys: ${extraKeys.join(', ')}`
+    )
+  }
+
+  return applyAdminFieldRules(table, config, payload, 'keys', operation)
+}
+
+const normalizeAdminRowPayload = (
+  table: string,
+  config: AdminTableConfig,
+  payload: Record<string, unknown>,
+  operation: Extract<AdminPayloadOperation, 'create' | 'update'>
+) => {
+  ensureKnownAdminColumns(config, payload, 'row payload')
+
+  const normalizedPayload = applyAdminFieldRules(
+    table,
+    config,
+    payload,
+    'row',
+    operation
+  )
+
+  if (operation === 'update') {
+    const mutableEntries = Object.entries(normalizedPayload).filter(
+      ([column]) => !config.primaryKeys.includes(column)
+    )
+
+    if (mutableEntries.length === 0) {
+      throw new HttpError(400, 'No mutable fields in row payload')
+    }
+
+    return Object.fromEntries(mutableEntries)
+  }
+
+  return normalizedPayload
 }
 
 export const parseAdminTableLimit = (rawValue: string | undefined) => {
@@ -84,8 +172,7 @@ export const createAdminRow = async (
   row: Record<string, unknown>
 ) => {
   const config = requireAdminTableConfig(table)
-  ensureKnownAdminColumns(config, row, 'row payload')
-  return insertAdminRow(config, row)
+  return insertAdminRow(config, normalizeAdminRowPayload(table, config, row, 'create'))
 }
 
 export const editAdminRow = async (
@@ -94,9 +181,11 @@ export const editAdminRow = async (
   row: Record<string, unknown>
 ) => {
   const config = requireAdminTableConfig(table)
-  ensureKnownAdminColumns(config, keys, 'keys payload')
-  ensureKnownAdminColumns(config, row, 'row payload')
-  return updateAdminRow(config, keys, row)
+  return updateAdminRow(
+    config,
+    normalizeAdminKeysPayload(table, config, keys, 'update'),
+    normalizeAdminRowPayload(table, config, row, 'update')
+  )
 }
 
 export const removeAdminRow = async (
@@ -104,7 +193,9 @@ export const removeAdminRow = async (
   keys: Record<string, unknown>
 ) => {
   const config = requireAdminTableConfig(table)
-  ensureKnownAdminColumns(config, keys, 'keys payload')
-  await deleteAdminRow(config, keys)
+  await deleteAdminRow(
+    config,
+    normalizeAdminKeysPayload(table, config, keys, 'delete')
+  )
   return { ok: true }
 }
