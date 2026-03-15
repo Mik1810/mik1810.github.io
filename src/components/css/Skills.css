@@ -131,13 +131,48 @@
 }
 
 @media (max-width: 768px) {
+  .skills {
+    padding: 5rem 1rem;
+  }
+
+  .tech-stack {
+    gap: 1.6rem;
+    margin-bottom: 2.4rem;
+  }
+
+  .tech-category {
+    min-width: 100%;
+  }
+
+  .tech-items {
+    gap: 0.65rem;
+  }
+
+  .tech-item {
+    width: 68px;
+    padding: 0.7rem 0.45rem;
+  }
+
   .skills-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 1.1rem;
+  }
+
+  .skill-category {
+    padding: 1.25rem 1rem;
   }
 }
 
 @media (max-width: 480px) {
+  .skills {
+    padding-inline: 0.9rem;
+  }
+
   .skills-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tech-items {
+    justify-content: center;
   }
 }

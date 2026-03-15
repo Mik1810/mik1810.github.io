@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { GithubProjectItem } from '../../types/app.js'
+import { warmImage, warmImageBatch } from '../../utils/imageWarmup.js'
 import '../css/GithubProjectLightbox.css'
 
 function GithubProjectLightbox({
@@ -119,6 +120,19 @@ function GithubProjectLightbox({
     }
   }, [initialImageSrc])
 
+  useEffect(() => {
+    void warmImage(imageSrc, 'high')
+
+    if (!showControls) return
+
+    const nextIndex = (activeIndex + 1) % images.length
+    const prevIndex = (activeIndex - 1 + images.length) % images.length
+
+    void warmImage(images[nextIndex] || '', 'high')
+    void warmImage(images[prevIndex] || '', 'low')
+    void warmImageBatch(images, 'low')
+  }, [activeIndex, imageSrc, images, showControls])
+
   if (typeof document === 'undefined') return null
 
   return createPortal(
@@ -194,6 +208,7 @@ function GithubProjectLightbox({
               alt={`${project.title} screenshot ${activeIndex + 1}`}
               className="github-project-lightbox-image"
               decoding="async"
+              fetchPriority="high"
             />
           </div>
 

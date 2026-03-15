@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type {
   GithubProjectItem,
   GithubProjectMediaCarouselProps,
 } from '../../types/app.js'
 import usePrefersReducedMotion from '../../hooks/usePrefersReducedMotion.js'
+import {
+  scheduleWarmImageBatch,
+  warmImage,
+  warmImageBatch,
+} from '../../utils/imageWarmup.js'
 import '../css/GithubProjectMedia.css'
 import GithubProjectLightbox from './GithubProjectLightbox'
 
@@ -120,24 +125,29 @@ function GithubProjectMediaCarousel({
         data-transition={isTransitionEnabled ? 'enabled' : 'disabled'}
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
-        {loopedImages.map((imageSrc, index) => (
-          <div key={`${project.slug}-image-${index}`} className="github-project-media-slide">
-            <img
-              src={imageSrc}
-              alt={`${project.title} screenshot ${((index - 1 + images.length) % images.length) + 1}`}
-              loading="lazy"
-              decoding="async"
-              className="github-project-media-image"
-              onError={(event) => {
-                event.currentTarget.style.display = 'none'
-                const fallback =
-                  event.currentTarget.parentElement?.parentElement
-                    ?.nextElementSibling as HTMLElement | null
-                if (fallback) fallback.hidden = false
-              }}
-            />
-          </div>
-        ))}
+        {loopedImages.map((imageSrc, index) => {
+          const isPrioritySlide = index === currentIndex
+
+          return (
+            <div key={`${project.slug}-image-${index}`} className="github-project-media-slide">
+              <img
+                src={imageSrc}
+                alt={`${project.title} screenshot ${((index - 1 + images.length) % images.length) + 1}`}
+                loading={isPrioritySlide ? 'eager' : 'lazy'}
+                decoding="async"
+                fetchPriority={isPrioritySlide ? 'high' : 'auto'}
+                className="github-project-media-image"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none'
+                  const fallback =
+                    event.currentTarget.parentElement?.parentElement
+                      ?.nextElementSibling as HTMLElement | null
+                  if (fallback) fallback.hidden = false
+                }}
+              />
+            </div>
+          )
+        })}
       </div>
       <div className="github-project-fallback" hidden>
         <span>{project.title}</span>
@@ -220,9 +230,54 @@ function GithubProjectMedia({
     images.length > 1 ? [images[images.length - 1], ...images, images[0]] : images
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [activeLightboxIndex, setActiveLightboxIndex] = useState(0)
+  const [isMediaVisible, setIsMediaVisible] = useState(false)
+  const mediaViewportRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !mediaViewportRef.current) return undefined
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setIsMediaVisible(true)
+          observer.disconnect()
+        }
+      },
+      {
+        threshold: 0.25,
+        rootMargin: '160px 0px',
+      }
+    )
+
+    observer.observe(mediaViewportRef.current)
+
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!isMediaVisible || images.length === 0) return
+
+    void warmImage(images[0], 'high')
+
+    if (images[1]) {
+      void warmImage(images[1], 'low')
+    }
+
+    if (images[2]) {
+      void warmImage(images[2], 'low')
+    }
+
+    scheduleWarmImageBatch(images.slice(3), 'low')
+  }, [images, isMediaVisible])
 
   const openPreview = (index: number) => {
     if (images.length === 0) return
+
+    void warmImage(images[index] || '', 'high')
+    void warmImage(images[(index + 1) % images.length] || '', 'high')
+    void warmImage(images[(index - 1 + images.length) % images.length] || '', 'low')
+    scheduleWarmImageBatch(images, 'low')
+
     setActiveLightboxIndex(index)
     setIsLightboxOpen(true)
   }
@@ -232,18 +287,30 @@ function GithubProjectMedia({
   const goNext = () =>
     setActiveLightboxIndex((prev) => (prev + 1) % images.length)
 
+  useEffect(() => {
+    if (!isLightboxOpen || images.length === 0) return
+
+    void warmImage(images[activeLightboxIndex] || '', 'high')
+    void warmImage(images[(activeLightboxIndex + 1) % images.length] || '', 'high')
+    void warmImage(images[(activeLightboxIndex - 1 + images.length) % images.length] || '', 'low')
+
+    scheduleWarmImageBatch(images, 'low')
+  }, [activeLightboxIndex, images, isLightboxOpen])
+
   return (
     <>
-      <GithubProjectMediaCarousel
-        key={`${project.slug}:${images.join('|')}`}
-        project={project}
-        images={images}
-        loopedImages={loopedImages}
-        onOpenPreview={openPreview}
-        previewCtaLabel={previewCtaLabel}
-        expandHintLabel={expandHintLabel}
-        emptyMediaLabel={emptyMediaLabel}
-      />
+      <div ref={mediaViewportRef}>
+        <GithubProjectMediaCarousel
+          key={`${project.slug}:${images.join('|')}`}
+          project={project}
+          images={images}
+          loopedImages={loopedImages}
+          onOpenPreview={openPreview}
+          previewCtaLabel={previewCtaLabel}
+          expandHintLabel={expandHintLabel}
+          emptyMediaLabel={emptyMediaLabel}
+        />
+      </div>
       {isLightboxOpen && images.length > 0 && (
         <GithubProjectLightbox
           project={project}

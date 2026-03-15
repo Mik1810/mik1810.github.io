@@ -91,5 +91,33 @@
 @media (max-width: 768px) {
   .github-projects-grid {
     grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .github-project-header {
+    padding: 1.1rem 1.1rem 0.85rem;
+  }
+
+  .github-project-content {
+    padding: 1.05rem 1.1rem 1.2rem;
+  }
+
+  .github-project-title {
+    font-size: 1.08rem;
+  }
+
+  .github-project-topline {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .github-project-topline {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .github-project-badge {
+    align-self: flex-start;
   }
 }

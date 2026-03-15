@@ -289,13 +289,30 @@
   .hero-typing-container {
     flex-direction: column-reverse;
     text-align: center;
-    gap: 2.5rem;
+    gap: 2.2rem;
   }
-  .hero-typing-name { font-size: 2.5rem; }
-  .hero-typing-role { font-size: 1.2rem; }
-  .hero-typing-actions { justify-content: center; }
+  .hero-typing {
+    min-height: auto;
+    padding: 7.35rem 1.1rem 3.25rem;
+  }
+  .hero-typing-name { font-size: 2.7rem; }
+  .hero-typing-role {
+    font-size: 1.16rem;
+    min-height: 1.9rem;
+  }
+  .hero-university-badge {
+    margin-bottom: 1.6rem;
+  }
+  .hero-typing-actions {
+    justify-content: center;
+    margin-bottom: 1.55rem;
+  }
+  .hero-typing-actions .btn {
+    min-width: 148px;
+    justify-content: center;
+  }
   .hero-typing-socials { justify-content: center; }
-  .hero-typing-image img { width: 220px; height: 220px; }
+  .hero-typing-image img { width: 236px; height: 236px; }
   .hero-skeleton-line-sm {
     margin-inline: auto;
   }
@@ -327,5 +344,34 @@
   .hero-skeleton-image {
     width: 220px;
     height: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-typing {
+    padding: 7rem 0.95rem 2.85rem;
+  }
+
+  .hero-typing-container {
+    gap: 1.8rem;
+  }
+
+  .hero-typing-name {
+    font-size: 2.25rem;
+  }
+
+  .hero-typing-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .hero-typing-actions .btn {
+    width: 100%;
+  }
+
+  .hero-typing-image img {
+    width: 210px;
+    height: 210px;
   }
 }

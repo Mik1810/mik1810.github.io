@@ -2532,3 +2532,87 @@ Conclusione:
 - Simplified project tags again to remove the distracting highlight line effect.
 - Rolled back the heavy boxed treatment from the upper technologies area in Skills while keeping the rest of the section intact.
 - Re-verified the adjusted pass with `npm run build`.
+
+## 2026-03-15 22:52 CET - Applied a focused mobile polish pass across the public single-page UI
+
+- Improved the mobile navbar with:
+  - a cleaner dropdown panel
+  - better tap targets for icon buttons and toggle
+  - stronger spacing and full-width CTA handling in the open menu
+- Refined the hero on smaller screens by:
+  - reducing visual density
+  - improving portrait sizing
+  - stacking CTAs more cleanly on very small viewports
+- Tightened mobile layouts for Projects, GitHub projects, Skills, Experience, and Contact with reduced padding, cleaner gaps, and more comfortable content rhythm.
+- Made the contact form submit button full width on mobile and improved list spacing/readability in contact and timeline sections.
+- Verified the pass with `npm run build`.
+
+## 2026-03-15 22:59 CET - Moved the navbar mobile breakpoint earlier
+
+- Shifted the public navbar collapse breakpoint from `768px` to `900px`.
+- This prevents the overlap seen around `769px`, where the desktop navigation links and right-side controls no longer fit cleanly on the same row.
+
+## 2026-03-15 23:06 CET - Warmed GitHub project screenshots before and during lightbox viewing
+
+- Investigated the perceived slowness of GitHub project screenshots on narrow/mobile viewport emulation and found that the viewer was still loading many images too close to interaction time.
+- Updated:
+  - [GithubProjectMedia.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/GithubProjectMedia.tsx)
+  - [GithubProjectLightbox.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/GithubProjectLightbox.tsx)
+- Changes:
+  - start warming the first screenshots once the project media block enters the viewport
+  - give the currently visible carousel slide eager/high-priority loading
+  - preload the active lightbox image plus adjacent screenshots when opening the viewer
+  - continue warming the rest of the gallery shortly after opening the lightbox
+- Result:
+  - screenshot opening should feel noticeably less delayed, especially in mobile-width testing where the previous behavior was too just-in-time.
+
+## 2026-03-15 23:12 CET - Reworked the GitHub lightbox mobile layout
+
+- Adjusted the mobile lightbox composition to be more vertical and thumb-friendly.
+- Updated:
+  - [GithubProjectLightbox.css](/c:/Users/micha/Desktop/mik1810.github.io/src/components/css/GithubProjectLightbox.css)
+- Changes:
+  - kept the image stage above
+  - moved the previous/next controls below the image on mobile
+  - widened the controls into a bottom navigation row
+  - slightly relaxed the modal width/height balance for narrow screens
+- Result:
+  - the mobile lightbox should feel less cramped laterally and more natural to navigate on touch devices.
+
+## 2026-03-15 23:17 CET - Tightened mobile lightbox height and added stronger control highlighting
+
+- Reduced the amount of fixed vertical space reserved by the GitHub lightbox on narrow screens.
+- Updated:
+  - [GithubProjectLightbox.css](/c:/Users/micha/Desktop/mik1810.github.io/src/components/css/GithubProjectLightbox.css)
+- Changes:
+  - switched the mobile lightbox from a forced fixed height to an auto-height shell capped by viewport max-height
+  - constrained the stage directly instead of letting the whole modal hold extra empty space
+  - added a more visible highlighted treatment to the close and navigation buttons across desktop and mobile
+- Result:
+  - less wasted space below the mobile controls
+  - controls feel more clearly actionable in both layouts.
+
+## 2026-03-15 23:21 CET - Fixed mobile lightbox height override precedence
+
+- Identified that the mobile lightbox still reserved large empty space because the desktop `wide`/`tall` height rules had higher selector specificity than the generic mobile override.
+- Updated:
+  - [GithubProjectLightbox.css](/c:/Users/micha/Desktop/mik1810.github.io/src/components/css/GithubProjectLightbox.css)
+- Changes:
+  - extended the mobile override to target both `.github-project-lightbox-wide` and `.github-project-lightbox-tall`
+  - kept mobile height on `auto` with viewport capping, regardless of the desktop layout mode class
+- Result:
+  - the unused vertical space in the mobile lightbox should now collapse correctly instead of inheriting desktop fixed heights.
+
+## 2026-03-15 23:29 CET - Reworked screenshot warming to improve gallery navigation speed
+
+- Replaced the ad-hoc screenshot priming with a shared warmup utility that caches, preloads, and decodes project images more systematically.
+- Updated:
+  - [imageWarmup.ts](/c:/Users/micha/Desktop/mik1810.github.io/src/utils/imageWarmup.ts)
+  - [GithubProjectMedia.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/GithubProjectMedia.tsx)
+  - [GithubProjectLightbox.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/GithubProjectLightbox.tsx)
+- Changes:
+  - warm the first gallery images as soon as a project card enters the viewport
+  - schedule the rest of the gallery warming during idle time
+  - preload the active and adjacent screenshots more aggressively when opening the lightbox
+  - warm the full gallery while navigating so image-to-image skipping is less dependent on last-second network fetches
+- Verified with `npm run typecheck` and `npm run build`.

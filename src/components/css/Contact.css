@@ -87,8 +87,36 @@
 }
 
 @media (max-width: 768px) {
+  .contact {
+    padding: 5rem 1rem;
+  }
+
   .contact-wrapper {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.6rem;
+  }
+
+  .contact-info {
+    padding-top: 0;
+    gap: 1rem;
+  }
+
+  .contact-form {
+    gap: 1rem;
+  }
+
+  .contact-form .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact {
+    padding-inline: 0.9rem;
+  }
+
+  .contact-item {
+    align-items: flex-start;
   }
 }

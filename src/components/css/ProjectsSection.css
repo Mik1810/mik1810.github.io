@@ -111,15 +111,39 @@
 }
 
 @media (max-width: 768px) {
+  .projects {
+    padding: 5rem 1rem;
+  }
+
   .section-title {
     font-size: 1.8rem;
   }
 
   .section-subtitle {
+    font-size: 0.98rem;
+    line-height: 1.65;
     margin-bottom: 2.35rem;
   }
 
   .projects-subsection {
     margin-top: 4rem;
+  }
+
+  .projects-subsection-header {
+    margin-bottom: 1.45rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .projects {
+    padding-inline: 0.9rem;
+  }
+
+  .section-title {
+    font-size: 1.65rem;
+  }
+
+  .project-links {
+    gap: 0.9rem 1rem;
   }
 }
