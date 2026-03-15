@@ -155,9 +155,83 @@
   color: var(--color-text-primary);
 }
 
+.admin-table-groups {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-table-group {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.7rem 0.75rem;
+  background: color-mix(in srgb, var(--color-bg-primary) 84%, var(--color-input-bg));
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+
+.admin-group-toggle:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-border));
+}
+
+.admin-group-toggle.is-expanded {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-primary));
+}
+
+.admin-group-toggle-main {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.admin-group-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.admin-group-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.admin-group-toggle.is-expanded .admin-group-arrow {
+  transform: rotate(90deg);
+}
+
 .admin-table-list {
   display: grid;
   gap: 0.4rem;
+  padding-left: 0.4rem;
 }
 
 .admin-table-item {
@@ -166,7 +240,7 @@
   border-radius: 8px;
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  padding: 0.55rem 0.6rem;
+  padding: 0.6rem 0.7rem;
   cursor: pointer;
 }
 

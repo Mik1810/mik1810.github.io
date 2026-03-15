@@ -3,9 +3,12 @@ import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core'
 
 import type {
   AdminFieldRule,
+  AdminTableGroupKey,
   AdminTableColumnConfig,
   AdminTableConfig,
 } from '../types/admin.js'
+
+type AdminTableConfigWithoutGroup = Omit<AdminTableConfig, 'group'>
 
 export interface AdminTableDefinitionInput {
   label: string
@@ -47,7 +50,7 @@ export const createAdminTableConfig = ({
   primaryKeys,
   defaultRow,
   fieldRules = {},
-}: AdminTableDefinitionInput): AdminTableConfig => {
+}: AdminTableDefinitionInput): AdminTableConfigWithoutGroup => {
   const columns = buildColumns(table)
   const columnsByDbName = toColumnsByDbName(columns)
 
@@ -73,3 +76,17 @@ export const createAdminTableConfig = ({
     fieldRules,
   }
 }
+
+export const attachAdminGroup = (
+  group: AdminTableGroupKey,
+  tables: Record<string, AdminTableConfigWithoutGroup>
+) =>
+  Object.fromEntries(
+    Object.entries(tables).map(([name, config]) => [
+      name,
+      {
+        ...config,
+        group,
+      },
+    ])
+  ) as Record<string, AdminTableConfig>

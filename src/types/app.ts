@@ -178,6 +178,8 @@ export interface ContactFormData {
 export interface AdminTableDefinition {
   name: string
   label: string
+  group: string
+  groupLabel: string
   primaryKeys: string[]
   defaultRow: Record<string, unknown>
 }

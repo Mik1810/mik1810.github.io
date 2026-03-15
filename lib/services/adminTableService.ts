@@ -1,4 +1,5 @@
 import { HttpError, requireRecord } from '../http/apiUtils.js'
+import { ADMIN_TABLE_GROUPS } from '../admin/groups.js'
 import { ADMIN_TABLES, getAdminTableConfig } from '../adminTables.js'
 import {
   deleteAdminRow,
@@ -154,12 +155,18 @@ export const getAllowedAdminTable = (table: unknown) => {
 }
 
 export const getAdminTablesList = () =>
-  Object.entries(ADMIN_TABLES).map(([name, config]) => ({
-    name,
-    label: config.label,
-    primaryKeys: config.primaryKeys,
-    defaultRow: config.defaultRow || {},
-  }))
+  ADMIN_TABLE_GROUPS.flatMap((group) =>
+    Object.entries(ADMIN_TABLES)
+      .filter(([, config]) => config.group === group.key)
+      .map(([name, config]) => ({
+        name,
+        label: config.label,
+        group: config.group,
+        groupLabel: group.label,
+        primaryKeys: config.primaryKeys,
+        defaultRow: config.defaultRow || {},
+      }))
+  )
 
 export const getAdminTableConfigOrNull = (table: string) =>
   getAdminTableConfig(table)

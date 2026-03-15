@@ -1,5 +1,5 @@
 import * as schema from '../../db/schema.js'
-import { createAdminTableConfig } from '../registry.js'
+import { attachAdminGroup, createAdminTableConfig } from '../registry.js'
 import {
   booleanRule,
   localeRule,
@@ -11,7 +11,7 @@ import {
   requiredUrlRule,
 } from '../rules.js'
 
-export const PROJECT_ADMIN_TABLES = {
+export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
   projects: createAdminTableConfig({
     label: 'Projects',
     table: schema.projects,
@@ -107,4 +107,4 @@ export const PROJECT_ADMIN_TABLES = {
       alt_text: optionalTextRule(),
     },
   }),
-}
+})

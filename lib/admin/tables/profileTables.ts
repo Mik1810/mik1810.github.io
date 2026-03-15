@@ -1,5 +1,5 @@
 import * as schema from '../../db/schema.js'
-import { createAdminTableConfig } from '../registry.js'
+import { attachAdminGroup, createAdminTableConfig } from '../registry.js'
 import {
   localeRule,
   optionalEmailRule,
@@ -11,7 +11,7 @@ import {
   requiredUrlRule,
 } from '../rules.js'
 
-export const PROFILE_ADMIN_TABLES = {
+export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
   profile: createAdminTableConfig({
     label: 'Profile',
     table: schema.profile,
@@ -96,4 +96,4 @@ export const PROFILE_ADMIN_TABLES = {
       interest: requiredTextRule(),
     },
   }),
-}
+})

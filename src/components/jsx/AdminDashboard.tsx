@@ -12,6 +12,13 @@ import '../css/AdminAuth.css'
 const PAGE_SIZE = 15
 const EMPTY_PRIMARY_KEYS: string[] = []
 
+const buildInitialExpandedGroups = (nextTables: AdminTableDefinition[]) => {
+  const groups = Array.from(new Set(nextTables.map((table) => table.group)))
+  return Object.fromEntries(
+    groups.map((group, index) => [group, index === 0])
+  ) as Record<string, boolean>
+}
+
 const prettyValue = (value: unknown) => {
   if (value === null || value === undefined) return ''
   if (typeof value === 'object') return JSON.stringify(value)
@@ -99,6 +106,7 @@ function AdminDashboard() {
   const [page, setPage] = useState(1)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
   const activeTable = useMemo(
     () => tables.find((item) => item.name === activeTableName) || null,
@@ -110,6 +118,29 @@ function AdminDashboard() {
     [activeTable]
   )
   const selectedRow = selectedIndex >= 0 ? rows[selectedIndex] : null
+  const groupedTables = useMemo(() => {
+    const groupMap = new Map<
+      string,
+      {
+        key: string
+        label: string
+        tables: AdminTableDefinition[]
+      }
+    >()
+
+    for (const table of tables) {
+      if (!groupMap.has(table.group)) {
+        groupMap.set(table.group, {
+          key: table.group,
+          label: table.groupLabel,
+          tables: [],
+        })
+      }
+      groupMap.get(table.group)?.tables.push(table)
+    }
+
+    return Array.from(groupMap.values())
+  }, [tables])
 
   const loadRows = useCallback(
     async (tableName: string) => {
@@ -172,6 +203,7 @@ function AdminDashboard() {
         }
         const nextTables = Array.isArray(data?.tables) ? data.tables : []
         setTables(nextTables)
+        setExpandedGroups(buildInitialExpandedGroups(nextTables))
         if (nextTables.length > 0) {
           setActiveTableName(nextTables[0].name)
         }
@@ -189,6 +221,14 @@ function AdminDashboard() {
     if (!activeTableName) return
     void loadRows(activeTableName)
   }, [activeTableName, loadRows])
+
+  useEffect(() => {
+    if (!activeTable?.group) return
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [activeTable.group]: true,
+    }))
+  }, [activeTable])
 
   useEffect(() => {
     setSearchQuery('')
@@ -216,6 +256,13 @@ function AdminDashboard() {
     setDraftRow((prev) => ({
       ...prev,
       [key]: value,
+    }))
+  }
+
+  const toggleGroup = (groupKey: string) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
     }))
   }
 
@@ -373,16 +420,54 @@ function AdminDashboard() {
             {!loadingTables && tables.length === 0 && (
               <p>Nessuna tabella disponibile</p>
             )}
-            <div className="admin-table-list">
-              {tables.map((table) => (
-                <button
-                  key={table.name}
-                  className={`admin-table-item ${table.name === activeTableName ? 'is-active' : ''}`}
-                  onClick={() => setActiveTableName(table.name)}
-                >
-                  {table.label}
-                </button>
-              ))}
+            <div className="admin-table-groups">
+              {groupedTables.map((group) => {
+                const isExpanded = expandedGroups[group.key] ?? false
+                return (
+                  <section key={group.key} className="admin-table-group">
+                    <button
+                      type="button"
+                      className={`admin-group-toggle ${isExpanded ? 'is-expanded' : ''}`}
+                      onClick={() => toggleGroup(group.key)}
+                    >
+                      <span className="admin-group-toggle-main">
+                        <span className="admin-group-label">{group.label}</span>
+                        <span className="admin-group-count">{group.tables.length}</span>
+                      </span>
+                      <span className="admin-group-arrow" aria-hidden="true">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 6L15 12L9 18"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <div className="admin-table-list">
+                        {group.tables.map((table) => (
+                          <button
+                            key={table.name}
+                            className={`admin-table-item ${table.name === activeTableName ? 'is-active' : ''}`}
+                            onClick={() => setActiveTableName(table.name)}
+                          >
+                            {table.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                )
+              })}
             </div>
           </aside>
 

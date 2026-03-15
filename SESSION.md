@@ -1398,3 +1398,32 @@ Conclusione:
   - `npm run typecheck` passed
   - `npm run lint` passed
   - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+## 2026-03-15 12:19 CET - Grouped the admin sidebar into collapsible macro-sections
+
+- Extended the admin table metadata contract so the backend now exposes grouped table definitions instead of a flat list only.
+- Added shared group metadata in [groups.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/groups.ts) for the four current admin macro-sections:
+  - `profile`
+  - `projects`
+  - `experiences`
+  - `skills`
+- Updated the admin registry builder in [registry.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/registry.ts) so each domain registry is decorated with its group key via `attachAdminGroup(...)`.
+- Updated [adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts) so `/api/admin/tables` now returns:
+  - `group`
+  - `groupLabel`
+  in addition to the existing `name`, `label`, `primaryKeys`, and `defaultRow`.
+- Updated the frontend admin contract in [app.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/types/app.ts) to include those new fields.
+- Reworked the sidebar in [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx):
+  - tables are now grouped by backend-provided macro-section
+  - each section has a collapsible header with a rotating arrow
+  - the section containing the active table auto-expands
+  - the flat table list has been replaced by nested table items under each group
+- Updated [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css) to support:
+  - group headers
+  - counters per group
+  - nested table lists
+  - arrow rotation / expanded state styling
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+  - direct runtime check of `getAdminTablesList()` confirmed grouped metadata is returned correctly for the admin UI

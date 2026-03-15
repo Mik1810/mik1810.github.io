@@ -1,5 +1,12 @@
 import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core'
 
+export type AdminTableGroupKey = 'profile' | 'projects' | 'experiences' | 'skills'
+
+export interface AdminTableGroupDefinition {
+  key: AdminTableGroupKey
+  label: string
+}
+
 export interface AdminTableColumnConfig {
   dbName: string
   propertyKey: string
@@ -22,6 +29,7 @@ export interface AdminFieldRule {
 }
 
 export interface AdminTableConfig {
+  group: AdminTableGroupKey
   label: string
   table: AnyPgTable
   primaryKeys: string[]

@@ -1,5 +1,5 @@
 import * as schema from '../../db/schema.js'
-import { createAdminTableConfig } from '../registry.js'
+import { attachAdminGroup, createAdminTableConfig } from '../registry.js'
 import {
   localeRule,
   optionalHexColorRule,
@@ -9,7 +9,7 @@ import {
   requiredTextRule,
 } from '../rules.js'
 
-export const SKILL_ADMIN_TABLES = {
+export const SKILL_ADMIN_TABLES = attachAdminGroup('skills', {
   tech_categories: createAdminTableConfig({
     label: 'Tech categories',
     table: schema.techCategories,
@@ -95,4 +95,4 @@ export const SKILL_ADMIN_TABLES = {
       label: requiredTextRule(),
     },
   }),
-}
+})
