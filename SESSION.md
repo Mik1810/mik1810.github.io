@@ -2797,3 +2797,40 @@ Conclusione:
   - added an `onError` escape hatch so the placeholder does not stay indefinitely if the image fails
 - Result:
   - the hero portrait should reveal correctly both on first load and on refreshes that hit the browser cache path.
+
+## 2026-03-16 02:03 CET - Reordered public bootstrap so sections unlock progressively
+
+- Investigated reports of `hero`, `about`, `skills`, and `contact` staying in skeleton state too long on Vercel even when the APIs were healthy.
+- Updated:
+  - [ContentContext.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/context/ContentContext.tsx)
+- Changes:
+  - made the content bootstrap wait until the profile provider finishes its initial load attempt
+  - replaced the all-at-once `Promise.allSettled(...)` strategy with ordered fetches: `about -> projects -> experiences -> skills`
+  - applied state updates incrementally after each response instead of waiting for the whole content batch to settle
+- Expected result:
+  - the hero and profile-dependent sections get priority over the rest of the page
+  - `about`, `projects`, `experience`, and `skills` should unlock one after another instead of all waiting behind the slowest request.
+
+## 2026-03-16 02:14 CET - Let the hero portrait appear independently from profile payload timing
+
+- The hero image could still feel late because the portrait was effectively gated by the profile payload even though the image itself is a static local asset.
+- Updated:
+  - [HeroTyping.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/HeroTyping.tsx)
+- Changes:
+  - introduced a shared `HeroPortrait` renderer with a `useLayoutEffect` cache-path check
+  - made the hero skeleton use the real portrait asset instead of a pure circular placeholder
+  - promoted `/imgs/michael.jpg` to the default hero photo so the image can reveal before profile data finishes
+- Expected result:
+  - the hero portrait can show up immediately when the browser already has the asset
+  - the visual gap between hero text and portrait should shrink noticeably on refresh and warm loads.
+
+## 2026-03-16 02:21 CET - Removed StrictMode to stop dev-only canceled bootstrap fetches
+
+- The dev network panel still showed an extra batch of canceled content/profile requests because React `StrictMode` intentionally double-mounted the app tree in development.
+- Updated:
+  - [main.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/main.tsx)
+- Changes:
+  - removed the top-level `StrictMode` wrapper from the client root
+- Result:
+  - the local network panel should stop showing the dev-only aborted fetch cycle
+  - bootstrap debugging is cleaner without changing the production runtime behavior.

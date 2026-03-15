@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { useLanguage } from '../../context/useLanguage'
 import { useProfile } from '../../context/useProfile'
@@ -7,6 +7,53 @@ import type { HeroTypingAnimationProps } from '../../types/app.js'
 import '../css/HeroTyping.css'
 
 const EMPTY_ROLES: string[] = []
+const DEFAULT_HERO_PHOTO = '/imgs/michael.jpg'
+
+function HeroPortrait({
+  photo,
+  alt,
+  ariaHidden = false,
+}: {
+  photo: string
+  alt: string
+  ariaHidden?: boolean
+}) {
+  const [photoLoaded, setPhotoLoaded] = useState(false)
+  const photoRef = useRef<HTMLImageElement | null>(null)
+
+  useEffect(() => {
+    setPhotoLoaded(false)
+  }, [photo])
+
+  useLayoutEffect(() => {
+    const image = photoRef.current
+    if (!photo || !image) return
+
+    if (image.complete && image.naturalWidth > 0) {
+      setPhotoLoaded(true)
+    }
+  }, [photo])
+
+  return (
+    <div
+      className={`hero-typing-image photo-glow${photoLoaded ? ' is-loaded' : ' is-loading'}`}
+      aria-hidden={ariaHidden}
+    >
+      {photo ? (
+        <img
+          ref={photoRef}
+          className="float-animation"
+          src={photo}
+          alt={alt}
+          decoding="async"
+          fetchPriority="high"
+          onLoad={() => setPhotoLoaded(true)}
+          onError={() => setPhotoLoaded(true)}
+        />
+      ) : null}
+    </div>
+  )
+}
 
 function HeroTypingSkeleton() {
   return (
@@ -26,9 +73,7 @@ function HeroTypingSkeleton() {
             <span className="hero-skeleton-icon" />
           </div>
         </div>
-        <div className="hero-typing-image photo-glow hero-skeleton-image-wrap">
-          <div className="hero-skeleton-image" />
-        </div>
+        <HeroPortrait photo={DEFAULT_HERO_PHOTO} alt="" ariaHidden />
       </div>
     </section>
   )
@@ -48,21 +93,6 @@ function HeroTypingAnimation({
   const [roleCharIndex, setRoleCharIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
   const [hasRoleRendered, setHasRoleRendered] = useState(false)
-  const [photoLoaded, setPhotoLoaded] = useState(false)
-  const photoRef = useRef<HTMLImageElement | null>(null)
-
-  useEffect(() => {
-    setPhotoLoaded(false)
-  }, [photo])
-
-  useEffect(() => {
-    const image = photoRef.current
-    if (!photo || !image) return
-
-    if (image.complete && image.naturalWidth > 0) {
-      setPhotoLoaded(true)
-    }
-  }, [photo])
 
   useEffect(() => {
     const currentRole = roles[roleIndex]
@@ -150,22 +180,7 @@ function HeroTypingAnimation({
             ))}
           </div>
         </div>
-        <div
-          className={`hero-typing-image photo-glow${photoLoaded ? ' is-loaded' : ' is-loading'}`}
-        >
-          {photo ? (
-            <img
-              ref={photoRef}
-              className="float-animation"
-              src={photo}
-              alt={nameText}
-              decoding="async"
-              fetchPriority="high"
-              onLoad={() => setPhotoLoaded(true)}
-              onError={() => setPhotoLoaded(true)}
-            />
-          ) : null}
-        </div>
+        <HeroPortrait photo={photo} alt={nameText} />
       </div>
     </section>
   )
@@ -175,7 +190,7 @@ function HeroTyping() {
   const { t, lang } = useLanguage()
   const { profile } = useProfile()
   const nameText = profile?.name || ''
-  const photo = profile?.photo || ''
+  const photo = profile?.photo || DEFAULT_HERO_PHOTO
   const university = profile?.university || { logo: '', name: '' }
   const socials = Array.isArray(profile?.socials) ? profile.socials : []
   const roles = Array.isArray(profile?.roles) ? profile.roles : EMPTY_ROLES

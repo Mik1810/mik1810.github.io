@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { ContentContext } from './contentContextValue'
+import { useProfile } from './useProfile'
 import { useLanguage } from './useLanguage'
 import type {
   AboutData,
@@ -43,6 +44,7 @@ const EMPTY_ABOUT: AboutData = { interests: [] }
 
 export function ContentProvider({ children }: ProviderProps) {
   const { lang } = useLanguage()
+  const { loading: profileLoading } = useProfile()
   const [reloadKey, setReloadKey] = useState(0)
   const [loading, setLoading] = useState(true)
   const [about, setAbout] = useState<AboutData>(EMPTY_ABOUT)
@@ -58,6 +60,8 @@ export function ContentProvider({ children }: ProviderProps) {
   }, [])
 
   useEffect(() => {
+    if (profileLoading) return undefined
+
     const controller = new AbortController()
 
     const fetchJson = async <T,>(url: string): Promise<FetchJsonResult<T>> => {
@@ -127,44 +131,33 @@ export function ContentProvider({ children }: ProviderProps) {
     const loadContent = async () => {
       setLoading(true)
       try {
-        const [aboutSettled, projectsSettled, expSettled, skillsSettled] =
-          await Promise.allSettled([
-            fetchJson<AboutData>(`/api/about?lang=${lang}`),
-            fetchJson<ProjectsApiResponse>(`/api/projects?lang=${lang}`),
-            fetchJson<ExperiencesApiResponse>(`/api/experiences?lang=${lang}`),
-            fetchJson<SkillsApiResponse>(`/api/skills?lang=${lang}`),
-          ])
+        const aboutResult = await fetchJson<AboutData>(`/api/about?lang=${lang}`)
+        if (controller.signal.aborted) return
+        setAbout(aboutResult.ok && aboutResult.data ? aboutResult.data : EMPTY_ABOUT)
 
-        const aboutResult =
-          aboutSettled.status === 'fulfilled'
-            ? aboutSettled.value
-            : { ok: false, data: null }
-        const projectsResult =
-          projectsSettled.status === 'fulfilled'
-            ? projectsSettled.value
-            : { ok: false, data: null }
-        const expResult =
-          expSettled.status === 'fulfilled'
-            ? expSettled.value
-            : { ok: false, data: null }
-        const skillsResult =
-          skillsSettled.status === 'fulfilled'
-            ? skillsSettled.value
-            : { ok: false, data: null }
-
+        const projectsResult = await fetchJson<ProjectsApiResponse>(
+          `/api/projects?lang=${lang}`
+        )
+        if (controller.signal.aborted) return
         const projectsData = normalizeProjects(projectsResult.data)
-        const skillsData = normalizeSkills(skillsResult.data)
-
-        const aboutData = aboutResult.ok ? aboutResult.data : null
-        const expData = expResult.ok ? expResult.data : null
-
-        setAbout(aboutData || EMPTY_ABOUT)
         setProjects(projectsData.projects)
         setGithubProjects(projectsData.githubProjects)
+
+        const experiencesResult = await fetchJson<ExperiencesApiResponse>(
+          `/api/experiences?lang=${lang}`
+        )
+        if (controller.signal.aborted) return
+        const expData = experiencesResult.ok ? experiencesResult.data : null
         setExperiences(
           Array.isArray(expData?.experiences) ? expData.experiences : []
         )
         setEducation(Array.isArray(expData?.education) ? expData.education : [])
+
+        const skillsResult = await fetchJson<SkillsApiResponse>(
+          `/api/skills?lang=${lang}`
+        )
+        if (controller.signal.aborted) return
+        const skillsData = normalizeSkills(skillsResult.data)
         setTechStack(Array.isArray(skillsData.techStack) ? skillsData.techStack : [])
         setSkillCategories(
           Array.isArray(skillsData.categories) ? skillsData.categories : []
@@ -186,7 +179,7 @@ export function ContentProvider({ children }: ProviderProps) {
 
     void loadContent()
     return () => controller.abort()
-  }, [lang, reloadKey])
+  }, [lang, reloadKey, profileLoading])
 
   const value: ContentContextValue = {
     loading,

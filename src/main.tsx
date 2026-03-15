@@ -1,4 +1,3 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -17,19 +16,17 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <LanguageProvider>
-      <ProfileProvider>
-        <ContentProvider>
-          <AuthProvider>
-            <ThemeProvider>
-              <BrowserRouter>
-                <App />
-              </BrowserRouter>
-            </ThemeProvider>
-          </AuthProvider>
-        </ContentProvider>
-      </ProfileProvider>
-    </LanguageProvider>
-  </StrictMode>
+  <LanguageProvider>
+    <ProfileProvider>
+      <ContentProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ThemeProvider>
+        </AuthProvider>
+      </ContentProvider>
+    </ProfileProvider>
+  </LanguageProvider>
 )
