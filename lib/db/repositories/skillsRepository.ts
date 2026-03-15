@@ -1,7 +1,6 @@
 import { asc, eq } from 'drizzle-orm'
 
 import { db } from '../client.js'
-import { runDbRead } from '../runDbRead.js'
 import {
   skillCategories,
   skillCategoriesI18n,
@@ -31,80 +30,66 @@ export interface SkillsResponse {
 export const fetchSkills = async (
   locale: RepositoryLocale
 ): Promise<SkillsResponse> => {
-  const techCategoryRows = await runDbRead(() =>
-    db
-      .select({
-        id: techCategories.id,
-        slug: techCategories.slug,
-        orderIndex: techCategories.orderIndex,
-      })
-      .from(techCategories)
-      .orderBy(asc(techCategories.orderIndex))
-  )
+  const techCategoryRows = await db
+    .select({
+      id: techCategories.id,
+      slug: techCategories.slug,
+      orderIndex: techCategories.orderIndex,
+    })
+    .from(techCategories)
+    .orderBy(asc(techCategories.orderIndex))
 
-  const techCategoryI18nRows = await runDbRead(() =>
-    db
-      .select({
-        techCategoryId: techCategoriesI18n.techCategoryId,
-        name: techCategoriesI18n.name,
-      })
-      .from(techCategoriesI18n)
-      .where(eq(techCategoriesI18n.locale, locale))
-  )
+  const techCategoryI18nRows = await db
+    .select({
+      techCategoryId: techCategoriesI18n.techCategoryId,
+      name: techCategoriesI18n.name,
+    })
+    .from(techCategoriesI18n)
+    .where(eq(techCategoriesI18n.locale, locale))
 
-  const techItemRows = await runDbRead(() =>
-    db
-      .select({
-        techCategoryId: techItems.techCategoryId,
-        orderIndex: techItems.orderIndex,
-        name: techItems.name,
-        devicon: techItems.devicon,
-        color: techItems.color,
-      })
-      .from(techItems)
-      .orderBy(asc(techItems.orderIndex))
-  )
+  const techItemRows = await db
+    .select({
+      techCategoryId: techItems.techCategoryId,
+      orderIndex: techItems.orderIndex,
+      name: techItems.name,
+      devicon: techItems.devicon,
+      color: techItems.color,
+    })
+    .from(techItems)
+    .orderBy(asc(techItems.orderIndex))
 
-  const skillCategoryRows = await runDbRead(() =>
-    db
-      .select({
-        id: skillCategories.id,
-        orderIndex: skillCategories.orderIndex,
-      })
-      .from(skillCategories)
-      .orderBy(asc(skillCategories.orderIndex))
-  )
+  const skillCategoryRows = await db
+    .select({
+      id: skillCategories.id,
+      orderIndex: skillCategories.orderIndex,
+    })
+    .from(skillCategories)
+    .orderBy(asc(skillCategories.orderIndex))
 
-  const skillCategoryI18nRows = await runDbRead(() =>
-    db
-      .select({
-        skillCategoryId: skillCategoriesI18n.skillCategoryId,
-        categoryName: skillCategoriesI18n.categoryName,
-      })
-      .from(skillCategoriesI18n)
-      .where(eq(skillCategoriesI18n.locale, locale))
-  )
+  const skillCategoryI18nRows = await db
+    .select({
+      skillCategoryId: skillCategoriesI18n.skillCategoryId,
+      categoryName: skillCategoriesI18n.categoryName,
+    })
+    .from(skillCategoriesI18n)
+    .where(eq(skillCategoriesI18n.locale, locale))
 
-  const skillItemRows = await runDbRead(() =>
-    db
-      .select({
-        id: skillItems.id,
-        skillCategoryId: skillItems.skillCategoryId,
-        orderIndex: skillItems.orderIndex,
-      })
-      .from(skillItems)
-      .orderBy(asc(skillItems.orderIndex))
-  )
+  const skillItemRows = await db
+    .select({
+      id: skillItems.id,
+      skillCategoryId: skillItems.skillCategoryId,
+      orderIndex: skillItems.orderIndex,
+    })
+    .from(skillItems)
+    .orderBy(asc(skillItems.orderIndex))
 
-  const skillItemI18nRows = await runDbRead(() =>
-    db
-      .select({
-        skillItemId: skillItemsI18n.skillItemId,
-        label: skillItemsI18n.label,
-      })
-      .from(skillItemsI18n)
-      .where(eq(skillItemsI18n.locale, locale))
-  )
+  const skillItemI18nRows = await db
+    .select({
+      skillItemId: skillItemsI18n.skillItemId,
+      label: skillItemsI18n.label,
+    })
+    .from(skillItemsI18n)
+    .where(eq(skillItemsI18n.locale, locale))
 
   const techNameById = new Map(
     techCategoryI18nRows.map((row) => [row.techCategoryId, row.name || ''])

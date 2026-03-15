@@ -60,45 +60,35 @@ export function ContentProvider({ children }: ProviderProps) {
   useEffect(() => {
     const controller = new AbortController()
 
-    const delay = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms))
+    const fetchJson = async <T,>(url: string): Promise<FetchJsonResult<T>> => {
+      const requestController = new AbortController()
+      const timeoutId = setTimeout(() => requestController.abort(), 8000)
+      const abortFromParent = () => requestController.abort()
+      controller.signal.addEventListener('abort', abortFromParent)
 
-    const fetchJson = async <T,>(
-      url: string,
-      retryCount = 1
-    ): Promise<FetchJsonResult<T>> => {
-      let lastData: FetchJsonResult<T> = { ok: false, data: null }
-      for (let attempt = 0; attempt <= retryCount; attempt += 1) {
-        const requestController = new AbortController()
-        const timeoutId = setTimeout(() => requestController.abort(), 8000)
-        const abortFromParent = () => requestController.abort()
-        controller.signal.addEventListener('abort', abortFromParent)
+      try {
+        const res = await fetch(url, {
+          signal: requestController.signal,
+          cache: 'no-store',
+        })
+        let data: T | null = null
         try {
-          const res = await fetch(url, {
-            signal: requestController.signal,
-            cache: 'no-store',
-          })
-          let data: T | null = null
-          try {
-            data = (await res.json()) as T
-          } catch {
-            data = null
-          }
-          lastData = { ok: res.ok, data }
-          if (res.ok) return lastData
-        } catch (error) {
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            if (controller.signal.aborted) {
-              throw error
-            }
-          }
-        } finally {
-          clearTimeout(timeoutId)
-          controller.signal.removeEventListener('abort', abortFromParent)
+          data = (await res.json()) as T
+        } catch {
+          data = null
         }
-        if (attempt < retryCount) await delay(250)
+        return { ok: res.ok, data }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          if (controller.signal.aborted) {
+            throw error
+          }
+        }
+        return { ok: false, data: null }
+      } finally {
+        clearTimeout(timeoutId)
+        controller.signal.removeEventListener('abort', abortFromParent)
       }
-      return lastData
     }
 
     const normalizeProjects = (data: ProjectsApiResponse | null) => {
@@ -139,10 +129,10 @@ export function ContentProvider({ children }: ProviderProps) {
       try {
         const [aboutSettled, projectsSettled, expSettled, skillsSettled] =
           await Promise.allSettled([
-            fetchJson<AboutData>(`/api/about?lang=${lang}`, 2),
-            fetchJson<ProjectsApiResponse>(`/api/projects?lang=${lang}`, 3),
-            fetchJson<ExperiencesApiResponse>(`/api/experiences?lang=${lang}`, 2),
-            fetchJson<SkillsApiResponse>(`/api/skills?lang=${lang}`, 3),
+            fetchJson<AboutData>(`/api/about?lang=${lang}`),
+            fetchJson<ProjectsApiResponse>(`/api/projects?lang=${lang}`),
+            fetchJson<ExperiencesApiResponse>(`/api/experiences?lang=${lang}`),
+            fetchJson<SkillsApiResponse>(`/api/skills?lang=${lang}`),
           ])
 
         const aboutResult =
@@ -162,29 +152,8 @@ export function ContentProvider({ children }: ProviderProps) {
             ? skillsSettled.value
             : { ok: false, data: null }
 
-        let projectsData = normalizeProjects(projectsResult.data)
-        let skillsData = normalizeSkills(skillsResult.data)
-
-        if (
-          projectsData.projects.length === 0 ||
-          skillsData.categories.length === 0
-        ) {
-          await delay(300)
-          const [projectsRetry, skillsRetry] = await Promise.all([
-            fetchJson<ProjectsApiResponse>(`/api/projects?lang=${lang}`),
-            fetchJson<SkillsApiResponse>(`/api/skills?lang=${lang}`),
-          ])
-
-          const projectsRetryData = normalizeProjects(projectsRetry.data)
-          const skillsRetryData = normalizeSkills(skillsRetry.data)
-
-          if (projectsRetry.ok && projectsRetryData.projects.length > 0) {
-            projectsData = projectsRetryData
-          }
-          if (skillsRetry.ok && skillsRetryData.categories.length > 0) {
-            skillsData = skillsRetryData
-          }
-        }
+        const projectsData = normalizeProjects(projectsResult.data)
+        const skillsData = normalizeSkills(skillsResult.data)
 
         const aboutData = aboutResult.ok ? aboutResult.data : null
         const expData = expResult.ok ? expResult.data : null

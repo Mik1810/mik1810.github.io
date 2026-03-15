@@ -1295,3 +1295,17 @@ Conclusione:
 - Goal:
   - render the homepage with graceful fallbacks instead of keeping the entire UI behind an infinite loading gate
   - make client bootstrap deterministic even when one API request is slow or temporarily fails
+## 2026-03-15 10:20 CET - Removed temporary retry layers after production stabilization
+
+- Reviewed the emergency mitigations added during the Vercel recovery and removed the parts that no longer looked necessary once production stabilized.
+- Simplified the public Drizzle repositories:
+  - removed [runDbRead.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/runDbRead.ts)
+  - removed the single-retry wrapper around public read queries
+  - kept the sequential query execution model introduced for lower DB burstiness
+- Simplified [ContentContext.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/context/ContentContext.tsx):
+  - removed per-request retry counters
+  - removed the extra delayed retry pass for `projects` and `skills`
+  - kept request timeouts and `cache: 'no-store'` during bootstrap
+- Intention:
+  - retain the structural fixes that improved stability
+  - remove “panic-mode” retry layers that added complexity and made behavior harder to reason about
