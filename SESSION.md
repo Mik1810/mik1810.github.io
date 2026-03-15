@@ -2892,3 +2892,21 @@ Conclusione:
 - Expected result:
   - GitHub now verifies that the project installs, typechecks, and builds successfully before or alongside deployment
   - routine regressions should be caught earlier, without depending solely on Vercel deploy feedback.
+
+## 2026-03-15 20:41 CET - Extended the GitHub CI workflow with lint and archived logs
+
+- The initial CI workflow only verified install, typecheck, and build. A lint pass and downloadable run logs were still missing.
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - added a dedicated `Lint` step to the existing GitHub Actions workflow
+  - introduced a `logs/` directory inside the job to capture:
+    - dependency installation
+    - lint
+    - typecheck
+    - build
+  - routed command output through `tee` so each run now emits a persistent log file while still failing the step correctly via `pipefail`
+  - added an `Upload CI logs` artifact step with `if: always()` so logs remain available even when the workflow fails
+- Expected result:
+  - each CI run now enforces lint in addition to typecheck and build
+  - GitHub Actions retains a downloadable `ci-logs` artifact that can be inspected after both successful and failed runs.
