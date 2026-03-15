@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { GithubProjectItem } from '../../types/app.js'
+import '../css/GithubProjectLightbox.css'
 
 function GithubProjectLightbox({
   project,

@@ -2429,6 +2429,25 @@ Conclusione:
   - `webmarket`-like wide screenshots and `unify`-like taller screenshots no longer need to share exactly the same viewer proportions
   - controls remain stable while the shell adapts more intelligently to the active image family
 
+## 2026-03-15 21:18 CET - Split the monolithic Projects.css file along the extracted component boundaries
+
+- Refactored the stylesheet structure of the single-page `Projects` section after the earlier component split.
+- Added:
+  - [ProjectsSection.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/ProjectsSection.css)
+  - [PortfolioProjectsGrid.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/PortfolioProjectsGrid.css)
+  - [GithubProjectsGrid.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/GithubProjectsGrid.css)
+  - [GithubProjectMedia.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/GithubProjectMedia.css)
+  - [GithubProjectLightbox.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/GithubProjectLightbox.css)
+- Updated:
+  - [Projects.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Projects.tsx)
+  - [PortfolioProjectsGrid.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/PortfolioProjectsGrid.tsx)
+  - [GithubProjectsGrid.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/GithubProjectsGrid.tsx)
+  - [GithubProjectMedia.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/GithubProjectMedia.tsx)
+  - [GithubProjectLightbox.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/GithubProjectLightbox.tsx)
+- Result:
+  - the stylesheet layout now mirrors the React component architecture much more closely
+  - future tweaks to portfolio cards, GitHub cards, media, and lightbox can be made in more local files
+
 ## 2026-03-15 21:16 CET - Froze the GitHub lightbox layout for the whole viewing session
 
 - Refined the GitHub screenshot viewer after noticing that some galleries still resized while browsing between images.

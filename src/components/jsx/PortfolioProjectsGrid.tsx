@@ -1,6 +1,7 @@
 import type { MouseEvent } from 'react'
 
 import type { ProjectItem } from '../../types/app.js'
+import '../css/PortfolioProjectsGrid.css'
 
 type TiltState = {
   rect: DOMRect

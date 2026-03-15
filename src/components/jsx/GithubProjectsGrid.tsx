@@ -1,4 +1,5 @@
 import type { GithubProjectItem } from '../../types/app.js'
+import '../css/GithubProjectsGrid.css'
 import GithubProjectCard from './GithubProjectCard'
 
 function GithubProjectSkeleton({ index }: { index: number }) {

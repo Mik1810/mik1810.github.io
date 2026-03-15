@@ -4,6 +4,7 @@ import type {
   GithubProjectItem,
   GithubProjectMediaCarouselProps,
 } from '../../types/app.js'
+import '../css/GithubProjectMedia.css'
 import GithubProjectLightbox from './GithubProjectLightbox'
 
 function GithubProjectMediaCarousel({

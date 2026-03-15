@@ -1,7 +1,7 @@
 import { useContent } from '../../context/useContent'
 import { useLanguage } from '../../context/useLanguage'
 import type { GithubProjectItem, ProjectItem } from '../../types/app.js'
-import '../css/Projects.css'
+import '../css/ProjectsSection.css'
 import GithubProjectsGrid from './GithubProjectsGrid'
 import PortfolioProjectsGrid from './PortfolioProjectsGrid'
 

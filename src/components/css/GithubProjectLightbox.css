@@ -1,0 +1,160 @@
+.github-project-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1600;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(14px);
+}
+
+.github-project-lightbox {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0.85rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+    rgba(15, 23, 42, 0.94);
+  box-shadow: 0 30px 90px rgba(2, 6, 23, 0.45);
+  overflow: hidden;
+}
+
+.github-project-lightbox.github-project-lightbox-wide {
+  width: min(82vw, 1040px);
+  height: min(82vh, 760px);
+  max-width: 1040px;
+  max-height: 82vh;
+}
+
+.github-project-lightbox.github-project-lightbox-tall {
+  width: min(70vw, 860px);
+  height: min(88vh, 920px);
+  max-width: 860px;
+  max-height: 88vh;
+}
+
+.github-project-lightbox-close,
+.github-project-lightbox-nav {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #f8fafc;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.github-project-lightbox-close:hover,
+.github-project-lightbox-nav:hover {
+  background: rgba(15, 23, 42, 0.92);
+  transform: scale(1.05);
+}
+
+.github-project-lightbox-close {
+  top: 1rem;
+  right: 1rem;
+}
+
+.github-project-lightbox-nav {
+  position: static;
+  flex-shrink: 0;
+  transform: none;
+}
+
+.github-project-lightbox-nav:hover {
+  transform: scale(1.05);
+}
+
+.github-project-lightbox-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 2.4rem;
+  padding: 0.1rem 3.9rem 0 0.25rem;
+  color: #e2e8f0;
+}
+
+.github-project-lightbox-meta strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.github-project-lightbox-meta span {
+  flex-shrink: 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 0.9rem;
+}
+
+.github-project-lightbox-media-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 0;
+}
+
+.github-project-lightbox-stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0.6rem;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(102, 163, 255, 0.16), transparent 55%),
+    rgba(2, 6, 23, 0.66);
+  overflow: hidden;
+}
+
+.github-project-lightbox-image {
+  width: auto;
+  height: auto;
+  max-width: calc(100% - 1.2rem);
+  max-height: calc(100% - 1.2rem);
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .github-project-lightbox-backdrop {
+    padding: 0.85rem;
+  }
+
+  .github-project-lightbox {
+    width: min(100%, 92vw);
+    height: min(78vh, 680px);
+    max-width: 92vw;
+    max-height: 78vh;
+    padding: 0.8rem;
+    border-radius: 20px;
+  }
+
+  .github-project-lightbox-close,
+  .github-project-lightbox-nav {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .github-project-lightbox-media-shell {
+    gap: 0.55rem;
+  }
+
+  .github-project-lightbox-meta {
+    padding-right: 3.3rem;
+  }
+}
