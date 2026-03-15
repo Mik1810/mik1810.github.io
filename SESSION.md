@@ -2874,3 +2874,21 @@ Conclusione:
 - Expected result:
   - while the hero text is still skeletonized, the portrait area should remain skeletonized too
   - the whole hero should now transition as one coherent block.
+
+## 2026-03-15 20:39 CET - Added a minimal GitHub Actions CI workflow
+
+- The repository did not yet have a verification workflow for routine pushes and pull requests; only deployment cleanup automation was present.
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - added a dedicated `CI` workflow triggered on:
+    - pushes to `main`
+    - all pull requests
+  - configured the workflow to run on `ubuntu-latest` with Node `24`
+  - added the minimal verification sequence:
+    - `npm ci`
+    - `npm run typecheck`
+    - `npm run build`
+- Expected result:
+  - GitHub now verifies that the project installs, typechecks, and builds successfully before or alongside deployment
+  - routine regressions should be caught earlier, without depending solely on Vercel deploy feedback.
