@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type {
+  AdminFieldDefinition,
   AdminOkResponse,
   AdminRowResponse,
   AdminRowsResponse,
   AdminTableDefinition,
   AdminTablesResponse,
 } from '../../types/app.js'
+import AdminDashboardSkeleton from './AdminDashboardSkeleton'
 import '../css/AdminAuth.css'
 
 const PAGE_SIZE = 15
 const EMPTY_PRIMARY_KEYS: string[] = []
+const ADMIN_TABLE_SKELETON_ROWS = 6
 
 const buildInitialExpandedGroups = (nextTables: AdminTableDefinition[]) => {
   const groups = Array.from(new Set(nextTables.map((table) => table.group)))
@@ -25,24 +28,9 @@ const prettyValue = (value: unknown) => {
   return String(value)
 }
 
-const parseEditorValue = (rawValue: string): unknown => {
-  const trimmed = rawValue.trim()
-  if (trimmed === '') return ''
-  if (trimmed === 'null') return null
-  if (trimmed === 'true') return true
-  if (trimmed === 'false') return false
-  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed)
-  if (
-    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
-    (trimmed.startsWith('[') && trimmed.endsWith(']'))
-  ) {
-    try {
-      return JSON.parse(trimmed)
-    } catch {
-      return rawValue
-    }
-  }
-  return rawValue
+const toInputValue = (value: unknown) => {
+  if (value === null || value === undefined) return ''
+  return typeof value === 'string' ? value : String(value)
 }
 
 const buildKeys = (row: Record<string, unknown> | null, primaryKeys: string[]) => {
@@ -69,16 +57,6 @@ const isLikelyUrlField = (fieldName: string) => {
   )
 }
 
-const isKeyColumnName = (column: string) => {
-  const normalized = column.toLowerCase()
-  return (
-    normalized === 'id' ||
-    normalized.endsWith('_id') ||
-    normalized === 'order_index' ||
-    normalized.endsWith('_index')
-  )
-}
-
 const isValidUrlLike = (value: unknown) => {
   if (typeof value !== 'string') return false
   const trimmed = value.trim()
@@ -91,6 +69,10 @@ const isValidUrlLike = (value: unknown) => {
     return false
   }
 }
+
+const isHexColorValue = (value: unknown) =>
+  typeof value === 'string' &&
+  /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim())
 
 function AdminDashboard() {
   const [tables, setTables] = useState<AdminTableDefinition[]>([])
@@ -116,6 +98,18 @@ function AdminDashboard() {
   const primaryKeys = useMemo(
     () => activeTable?.primaryKeys || EMPTY_PRIMARY_KEYS,
     [activeTable]
+  )
+  const fieldDefinitions = useMemo(
+    () => activeTable?.fields || [],
+    [activeTable]
+  )
+  const fieldsByName = useMemo(
+    () =>
+      Object.fromEntries(fieldDefinitions.map((field) => [field.name, field])) as Record<
+        string,
+        AdminFieldDefinition
+      >,
+    [fieldDefinitions]
   )
   const selectedRow = selectedIndex >= 0 ? rows[selectedIndex] : null
   const groupedTables = useMemo(() => {
@@ -147,6 +141,9 @@ function AdminDashboard() {
       if (!tableName) return
       setLoadingRows(true)
       setError('')
+      setRows([])
+      setSelectedIndex(-1)
+      setDraftRow(activeTable?.defaultRow || {})
       try {
         const response = await fetch(
           `/api/admin/table?table=${encodeURIComponent(tableName)}&limit=500`,
@@ -365,28 +362,42 @@ function AdminDashboard() {
     })
 
   const columns = useMemo(() => {
-    const columnSet = new Set<string>()
+    const columnSet = new Set<string>(fieldDefinitions.map((field) => field.name))
     for (const row of rows) {
       Object.keys(row || {}).forEach((key) => columnSet.add(key))
     }
     Object.keys(draftRow || {}).forEach((key) => columnSet.add(key))
     return Array.from(columnSet)
-  }, [rows, draftRow])
+  }, [fieldDefinitions, rows, draftRow])
 
   const hiddenColumns = useMemo(() => {
     return new Set(
-      columns.filter(
-        (column) =>
+      columns.filter((column) => {
+        const field = fieldsByName[column]
+        if (field) {
+          return field.primaryKey || field.foreignKey || field.system || !field.editable
+        }
+        return (
           primaryKeys.includes(column) ||
           isForeignKeyColumn(column) ||
           isSystemColumn(column)
-      )
+        )
+      })
     )
-  }, [columns, primaryKeys])
+  }, [columns, fieldsByName, primaryKeys])
 
   const visibleColumns = useMemo(
     () => columns.filter((column) => !hiddenColumns.has(column)),
     [columns, hiddenColumns]
+  )
+  const showRowIndex = useMemo(
+    () => !visibleColumns.includes('id'),
+    [visibleColumns]
+  )
+
+  const editorFields = useMemo(
+    () => visibleColumns.map((column) => fieldsByName[column]).filter(Boolean),
+    [fieldsByName, visibleColumns]
   )
 
   const filteredRows = useMemo(() => {
@@ -410,13 +421,151 @@ function AdminDashboard() {
 
   const hasSelection = Boolean(selectedRow)
 
+  const handleEditorFieldChange = (field: AdminFieldDefinition, rawValue: string | boolean) => {
+    if (field.editor.kind === 'checkbox') {
+      handleFieldChange(field.name, Boolean(rawValue))
+      return
+    }
+
+    if (field.editor.kind === 'number') {
+      const nextValue =
+        typeof rawValue === 'string' && rawValue.trim() === ''
+          ? ''
+          : Number(rawValue)
+      handleFieldChange(field.name, nextValue)
+      return
+    }
+
+    handleFieldChange(field.name, rawValue)
+  }
+
+  const renderEditorField = (field: AdminFieldDefinition) => {
+    const value = draftRow?.[field.name]
+
+    if (field.editor.kind === 'textarea') {
+      return (
+        <textarea
+          className="admin-input admin-textarea"
+          value={toInputValue(value)}
+          onChange={(event) =>
+            handleEditorFieldChange(field, event.target.value)
+          }
+          disabled={busyAction !== ''}
+          rows={field.editor.rows || 4}
+        />
+      )
+    }
+
+    if (field.editor.kind === 'select') {
+      return (
+        <select
+          className="admin-input admin-select"
+          value={toInputValue(value)}
+          onChange={(event) =>
+            handleEditorFieldChange(field, event.target.value)
+          }
+          disabled={busyAction !== ''}
+        >
+          <option value="">Seleziona...</option>
+          {(field.editor.options || []).map((option) => (
+            <option key={`${field.name}-${option.value}`} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )
+    }
+
+    if (field.editor.kind === 'checkbox') {
+      return (
+        <label className="admin-checkbox-field">
+          <input
+            type="checkbox"
+            checked={value === true}
+            onChange={(event) =>
+              handleEditorFieldChange(field, event.target.checked)
+            }
+            disabled={busyAction !== ''}
+          />
+          <span>{value === true ? 'True' : 'False'}</span>
+        </label>
+      )
+    }
+
+    if (field.editor.kind === 'color') {
+      const rawValue = toInputValue(value)
+      const pickerValue = isHexColorValue(rawValue) ? rawValue : '#999999'
+
+      return (
+        <div className="admin-color-field">
+          <input
+            className="admin-color-picker"
+            type="color"
+            value={pickerValue}
+            onChange={(event) =>
+              handleEditorFieldChange(field, event.target.value)
+            }
+            disabled={busyAction !== ''}
+          />
+          <input
+            className="admin-input"
+            type="text"
+            value={rawValue}
+            onChange={(event) =>
+              handleEditorFieldChange(field, event.target.value)
+            }
+            disabled={busyAction !== ''}
+            placeholder="#RRGGBB"
+          />
+        </div>
+      )
+    }
+
+    return (
+      <input
+        className="admin-input"
+        type={field.editor.kind}
+        value={toInputValue(value)}
+        onChange={(event) =>
+          handleEditorFieldChange(field, event.target.value)
+        }
+        disabled={busyAction !== ''}
+      />
+    )
+  }
+
+  const renderCellValue = (column: string, value: unknown) => {
+    const field = fieldsByName[column]
+
+    if (field?.editor.kind === 'color') {
+      const rawValue = prettyValue(value)
+      const isValidColor = isHexColorValue(rawValue)
+
+      return (
+        <span className="admin-color-cell">
+          <span
+            className={`admin-color-swatch ${isValidColor ? '' : 'is-empty'}`.trim()}
+            style={isValidColor ? { backgroundColor: rawValue } : undefined}
+            aria-hidden="true"
+          />
+          <span>{rawValue}</span>
+        </span>
+      )
+    }
+
+    return prettyValue(value)
+  }
+
+  if (loadingTables && tables.length === 0) {
+    return <AdminDashboardSkeleton />
+  }
+
   return (
     <main className="admin-page">
       <section className="admin-card admin-card-wide">
         <div className="admin-layout">
           <aside className="admin-sidebar">
             <h4>Tabelle</h4>
-            {loadingTables && <p>Caricamento...</p>}
             {!loadingTables && tables.length === 0 && (
               <p>Nessuna tabella disponibile</p>
             )}
@@ -516,11 +665,16 @@ function AdminDashboard() {
             <div className="admin-table-wrap">
               <table className="admin-data-table">
                 <colgroup>
-                  <col className="admin-col-index" />
+                  {showRowIndex && <col className="admin-col-index" />}
                   {visibleColumns.map((column) => (
                     <col
                       key={`col-${column}`}
-                      className={isKeyColumnName(column) ? 'admin-col-key' : 'admin-col-data'}
+                      className={
+                        fieldsByName[column]?.primaryKey ||
+                        fieldsByName[column]?.foreignKey
+                          ? 'admin-col-key'
+                          : 'admin-col-data'
+                      }
                     />
                   ))}
                   <col className="admin-col-action" />
@@ -528,13 +682,18 @@ function AdminDashboard() {
                 </colgroup>
                 <thead>
                   <tr>
-                    <th className="admin-index-col">#</th>
+                    {showRowIndex && <th className="admin-index-col">#</th>}
                     {visibleColumns.map((column) => (
                       <th
                         key={column}
-                        className={isKeyColumnName(column) ? 'admin-key-col' : 'admin-data-col'}
+                        className={
+                          fieldsByName[column]?.primaryKey ||
+                          fieldsByName[column]?.foreignKey
+                            ? 'admin-key-col'
+                            : 'admin-data-col'
+                        }
                       >
-                        {column}
+                        {fieldsByName[column]?.label || column}
                       </th>
                     ))}
                     <th className="admin-action-col">Delete</th>
@@ -542,16 +701,44 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loadingRows && (
-                    <tr>
-                      <td colSpan={Math.max(visibleColumns.length + 3, 4)}>
-                        Caricamento righe...
-                      </td>
-                    </tr>
-                  )}
+                  {loadingRows &&
+                    Array.from({ length: ADMIN_TABLE_SKELETON_ROWS }).map((_, rowIndex) => (
+                      <tr
+                        key={`admin-loading-row-${rowIndex}`}
+                        className="admin-loading-table-row"
+                      >
+                        {showRowIndex && (
+                          <td className="admin-index-cell">
+                            <span className="admin-skeleton admin-skeleton-table-chip" />
+                          </td>
+                        )}
+                        {visibleColumns.map((column) => (
+                          <td key={`admin-loading-${rowIndex}-${column}`}>
+                            <span
+                              className={
+                                fieldsByName[column]?.editor.kind === 'color'
+                                  ? 'admin-skeleton admin-skeleton-table-color'
+                                  : 'admin-skeleton admin-skeleton-table-line'
+                              }
+                            />
+                          </td>
+                        ))}
+                        <td className="admin-action-cell">
+                          <span className="admin-skeleton admin-skeleton-table-action" />
+                        </td>
+                        <td className="admin-action-cell">
+                          <span className="admin-skeleton admin-skeleton-table-action" />
+                        </td>
+                      </tr>
+                    ))}
                   {!loadingRows && rows.length === 0 && (
                     <tr>
-                      <td colSpan={Math.max(visibleColumns.length + 3, 4)}>
+                      <td
+                        colSpan={Math.max(
+                          visibleColumns.length + (showRowIndex ? 3 : 2),
+                          4
+                        )}
+                      >
                         Nessuna riga disponibile
                       </td>
                     </tr>
@@ -564,13 +751,20 @@ function AdminDashboard() {
                           key={`${activeTableName}-${absoluteIndex}`}
                           className={absoluteIndex === selectedIndex ? 'is-active' : ''}
                         >
-                          <td className="admin-index-cell">{absoluteIndex + 1}</td>
+                          {showRowIndex && (
+                            <td className="admin-index-cell">{absoluteIndex + 1}</td>
+                          )}
                           {visibleColumns.map((column) => (
                             <td
                               key={`${absoluteIndex}-${column}`}
-                              className={isKeyColumnName(column) ? 'admin-key-cell' : 'admin-data-cell'}
+                              className={
+                                fieldsByName[column]?.primaryKey ||
+                                fieldsByName[column]?.foreignKey
+                                  ? 'admin-key-cell'
+                                  : 'admin-data-cell'
+                              }
                             >
-                              {prettyValue(row?.[column])}
+                              {renderCellValue(column, row?.[column])}
                             </td>
                           ))}
                           <td className="admin-action-cell">
@@ -697,23 +891,10 @@ function AdminDashboard() {
                     Nessun campo modificabile disponibile
                   </p>
                 )}
-                {visibleColumns.map((column) => (
-                  <label key={`field-${column}`} className="admin-label">
-                    {column}
-                    <textarea
-                      className="admin-input admin-textarea"
-                      value={prettyValue(draftRow?.[column])}
-                      onChange={(event) =>
-                        handleFieldChange(column, parseEditorValue(event.target.value))
-                      }
-                      disabled={busyAction !== ''}
-                      rows={
-                        column.toLowerCase().includes('description') ||
-                        column.toLowerCase().includes('bio')
-                          ? 4
-                          : 2
-                      }
-                    />
+                {editorFields.map((field) => (
+                  <label key={`field-${field.name}`} className="admin-label">
+                    {field.label}
+                    {renderEditorField(field)}
                   </label>
                 ))}
               </div>

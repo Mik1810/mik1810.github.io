@@ -3,9 +3,11 @@ import type { AnyPgColumn, AnyPgTable } from 'drizzle-orm/pg-core'
 
 import type {
   AdminFieldRule,
+  AdminFieldEditorConfig,
   AdminTableGroupKey,
   AdminTableColumnConfig,
   AdminTableConfig,
+  AdminTableFieldDefinition,
 } from '../types/admin.js'
 
 type AdminTableConfigWithoutGroup = Omit<AdminTableConfig, 'group'>
@@ -30,6 +32,39 @@ const toColumnsByDbName = (columns: AdminTableColumnConfig[]) =>
     string,
     AdminTableColumnConfig
   >
+
+const isSystemColumn = (column: string) =>
+  column === 'created_at' || column === 'updated_at'
+
+const isForeignKeyColumn = (column: string) =>
+  column.endsWith('_id') && column !== 'id'
+
+const toFieldLabel = (dbName: string) =>
+  dbName
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+
+const inferEditor = (dbName: string, rule?: AdminFieldRule): AdminFieldEditorConfig => {
+  if (rule?.editor) return rule.editor
+  if (dbName === 'id' || dbName.endsWith('_id') || dbName.endsWith('_index')) {
+    return { kind: 'number' }
+  }
+  if (dbName.endsWith('_url') || dbName === 'url' || dbName === 'logo') {
+    return { kind: 'url' }
+  }
+  if (dbName === 'email') {
+    return { kind: 'email' }
+  }
+  if (dbName.includes('description') || dbName.includes('bio')) {
+    return { kind: 'textarea', rows: 5 }
+  }
+  if (dbName.includes('color')) {
+    return { kind: 'color' }
+  }
+  return { kind: 'text' }
+}
 
 const ensureKnownColumns = (
   columnsByDbName: Record<string, AdminTableColumnConfig>,
@@ -66,6 +101,16 @@ export const createAdminTableConfig = ({
     `${label} fieldRules`
   )
 
+  const fields: AdminTableFieldDefinition[] = columns.map((column) => ({
+    name: column.dbName,
+    label: toFieldLabel(column.dbName),
+    editor: inferEditor(column.dbName, fieldRules[column.dbName]),
+    editable: !isSystemColumn(column.dbName),
+    primaryKey: primaryKeys.includes(column.dbName),
+    system: isSystemColumn(column.dbName),
+    foreignKey: isForeignKeyColumn(column.dbName),
+  }))
+
   return {
     label,
     table,
@@ -74,6 +119,7 @@ export const createAdminTableConfig = ({
     columns,
     columnsByDbName,
     fieldRules,
+    fields,
   }
 }
 

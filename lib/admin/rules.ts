@@ -1,6 +1,10 @@
-import type { AdminFieldRule } from '../types/admin.js'
+import type { AdminFieldEditorConfig, AdminFieldRule } from '../types/admin.js'
 
 const SUPPORTED_LOCALES = new Set(['it', 'en'])
+const LOCALE_OPTIONS = [
+  { value: 'it', label: 'Italiano' },
+  { value: 'en', label: 'English' },
+] as const
 
 const trimString = (value: unknown) =>
   typeof value === 'string' ? value.trim() : value
@@ -23,6 +27,7 @@ const integerRule = ({
 }: {
   min?: number
 } = {}): AdminFieldRule => ({
+  editor: { kind: 'number' },
   normalize: (value) => {
     if (typeof value === 'string') {
       const trimmed = value.trim()
@@ -43,6 +48,7 @@ const integerRule = ({
 })
 
 export const requiredTextRule = (): AdminFieldRule => ({
+  editor: { kind: 'text' },
   normalize: (value) => trimString(value),
   validate: (value, context) => {
     if (typeof value !== 'string' || value.length === 0) {
@@ -52,6 +58,7 @@ export const requiredTextRule = (): AdminFieldRule => ({
 })
 
 export const optionalTextRule = (): AdminFieldRule => ({
+  editor: { kind: 'text' },
   normalize: (value) => {
     const normalized = trimString(value)
     return normalized === '' ? null : normalized
@@ -64,6 +71,7 @@ export const optionalTextRule = (): AdminFieldRule => ({
 })
 
 export const localeRule = (): AdminFieldRule => ({
+  editor: { kind: 'select', options: [...LOCALE_OPTIONS] },
   normalize: (value) => trimString(value),
   validate: (value, context) => {
     if (typeof value !== 'string' || !SUPPORTED_LOCALES.has(value)) {
@@ -77,6 +85,7 @@ export const localeRule = (): AdminFieldRule => ({
 })
 
 export const booleanRule = (): AdminFieldRule => ({
+  editor: { kind: 'checkbox' },
   normalize: (value) => {
     if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase()
@@ -93,6 +102,7 @@ export const booleanRule = (): AdminFieldRule => ({
 })
 
 export const optionalUrlRule = (): AdminFieldRule => ({
+  editor: { kind: 'url' },
   normalize: (value) => {
     const normalized = trimString(value)
     return normalized === '' ? null : normalized
@@ -106,6 +116,7 @@ export const optionalUrlRule = (): AdminFieldRule => ({
 })
 
 export const requiredUrlRule = (): AdminFieldRule => ({
+  editor: { kind: 'url' },
   normalize: (value) => trimString(value),
   validate: (value, context) => {
     if (typeof value !== 'string' || value.length === 0 || !isUrlLike(value)) {
@@ -115,6 +126,7 @@ export const requiredUrlRule = (): AdminFieldRule => ({
 })
 
 export const optionalEmailRule = (): AdminFieldRule => ({
+  editor: { kind: 'email' },
   normalize: (value) => {
     const normalized = trimString(value)
     return normalized === '' ? null : normalized
@@ -128,6 +140,7 @@ export const optionalEmailRule = (): AdminFieldRule => ({
 })
 
 export const optionalHexColorRule = (): AdminFieldRule => ({
+  editor: { kind: 'color' },
   normalize: (value) => {
     const normalized = trimString(value)
     return normalized === '' ? null : normalized
@@ -145,3 +158,11 @@ export const optionalHexColorRule = (): AdminFieldRule => ({
 
 export const positiveIdRule = integerRule({ min: 1 })
 export const orderIndexRule = integerRule({ min: 1 })
+
+export const withEditor = (
+  rule: AdminFieldRule,
+  editor: AdminFieldEditorConfig
+): AdminFieldRule => ({
+  ...rule,
+  editor,
+})

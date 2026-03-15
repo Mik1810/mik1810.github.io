@@ -182,6 +182,38 @@ export interface AdminTableDefinition {
   groupLabel: string
   primaryKeys: string[]
   defaultRow: Record<string, unknown>
+  fields: AdminFieldDefinition[]
+}
+
+export type AdminFieldEditorKind =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'url'
+  | 'email'
+  | 'checkbox'
+  | 'color'
+  | 'select'
+
+export interface AdminFieldEditorOption {
+  value: string
+  label: string
+}
+
+export interface AdminFieldEditorConfig {
+  kind: AdminFieldEditorKind
+  rows?: number
+  options?: AdminFieldEditorOption[]
+}
+
+export interface AdminFieldDefinition {
+  name: string
+  label: string
+  editor: AdminFieldEditorConfig
+  editable: boolean
+  primaryKey: boolean
+  system: boolean
+  foreignKey: boolean
 }
 
 export interface AdminTablesResponse {

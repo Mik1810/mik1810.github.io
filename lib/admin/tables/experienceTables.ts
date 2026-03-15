@@ -7,6 +7,7 @@ import {
   orderIndexRule,
   positiveIdRule,
   requiredTextRule,
+  withEditor,
 } from '../rules.js'
 
 export const EXPERIENCE_ADMIN_TABLES = attachAdminGroup('experiences', {
@@ -41,7 +42,7 @@ export const EXPERIENCE_ADMIN_TABLES = attachAdminGroup('experiences', {
       role: requiredTextRule(),
       company: requiredTextRule(),
       period: requiredTextRule(),
-      description: requiredTextRule(),
+      description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
     },
   }),
   education: createAdminTableConfig({
@@ -74,7 +75,7 @@ export const EXPERIENCE_ADMIN_TABLES = attachAdminGroup('experiences', {
       degree: requiredTextRule(),
       institution: requiredTextRule(),
       period: requiredTextRule(),
-      description: requiredTextRule(),
+      description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
     },
   }),
 })

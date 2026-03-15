@@ -13,6 +13,27 @@ export interface AdminTableColumnConfig {
   column: AnyPgColumn
 }
 
+export type AdminFieldEditorKind =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'url'
+  | 'email'
+  | 'checkbox'
+  | 'color'
+  | 'select'
+
+export interface AdminFieldEditorOption {
+  value: string
+  label: string
+}
+
+export interface AdminFieldEditorConfig {
+  kind: AdminFieldEditorKind
+  rows?: number
+  options?: AdminFieldEditorOption[]
+}
+
 export type AdminPayloadKind = 'keys' | 'row'
 export type AdminPayloadOperation = 'create' | 'update' | 'delete'
 
@@ -26,6 +47,17 @@ export interface AdminFieldRuleContext {
 export interface AdminFieldRule {
   normalize?: (value: unknown, context: AdminFieldRuleContext) => unknown
   validate?: (value: unknown, context: AdminFieldRuleContext) => void
+  editor?: AdminFieldEditorConfig
+}
+
+export interface AdminTableFieldDefinition {
+  name: string
+  label: string
+  editor: AdminFieldEditorConfig
+  editable: boolean
+  primaryKey: boolean
+  system: boolean
+  foreignKey: boolean
 }
 
 export interface AdminTableConfig {
@@ -37,6 +69,7 @@ export interface AdminTableConfig {
   columns: AdminTableColumnConfig[]
   columnsByDbName: Record<string, AdminTableColumnConfig>
   fieldRules: Record<string, AdminFieldRule>
+  fields: AdminTableFieldDefinition[]
 }
 
 export type AdminTablesMap = Record<string, AdminTableConfig>

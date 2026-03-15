@@ -9,6 +9,7 @@ import {
   positiveIdRule,
   requiredTextRule,
   requiredUrlRule,
+  withEditor,
 } from '../rules.js'
 
 export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
@@ -37,7 +38,7 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
       greeting: requiredTextRule(),
       location: requiredTextRule(),
       university_name: requiredTextRule(),
-      bio: optionalTextRule(),
+      bio: withEditor(optionalTextRule(), { kind: 'textarea', rows: 6 }),
     },
   }),
   social_links: createAdminTableConfig({
@@ -51,7 +52,13 @@ export const PROFILE_ADMIN_TABLES = attachAdminGroup('profile', {
       order_index: orderIndexRule,
       name: requiredTextRule(),
       url: requiredUrlRule(),
-      icon_key: requiredTextRule(),
+      icon_key: withEditor(requiredTextRule(), {
+        kind: 'select',
+        options: [
+          { value: 'github', label: 'GitHub' },
+          { value: 'linkedin', label: 'LinkedIn' },
+        ],
+      }),
     },
   }),
   hero_roles: createAdminTableConfig({

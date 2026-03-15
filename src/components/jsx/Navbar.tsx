@@ -72,7 +72,7 @@ function Navbar() {
           </ul>
         )}
         <div className="navbar-right">
-          <LanguageSwitcher />
+          {!isAdminRoute && <LanguageSwitcher />}
           <ThemeToggle />
           {showHomeLinks && (
             <button

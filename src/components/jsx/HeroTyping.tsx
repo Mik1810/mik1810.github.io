@@ -47,6 +47,7 @@ function HeroTypingAnimation({
   const [roleIndex, setRoleIndex] = useState(0)
   const [roleCharIndex, setRoleCharIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [hasRoleRendered, setHasRoleRendered] = useState(false)
 
   useEffect(() => {
     const currentRole = roles[roleIndex]
@@ -54,7 +55,10 @@ function HeroTypingAnimation({
     let timeout: number | ReturnType<typeof setTimeout> | undefined
 
     if (!isDeleting && roleCharIndex < currentRole.length) {
-      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex + 1), 65)
+      timeout = setTimeout(() => {
+        setRoleCharIndex(roleCharIndex + 1)
+        setHasRoleRendered(true)
+      }, 65)
     } else if (!isDeleting && roleCharIndex === currentRole.length) {
       timeout = setTimeout(() => setIsDeleting(true), 1800)
     } else if (isDeleting && roleCharIndex > 0) {
@@ -72,7 +76,8 @@ function HeroTypingAnimation({
   const displayRole = roles[roleIndex]
     ? roles[roleIndex].substring(0, roleCharIndex)
     : ''
-  const showRolePlaceholder = roles.length > 0 && displayRole.length === 0
+  const showRolePlaceholder =
+    roles.length > 0 && !hasRoleRendered && displayRole.length === 0
 
   return (
     <section id="hero" className="hero-typing">

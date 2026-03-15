@@ -9,6 +9,7 @@ import {
   positiveIdRule,
   requiredTextRule,
   requiredUrlRule,
+  withEditor,
 } from '../rules.js'
 
 export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
@@ -55,7 +56,7 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
       project_id: positiveIdRule,
       locale: localeRule(),
       title: requiredTextRule(),
-      description: requiredTextRule(),
+      description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
     },
   }),
   github_projects_i18n: createAdminTableConfig({
@@ -67,7 +68,7 @@ export const PROJECT_ADMIN_TABLES = attachAdminGroup('projects', {
       github_project_id: positiveIdRule,
       locale: localeRule(),
       title: requiredTextRule(),
-      description: requiredTextRule(),
+      description: withEditor(requiredTextRule(), { kind: 'textarea', rows: 5 }),
     },
   }),
   project_tags: createAdminTableConfig({

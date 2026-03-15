@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../context/useAuth'
+import AdminDashboardSkeleton from './AdminDashboardSkeleton'
 
 interface RequireAdminProps {
   children: ReactNode
@@ -11,11 +12,7 @@ function RequireAdmin({ children }: RequireAdminProps) {
   const { authLoading, authenticated } = useAuth()
 
   if (authLoading) {
-    return (
-      <main style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        <p>Verifica accesso admin...</p>
-      </main>
-    )
+    return <AdminDashboardSkeleton />
   }
 
   if (!authenticated) {

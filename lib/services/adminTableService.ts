@@ -158,15 +158,16 @@ export const getAdminTablesList = () =>
   ADMIN_TABLE_GROUPS.flatMap((group) =>
     Object.entries(ADMIN_TABLES)
       .filter(([, config]) => config.group === group.key)
-      .map(([name, config]) => ({
-        name,
-        label: config.label,
-        group: config.group,
-        groupLabel: group.label,
-        primaryKeys: config.primaryKeys,
-        defaultRow: config.defaultRow || {},
-      }))
-  )
+        .map(([name, config]) => ({
+          name,
+          label: config.label,
+          group: config.group,
+          groupLabel: group.label,
+          primaryKeys: config.primaryKeys,
+          defaultRow: config.defaultRow || {},
+          fields: config.fields,
+        }))
+    )
 
 export const getAdminTableConfigOrNull = (table: string) =>
   getAdminTableConfig(table)

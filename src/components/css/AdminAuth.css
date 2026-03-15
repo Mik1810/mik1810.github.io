@@ -70,6 +70,10 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
+.admin-select {
+  appearance: none;
+}
+
 .admin-btn {
   width: 100%;
   border: none;
@@ -124,6 +128,30 @@
   overflow: hidden;
 }
 
+.admin-skeleton {
+  display: block;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-input-bg) 86%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg-primary) 78%, white 6%) 50%,
+      color-mix(in srgb, var(--color-input-bg) 86%, transparent) 100%
+    );
+  background-size: 220% 100%;
+  animation: admin-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+@keyframes admin-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -20% 0;
+  }
+}
+
 .admin-layout {
   display: block;
   width: 100%;
@@ -171,6 +199,7 @@
   justify-content: space-between;
   gap: 0.8rem;
   width: 100%;
+  text-align: left;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 0.7rem 0.75rem;
@@ -192,14 +221,17 @@
 
 .admin-group-toggle-main {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.55rem;
+  flex: 1;
   min-width: 0;
 }
 
 .admin-group-label {
   font-size: 0.9rem;
   font-weight: 700;
+  text-align: left;
+  line-height: 1.25;
 }
 
 .admin-group-count {
@@ -232,6 +264,45 @@
   display: grid;
   gap: 0.4rem;
   padding-left: 0.4rem;
+}
+
+.admin-table-item-skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.admin-skeleton-title {
+  width: 8.5rem;
+  height: 1.2rem;
+  margin-bottom: 0.95rem;
+}
+
+.admin-group-toggle-skeleton {
+  cursor: default;
+  pointer-events: none;
+}
+
+.admin-skeleton-group-label {
+  width: 9.4rem;
+  max-width: 100%;
+  height: 1rem;
+}
+
+.admin-skeleton-group-count {
+  width: 1.8rem;
+  min-width: 1.8rem;
+  height: 1.5rem;
+}
+
+.admin-skeleton-icon {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.3rem;
+}
+
+.admin-skeleton-table-item {
+  width: 100%;
+  height: 0.95rem;
 }
 
 .admin-table-item {
@@ -291,6 +362,37 @@
   flex-wrap: wrap;
 }
 
+.admin-skeleton-heading {
+  width: min(15rem, 55%);
+  height: 1.5rem;
+}
+
+.admin-skeleton-button {
+  width: 7.5rem;
+  height: 2.2rem;
+  border-radius: 10px;
+}
+
+.admin-skeleton-button-sm {
+  width: 4rem;
+  height: 2rem;
+}
+
+.admin-skeleton-input {
+  width: min(360px, 100%);
+  height: 2.6rem;
+  border-radius: 10px;
+}
+
+.admin-pagination-skeleton {
+  min-width: min(18rem, 100%);
+}
+
+.admin-skeleton-page-label {
+  width: 10rem;
+  height: 0.95rem;
+}
+
 .admin-grid-tools .admin-input {
   width: min(360px, 100%);
 }
@@ -339,6 +441,60 @@
   border: 1px solid var(--color-border);
   border-radius: 10px;
   margin-bottom: 0.9rem;
+}
+
+.admin-table-wrap-skeleton {
+  overflow: hidden;
+}
+
+.admin-table-skeleton {
+  display: grid;
+  gap: 0;
+}
+
+.admin-table-skeleton-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) 52px 52px;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-table-skeleton-head {
+  background: color-mix(in srgb, var(--color-bg-primary) 94%, var(--color-input-bg));
+}
+
+.admin-skeleton-table-head {
+  height: 0.9rem;
+}
+
+.admin-skeleton-table-cell,
+.admin-skeleton-table-line {
+  width: 100%;
+  height: 0.88rem;
+}
+
+.admin-skeleton-table-chip {
+  width: 1.5rem;
+  height: 1rem;
+  margin: 0 auto;
+}
+
+.admin-skeleton-table-action {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+.admin-skeleton-table-color {
+  width: 3.8rem;
+  height: 0.95rem;
+}
+
+.admin-loading-table-row td {
+  cursor: default;
 }
 
 .admin-data-table {
@@ -407,6 +563,27 @@
   white-space: normal;
 }
 
+.admin-color-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.admin-color-swatch {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.admin-color-swatch.is-empty {
+  background:
+    linear-gradient(135deg, transparent 43%, rgba(180, 35, 24, 0.8) 43%, rgba(180, 35, 24, 0.8) 57%, transparent 57%),
+    color-mix(in srgb, var(--color-input-bg) 90%, var(--color-bg-primary));
+}
+
 .admin-data-table tr {
   cursor: default;
 }
@@ -459,10 +636,62 @@
   background: var(--color-input-bg);
 }
 
+.admin-editor-skeleton {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.admin-editor-skeleton-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-skeleton-label {
+  width: 7rem;
+  height: 0.85rem;
+}
+
+.admin-skeleton-editor {
+  width: 100%;
+  height: 2.75rem;
+  border-radius: 10px;
+}
+
 .admin-textarea {
   min-height: 2.4rem;
   resize: vertical;
   font: inherit;
+}
+
+.admin-checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.admin-checkbox-field input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+.admin-color-field {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.admin-color-picker {
+  width: 48px;
+  min-width: 48px;
+  height: 44px;
+  padding: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-input-bg);
 }
 
 .admin-modal-backdrop {
@@ -542,5 +771,13 @@
     min-height: auto;
     height: auto;
     overflow: visible;
+  }
+
+  .admin-table-skeleton-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .admin-table-skeleton-row > :nth-last-child(-n + 2) {
+    justify-self: end;
   }
 }

@@ -1568,3 +1568,101 @@ Conclusione:
   - `npm run typecheck` passed
   - `npm run lint` passed
   - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 13:39 CET - Restricted the hero role skeleton to bootstrap only
+
+- The role line in the hero still had one UX bug: when the typing animation deleted back down to zero characters between role cycles, the inline skeleton briefly reappeared, which made the animation look like a loading state even though data was already present.
+- Updated [HeroTyping.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/HeroTyping.tsx) so the role skeleton is now shown only before the role has been rendered for the first time.
+- Once at least one real role character has appeared, subsequent delete/retype cycles stay purely textual and never fall back to the skeleton again.
+- Result:
+  - skeleton only during initial hero bootstrap
+  - normal typing/deleting loop afterward
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 14:02 CET - Made the admin editor field-type aware using registry metadata
+
+- Returned to the admin improvements track and connected the schema-driven registry to the dashboard editor, so the UI no longer treats every editable field as a generic textarea.
+- Extended the admin registry/type system with explicit editor metadata:
+  - [lib/types/admin.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/types/admin.ts)
+  - [lib/admin/registry.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/registry.ts)
+  - [lib/admin/rules.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/admin/rules.ts)
+- Exposed field definitions from the admin tables service:
+  - [lib/services/adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts)
+  - [src/types/app.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/types/app.ts)
+- Updated admin table definitions to mark richer editors where they add actual value:
+  - locale fields -> select
+  - boolean fields -> checkbox
+  - URL/email fields -> typed inputs
+  - `bio` / `description` fields -> textarea
+  - `logo_bg` / `color` fields -> color-aware editor
+  - `icon_key` for socials -> select with the supported icon set
+- Refined [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so:
+  - table columns prefer registry field order/labels
+  - the editor renders typed controls instead of generic textareas
+  - the dashboard still preserves the current generic CRUD flow
+- Added the required styling in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css).
+- Result:
+  - cleaner editing UX
+  - less manual parsing of booleans/numbers/URLs/locales
+  - stronger reuse of backend registry knowledge in the frontend admin
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - `npm run build` passed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio)
+
+## 2026-03-15 14:11 CET - Removed the language toggle from the admin navbar
+
+- The admin UI is currently intentionally Italian-only, so keeping the public language toggle visible in the admin navbar created a misleading control that did not provide real value.
+- Updated [Navbar.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/Navbar.tsx) so the `LanguageSwitcher` is rendered only on non-admin routes.
+- Result:
+  - the public landing page still supports the language toggle
+  - the admin section keeps only the controls that are actually meaningful there
+  - the admin navbar is less noisy and better aligned with the current product intent
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 14:18 CET - Added color swatches in admin table cells
+
+- Improved the admin data grid so columns that use the `color` editor metadata now display a small visual swatch next to the stored hex value.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) to render color-aware cells using the field metadata already exposed by the schema-driven admin registry.
+- Added the corresponding styles in [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css), including a fallback "empty" swatch appearance when the current value is not a valid hex color.
+- Result:
+  - color fields are easier to scan in the admin list view
+  - users do not need to mentally parse hex strings to understand the stored color
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 14:24 CET - Hid the redundant row-number column when `id` is already visible
+
+- Some admin tables were showing both the generic `#` row-number column and a visible `id` column, which duplicated essentially the same identifier signal.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so the `#` column is now rendered only when the current table does not already expose `id` among its visible columns.
+- Result:
+  - tables with a real `id` stay cleaner
+  - tables without a visible `id` still keep a convenient positional row marker
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+
+## 2026-03-15 14:36 CET - Added skeleton states to the admin bootstrap and dashboard
+
+- Extended the admin UI with actual skeleton states so it no longer falls back to plain `Caricamento...` text while session and table data are still bootstrapping.
+- Added a reusable full-page admin shell skeleton in [AdminDashboardSkeleton.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboardSkeleton.tsx).
+- Updated [RequireAdmin.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/RequireAdmin.tsx) so the admin route now shows the skeleton shell during the auth/session check instead of a centered text message.
+- Updated [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) so:
+  - the initial admin load uses the full dashboard skeleton while table metadata is still loading
+  - row loading inside a selected table renders skeleton rows instead of a single textual loading row
+  - stale rows are cleared as soon as a new table load starts, making the loading state visually coherent during table switches
+- Extended [AdminAuth.css](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/css/AdminAuth.css) with:
+  - shimmer animation primitives
+  - sidebar/group skeleton blocks
+  - table/header/action skeletons
+  - editor-panel skeleton fields
+- Result:
+  - the admin now mirrors the public-side loading language
+  - route bootstrap, sidebar loading and row loading all feel materially more polished
+  - admin users see structure first, not abrupt text-only placeholders
