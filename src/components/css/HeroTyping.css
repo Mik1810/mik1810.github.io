@@ -277,12 +277,12 @@
 }
 
 .hero-typing-image img {
-  width: 320px;
-  height: 320px;
+  width: 360px;
+  height: 360px;
   border-radius: 50%;
   object-fit: cover;
   border: 6px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.34);
 }
 
 @media (max-width: 768px) {

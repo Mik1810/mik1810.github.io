@@ -2509,3 +2509,26 @@ Conclusione:
   - portfolio cards via `:focus-within`
 - Reduced motion-heavy effects under `prefers-reduced-motion` in the projects area and scroll-to-top behavior.
 - Added `decoding=\"async\"` and related loading hints to public images in Hero, Skills, Experience, GitHub media, and the lightbox.
+
+## 2026-03-15 22:28 CET - Applied a first visual polish pass to the public single-page UI
+
+- Refined the hero presentation with:
+  - a more layered atmospheric background
+  - stronger greeting and university badge treatments
+  - more sculpted social and portrait framing
+- Turned the About section into a clearer narrative card with improved reading measure and more polished interest chips.
+- Tightened visual hierarchy in Projects with:
+  - more generous title/subtitle rhythm
+  - more refined project chips and links
+  - stronger portfolio and GitHub card framing
+- Upgraded Skills and Experience with more consistent card depth, spacing, and section rhythm, keeping the existing information architecture intact.
+- Verified the pass with `npm run build`.
+
+## 2026-03-15 22:39 CET - Reduced the visual polish pass after targeted design feedback
+
+- Removed the new pill treatment behind the hero greeting and dropped the framed square container behind the portrait.
+- Kept the hero closer to the original layout while enlarging the circular portrait and preserving a stronger shadow.
+- Restored the About section to its earlier simpler presentation, including the previous tag style.
+- Simplified project tags again to remove the distracting highlight line effect.
+- Rolled back the heavy boxed treatment from the upper technologies area in Skills while keeping the rest of the section intact.
+- Re-verified the adjusted pass with `npm run build`.
