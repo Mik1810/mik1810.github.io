@@ -1,4 +1,4 @@
-name: CI
+name: CI test
 
 on:
   # Validate the main branch after each push.
@@ -84,7 +84,7 @@ jobs:
           set -o pipefail
           npm run build 2>&1 | tee -a logs/ci.log
 
-      # Mirror the full unified log into the Actions run summary.
+      # Mirror the full unified log into the Actions run summary as pure markdown.
       - name: Publish CI log summary
         if: always()
         shell: bash
@@ -92,14 +92,36 @@ jobs:
           {
             echo "## CI log summary"
             echo
-            echo "Each full command log is already visible in the step output above."
-            echo "The downloadable artifact is kept as a backup, but GitHub always serves artifacts as zip files."
+            echo "- Full command output remains visible in each workflow step."
+            echo "- The downloadable artifact is still kept as a backup, even though GitHub serves artifacts as zip files."
             echo
-            echo "### ci.log"
-            echo '```text'
-            cat logs/ci.log
-            echo '```'
+            echo "### Checks"
+            echo "- \`npm ci\`"
+            echo "- \`npm run lint\`"
+            echo "- \`npm run typecheck\`"
+            echo "- \`npm run build\`"
+            echo
           } >> "$GITHUB_STEP_SUMMARY"
+
+          for section in "Install dependencies" "Lint" "Typecheck" "Build"; do
+            {
+              echo "### ${section}"
+              echo
+              echo '```text'
+              awk -v target="$section" '
+                $0 == "===== " target " =====" {
+                  capture = 1
+                  next
+                }
+                /^===== .* =====$/ {
+                  if (capture) exit
+                }
+                capture { print }
+              ' logs/ci.log
+              echo '```'
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       # Keep the logs even on failure so the GitHub Actions run is debuggable.
       - name: Upload CI logs

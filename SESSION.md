@@ -3008,3 +3008,46 @@ Conclusione:
 - Expected result:
   - the workflow warning about Node 20 deprecation on GitHub-hosted runners should disappear
   - the workflows should remain aligned with the GitHub Actions move toward Node 24 by default.
+
+## 2026-03-15 21:24 CET - Reformatted the CI run summary into markdown sections
+
+- The Actions summary was still showing the entire `ci.log` as one large code block, which made it harder to scan quickly.
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - kept `ci.log` as the underlying unified transcript
+  - replaced the monolithic summary output with markdown-oriented sections:
+    - a short checklist of executed commands
+    - one collapsible section each for install, lint, typecheck, and build
+  - parsed `ci.log` by its existing section headers so the summary remains synchronized with the underlying artifact
+- Expected result:
+  - the GitHub Actions summary should now be much easier to read directly from the run page, without giving up the single `ci.log` artifact.
+
+## 2026-03-15 21:29 CET - Switched the CI summary output to markdown-only formatting
+
+- The previous summary formatting still relied on HTML `<details>` blocks, while the desired output was markdown-only.
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+- Changes:
+  - replaced the collapsible HTML sections with plain markdown headings
+  - kept each CI section rendered inside fenced code blocks
+  - preserved the same parsing of `ci.log`, but now the summary consists only of markdown elements
+- Expected result:
+  - the GitHub Actions run summary should now render entirely from markdown content, without mixing in HTML tags.
+
+## 2026-03-15 21:18 CET - Consolidated the admin route code behind a single lazy entry point
+
+- The public build was still emitting several small admin JavaScript chunks because `/login` and `/admin` each had their own `lazy()` entry, plus the admin guard and skeleton split points.
+- Updated:
+  - [AdminApp.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/components/jsx/AdminApp.tsx)
+  - [App.tsx](/c:/Users/micha/Desktop/mik1810.github.io/src/App.tsx)
+- Changes:
+  - introduced a single `AdminApp` module that imports:
+    - `AdminLogin`
+    - `RequireAdmin`
+    - `AdminDashboard`
+  - replaced the three independent admin lazy imports in `App.tsx` with one shared lazy entry point
+  - kept the public/home route unchanged while making the admin area load as a single lazy-loaded subtree
+- Expected result:
+  - Vite should stop emitting multiple admin route entry chunks
+  - the admin JavaScript should now be grouped much more coherently as one lazily loaded admin asset family, while remaining excluded from the public bundle.

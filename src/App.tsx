@@ -15,9 +15,7 @@ import './components/css/SectionSkeletons.css'
 import { useContent } from './context/useContent'
 import { useProfile } from './context/useProfile'
 
-const AdminDashboard = lazy(() => import('./components/jsx/AdminDashboard'))
-const AdminLogin = lazy(() => import('./components/jsx/AdminLogin'))
-const RequireAdmin = lazy(() => import('./components/jsx/RequireAdmin'))
+const AdminApp = lazy(() => import('./components/jsx/AdminApp'))
 
 function App() {
   const { pathname } = useLocation()
@@ -77,7 +75,7 @@ function App() {
           path="/login"
           element={
             <Suspense fallback={<AdminRouteFallback />}>
-              <AdminLogin />
+              <AdminApp mode="login" />
             </Suspense>
           }
         />
@@ -85,9 +83,7 @@ function App() {
           path="/admin"
           element={
             <Suspense fallback={<AdminRouteFallback />}>
-              <RequireAdmin>
-                <AdminDashboard />
-              </RequireAdmin>
+              <AdminApp mode="dashboard" />
             </Suspense>
           }
         />
