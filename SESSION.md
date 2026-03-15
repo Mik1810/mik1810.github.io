@@ -2988,3 +2988,23 @@ Conclusione:
   - changed the summary step to render the full `ci.log` with `cat` instead of truncating it with `tail`
 - Expected result:
   - future GitHub Actions summaries should show the entire CI transcript in readable plain text, without the ANSI escape artifacts that were visible before.
+
+## 2026-03-15 21:10 CET - Upgraded GitHub workflow actions to Node 24-native majors
+
+- GitHub Actions began warning that several workflow actions were still running on the deprecated Node 20 runtime:
+  - `actions/checkout@v4`
+  - `actions/setup-node@v4`
+  - `actions/upload-artifact@v4`
+  - `actions/github-script@v7`
+- Updated:
+  - [ci.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/ci.yml)
+  - [cleanup-deployments.yml](/c:/Users/micha/Desktop/mik1810.github.io/.github/workflows/cleanup-deployments.yml)
+- Changes:
+  - upgraded:
+    - `actions/checkout` from `v4` to `v6`
+    - `actions/setup-node` from `v4` to `v6`
+    - `actions/upload-artifact` from `v4` to `v6`
+    - `actions/github-script` from `v7` to `v8`
+- Expected result:
+  - the workflow warning about Node 20 deprecation on GitHub-hosted runners should disappear
+  - the workflows should remain aligned with the GitHub Actions move toward Node 24 by default.

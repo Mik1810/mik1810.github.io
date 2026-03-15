@@ -21,11 +21,11 @@ jobs:
     steps:
       # Download the repository contents into the runner workspace.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Use the same major Node version we target on Vercel and cache npm packages.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
@@ -104,7 +104,7 @@ jobs:
       # Keep the logs even on failure so the GitHub Actions run is debuggable.
       - name: Upload CI logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ci-logs
           path: logs
