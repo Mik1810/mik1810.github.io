@@ -2774,3 +2774,14 @@ Conclusione:
 - Result:
   - the hero photo should appear as a clean single reveal
   - the layout and shadow footprint stay stable while the image is still loading.
+
+## 2026-03-16 01:36 CET - Preloaded the hero portrait from the document head
+
+- The hero placeholder still felt longer than necessary because the portrait request could only start after the client app booted and the profile-driven hero mounted.
+- Updated:
+  - [index.html](/c:/Users/micha/Desktop/mik1810.github.io/index.html)
+- Changes:
+  - added a document-level preload for `/imgs/michael.jpg` with high priority
+- Expected result:
+  - the browser can start fetching the hero portrait during HTML parsing
+  - the circular hero placeholder should clear faster without reintroducing partial-image painting.
