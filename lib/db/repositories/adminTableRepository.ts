@@ -1,54 +1,9 @@
-import { sqlClient } from '../client.js'
+import { and, eq } from 'drizzle-orm'
 
-const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/
+import type { AdminTableConfig } from '../../types/admin.js'
+import { db } from '../client.js'
 
-const ensureIdentifier = (value: string) => {
-  if (!IDENTIFIER_PATTERN.test(value)) {
-    throw new Error(`Invalid SQL identifier: ${value}`)
-  }
-  return value
-}
-
-const buildWhereClause = (keys: Record<string, unknown>) => {
-  const entries = Object.entries(keys)
-  if (entries.length === 0) {
-    throw new Error('Missing keys payload')
-  }
-
-  const conditions = entries.map(([key, value]) => {
-    const identifier = sqlClient(ensureIdentifier(key))
-    return sqlClient`${identifier} = ${value as never}`
-  })
-
-  const [firstCondition, ...restConditions] = conditions
-  return restConditions.reduce(
-    (fragment, condition) => sqlClient`${fragment} and ${condition}`,
-    firstCondition
-  )
-}
-
-const ensureRowColumns = (row: Record<string, unknown>) => {
-  const columns = Object.keys(row)
-  if (columns.length === 0) {
-    throw new Error('Missing row payload')
-  }
-  columns.forEach((column) => {
-    ensureIdentifier(column)
-  })
-  return columns
-}
-
-const buildSetClause = (row: Record<string, unknown>) => {
-  const columns = ensureRowColumns(row)
-  return sqlClient(
-    row as Record<string, never>,
-    columns as unknown as string[]
-  )
-}
-
-const runQuery = async <TRow = Record<string, unknown>>(
-  query: Promise<TRow[]>
-) => {
+const runQuery = async <TResult>(query: Promise<TResult>) => {
   try {
     return await query
   } catch {
@@ -56,49 +11,107 @@ const runQuery = async <TRow = Record<string, unknown>>(
   }
 }
 
-export const listAdminRows = async (table: string, limit: number) => {
-  const rows = await runQuery(
-    sqlClient`select * from ${sqlClient(ensureIdentifier(table))} limit ${limit}`
+const toDbRow = (
+  config: AdminTableConfig,
+  row: Record<string, unknown>
+): Record<string, unknown> =>
+  Object.fromEntries(
+    config.columns.map(({ dbName, propertyKey }) => [dbName, row[propertyKey]])
   )
-  return rows
+
+const toPropertyPayload = (
+  config: AdminTableConfig,
+  row: Record<string, unknown>,
+  errorMessage: string
+) => {
+  const payload: Record<string, unknown> = {}
+
+  for (const [dbName, value] of Object.entries(row)) {
+    const columnConfig = config.columnsByDbName[dbName]
+    if (!columnConfig) {
+      throw new Error(errorMessage)
+    }
+    payload[columnConfig.propertyKey] = value
+  }
+
+  return payload
+}
+
+const buildWhereClause = (
+  config: AdminTableConfig,
+  keys: Record<string, unknown>
+) => {
+  const conditions = Object.entries(keys).map(([dbName, value]) => {
+    const columnConfig = config.columnsByDbName[dbName]
+    if (!columnConfig) {
+      throw new Error('Unknown column in keys payload')
+    }
+    return eq(columnConfig.column, value as never)
+  })
+
+  if (conditions.length === 0) {
+    throw new Error('Missing keys payload')
+  }
+
+  return conditions.length === 1 ? conditions[0] : and(...conditions)
+}
+
+export const listAdminRows = async (
+  config: AdminTableConfig,
+  limit: number
+) => {
+  const rows = (await runQuery(
+    db.select().from(config.table).limit(limit)
+  )) as Record<string, unknown>[]
+
+  return rows.map((row) => toDbRow(config, row))
 }
 
 export const insertAdminRow = async (
-  table: string,
+  config: AdminTableConfig,
   row: Record<string, unknown>
 ) => {
-  const rows = await runQuery(
-    sqlClient`insert into ${sqlClient(ensureIdentifier(table))} ${buildSetClause(row)} returning *`
+  const propertyPayload = toPropertyPayload(
+    config,
+    row,
+    'Unknown column in row payload'
   )
+  const rows = (await runQuery(
+    db
+      .insert(config.table)
+      .values(propertyPayload as never)
+      .returning()
+  )) as Record<string, unknown>[]
 
-  return rows[0] || null
+  return rows[0] ? toDbRow(config, rows[0]) : null
 }
 
 export const updateAdminRow = async (
-  table: string,
+  config: AdminTableConfig,
   keys: Record<string, unknown>,
   row: Record<string, unknown>
 ) => {
-  const rows = await runQuery(
-    sqlClient`
-      update ${sqlClient(ensureIdentifier(table))}
-      set ${buildSetClause(row)}
-      where ${buildWhereClause(keys)}
-      returning *
-    `
+  const propertyPayload = toPropertyPayload(
+    config,
+    row,
+    'Unknown column in row payload'
   )
+  const rows = (await runQuery(
+    db
+      .update(config.table)
+      .set(propertyPayload as never)
+      .where(buildWhereClause(config, keys))
+      .returning()
+  )) as Record<string, unknown>[]
 
-  return rows[0] || null
+  return rows[0] ? toDbRow(config, rows[0]) : null
 }
 
 export const deleteAdminRow = async (
-  table: string,
+  config: AdminTableConfig,
   keys: Record<string, unknown>
 ) => {
   await runQuery(
-    sqlClient`
-      delete from ${sqlClient(ensureIdentifier(table))}
-      where ${buildWhereClause(keys)}
-    `
+    db.delete(config.table).where(buildWhereClause(config, keys))
   )
 }

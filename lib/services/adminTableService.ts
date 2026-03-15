@@ -8,6 +8,31 @@ import {
 } from '../db/repositories/adminTableRepository.js'
 import type { AdminTableConfig } from '../types/admin.js'
 
+const requireAdminTableConfig = (table: string) => {
+  const config = getAdminTableConfig(table)
+  if (!config) {
+    throw new HttpError(400, 'Table not allowed')
+  }
+  return config
+}
+
+const ensureKnownAdminColumns = (
+  config: AdminTableConfig,
+  payload: Record<string, unknown>,
+  payloadLabel: string
+) => {
+  const unknownColumns = Object.keys(payload).filter(
+    (column) => !config.columnsByDbName[column]
+  )
+
+  if (unknownColumns.length > 0) {
+    throw new HttpError(
+      400,
+      `Unknown columns in ${payloadLabel}: ${unknownColumns.join(', ')}`
+    )
+  }
+}
+
 export const parseAdminTableLimit = (rawValue: string | undefined) => {
   if (rawValue === undefined) return 200
   const parsed = Number.parseInt(rawValue || '', 10)
@@ -52,23 +77,34 @@ export const getAdminTableConfigOrNull = (table: string) =>
   getAdminTableConfig(table)
 
 export const getAdminRows = async (table: string, limit: number) =>
-  listAdminRows(table, limit)
+  listAdminRows(requireAdminTableConfig(table), limit)
 
 export const createAdminRow = async (
   table: string,
   row: Record<string, unknown>
-) => insertAdminRow(table, row)
+) => {
+  const config = requireAdminTableConfig(table)
+  ensureKnownAdminColumns(config, row, 'row payload')
+  return insertAdminRow(config, row)
+}
 
 export const editAdminRow = async (
   table: string,
   keys: Record<string, unknown>,
   row: Record<string, unknown>
-) => updateAdminRow(table, keys, row)
+) => {
+  const config = requireAdminTableConfig(table)
+  ensureKnownAdminColumns(config, keys, 'keys payload')
+  ensureKnownAdminColumns(config, row, 'row payload')
+  return updateAdminRow(config, keys, row)
+}
 
 export const removeAdminRow = async (
   table: string,
   keys: Record<string, unknown>
 ) => {
-  await deleteAdminRow(table, keys)
+  const config = requireAdminTableConfig(table)
+  ensureKnownAdminColumns(config, keys, 'keys payload')
+  await deleteAdminRow(config, keys)
   return { ok: true }
 }

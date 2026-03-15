@@ -1322,3 +1322,27 @@ Conclusione:
 - Outcome:
   - successful requests should no longer be visually polluted by `dotenv`'s informational output
   - the remaining `DEP0169` warning appears unrelated to the application code itself and is likely emitted by a dependency or the hosting/runtime layer rather than by the repository logic
+## 2026-03-15 11:59 CET - Began migrating the generic admin CRUD path to a schema-driven Drizzle registry
+
+- Reworked [adminTables.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/adminTables.ts) from a metadata-only map into a schema-driven registry backed by the Drizzle table objects from [schema.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/schema.ts).
+- The admin registry now stores, for every allowed table:
+  - the Drizzle table object itself
+  - the public admin metadata already used by the dashboard (`label`, `primaryKeys`, `defaultRow`)
+  - a generated mapping between Drizzle property keys and DB column names
+  - a `columnsByDbName` index so the admin layer can keep speaking `snake_case` to the frontend while using Drizzle internally
+- Reworked [adminTableRepository.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/db/repositories/adminTableRepository.ts) to replace generic raw SQL CRUD with Drizzle operations:
+  - `db.select().from(...)`
+  - `db.insert(...).values(...).returning()`
+  - `db.update(...).set(...).where(...).returning()`
+  - `db.delete(...).where(...)`
+- The repository now performs a bidirectional mapping:
+  - incoming admin payloads remain `snake_case` and are converted to Drizzle property keys before insert/update
+  - outgoing rows are converted back to DB-style `snake_case` so [AdminDashboard.tsx](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/src/components/jsx/AdminDashboard.tsx) can remain unchanged
+- Hardened [adminTableService.ts](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio/lib/services/adminTableService.ts) so admin `row` and `keys` payloads are now validated against the registry's known columns before reaching the repository.
+- Verification:
+  - `npm run typecheck` passed
+  - `npm run lint` passed
+  - read-only runtime test against the new admin Drizzle path returned valid `snake_case` rows for:
+    - `profile`
+    - `profile_i18n`
+  - `npm run build` passed when executed from the real repository path [Piccirilli_Michael_Portfolio](/c:/Users/micha/Desktop/Piccirilli_Michael_Portfolio); the old [mik1810.github.io](/c:/Users/micha/Desktop/mik1810.github.io) path still behaves like the previously noted junction/alias and can trigger a Vite output-path error unrelated to this admin change
