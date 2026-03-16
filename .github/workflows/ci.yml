@@ -150,7 +150,7 @@ jobs:
       # Keep the logs even on failure so the GitHub Actions run is debuggable.
       - name: Upload CI logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ci-logs
           path: logs
