@@ -3357,3 +3357,18 @@ pm run build passed
   - `tech_categories_i18n` / `tech_items`
   - `skill_categories_i18n` / `skill_items` / `skill_items_i18n`
 - This pass does not change the live DB shape; it makes the ORM schema stricter and closer to the real dump.
+
+## 2026-03-16 23:29 CET - Closed schema and database hardening block for current scope
+
+- Reviewed the public content model after the index migration and Drizzle FK alignment.
+- Confirmed that `_i18n` uniqueness is already enforced by composite primary keys in both the live DB and [schema.ts](./lib/db/schema.ts).
+- Confirmed that order-sensitive public tables already rely on explicit unique constraints, for example:
+  - base entities by `order_index`
+  - child collections by `(parent_id, order_index)`
+  - slugs where needed
+- Marked the `Hardening schema e database` block in [TODO.md](./TODO.md) as completed for the current project scope.
+
+## 2026-03-16 23:37 CET - Removed committed SQL migration artifact and README dump references
+
+- Deleted [0001_public_read_indexes.sql](./drizzle/0001_public_read_indexes.sql) from the repository after the index migration had already been applied to the live database and reflected in dumps.
+- Removed direct dump references from [README.md](./README.md) to avoid documenting operational DB artifacts as part of the public project narrative.

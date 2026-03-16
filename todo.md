@@ -92,16 +92,12 @@ Rendere lo schema più robusto contro inconsistenze e query inefficienti.
 
 ### Interventi residui
 
-- `❌ Non fatto` aggiungere vincoli `unique` per le tabelle `_i18n`, per esempio:
-  - `(project_id, locale)`
-  - `(experience_id, locale)`
-  - equivalenti per le altre entità localizzate
-- `❌ Non fatto` aggiungere o rivedere indici su:
-  - `locale`
-  - foreign key più usate
-  - `order_index`
-  - eventuali flag come `featured`
-- `❌ Non fatto` verificare se esistono ancora punti dove l’ordinamento o l’unicità dipendono solo dalla logica applicativa
+- `✅ Fatto` confermato che le tabelle `*_i18n` sono gia` protette da chiavi composte `PRIMARY KEY (entity_id, locale)`, quindi l’unicita` locale-base e` gia` garantita
+- `✅ Fatto` aggiunti e applicati indici mirati per i path di lettura pubblici piu` usati:
+  - `locale` sulle tabelle `*_i18n`
+  - `featured + order_index` su `github_projects`
+  - dump riallineati dopo la migration
+- `✅ Fatto` completato l’audit del modello pubblico: ordine, slug, chiavi composte `*_i18n` e child tables ordinati sono gia` coperti da constraint o unique coerenti con le query attuali
 
 ### Priorità
 

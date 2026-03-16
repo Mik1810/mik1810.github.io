@@ -345,16 +345,6 @@ The repository currently contains two operational workflows:
 
 The CI pipeline is intentionally small, but it establishes a reproducible minimum verification floor before deployment.
 
-### 7.4 Database dumps and contract references
-
-The repository includes:
-
-- [dump/dump.sql](./dump/dump.sql)
-- [dump/dump_schema.sql](./dump/dump_schema.sql)
-- [docs/API_CONTRACT.md](./docs/API_CONTRACT.md)
-
-These artifacts serve as reproducibility anchors for schema alignment, endpoint expectations, and DB state verification.
-
 ## 8. Performance and Runtime Choices
 
 The current implementation incorporates several pragmatic performance decisions:
@@ -372,8 +362,6 @@ These choices are intentionally conservative: they improve runtime behavior with
 The artifact is structurally mature, but not complete. Current limits include:
 
 - cache and rate limiting remain process-local rather than distributed;
-- runtime schema validation is still manual and not yet consolidated behind Zod;
-- no automated endpoint suite yet exists for DB-backed public handlers;
 - no full admin upload flow exists for persistent media management;
 - some operational enhancements remain open, including environment validation, a minimal health/dashboard view, and lightweight release discipline.
 
