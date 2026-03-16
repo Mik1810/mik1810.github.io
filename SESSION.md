@@ -3402,5 +3402,21 @@ pm run build passed
 
 ## 2026-03-16 23:28 CET - Extended Dependabot guardrails to the Vite toolchain
 
-- Updated [dependabot.yml](./.github/dependabot.yml) to ignore semver-major updates for ite and @vitejs/plugin-react.
+- Updated [dependabot.yml](./.github/dependabot.yml) to ignore semver-major updates for `vite` and @vitejs/plugin-react.
 - This avoids automatic PRs that upgrade only one side of the Vite toolchain and break installation or preview deploys.
+
+## 2026-03-16 23:42 CET - Added coordinated tooling-upgrade tracking to the roadmap
+
+- Updated [todo.md](./todo.md) to explicitly track coordinated upgrades for major tooling stacks such as ESLint and Vite.
+- The new roadmap item highlights the need to verify dependency compatibility before merging major toolchain updates.
+
+## 2026-03-16 23:46 CET - Added explicit coordinated-tooling-upgrade item to the roadmap
+
+- Refined [todo.md](./todo.md) so coordinated upgrades for major tooling stacks are now a standalone roadmap item, not just an implied maintenance practice.
+
+## 2026-03-16 23:54 CET - Introduced a lightweight release discipline
+
+- Added [CHANGELOG.md](./CHANGELOG.md) with an Unreleased section and the initial 1.0.0 baseline entry.
+- Updated [README.md](./README.md) to document the lightweight release convention based on semantic version alignment and `vX.Y.Z` Git tags.
+- Marked the release-discipline item in [todo.md](./todo.md) as ✅ Fatto.
+

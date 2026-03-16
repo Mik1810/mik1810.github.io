@@ -345,6 +345,14 @@ The repository currently contains two operational workflows:
 
 The CI pipeline is intentionally small, but it establishes a reproducible minimum verification floor before deployment.
 
+### 7.4 Release discipline
+
+Release tracking follows a lightweight process:
+
+- [CHANGELOG.md](./CHANGELOG.md) accumulates ongoing work under Unreleased;
+- stable checkpoints are recorded as semantic versions aligned with [package.json](./package.json);
+- Git tags should mirror those versions using the form `vX.Y.Z`.
+
 ## 8. Performance and Runtime Choices
 
 The current implementation incorporates several pragmatic performance decisions:
@@ -363,12 +371,13 @@ The artifact is structurally mature, but not complete. Current limits include:
 
 - cache and rate limiting remain process-local rather than distributed;
 - no full admin upload flow exists for persistent media management;
-- some operational enhancements remain open, including environment validation, a minimal health/dashboard view, and lightweight release discipline.
+- several roadmap items remain intentionally open, especially around contact flow, content discoverability, final performance work, and admin upload UX.
 
 The active roadmap is maintained in [todo.md](./todo.md) and intentionally lists only open work.
 
 ## 10. Internal References
 
+- changelog: [CHANGELOG.md](./CHANGELOG.md)
 - current roadmap: [todo.md](./todo.md)
 - session log: [SESSION.md](./SESSION.md)
 - API contract: [docs/API_CONTRACT.md](./docs/API_CONTRACT.md)
@@ -376,5 +385,4 @@ The active roadmap is maintained in [todo.md](./todo.md) and intentionally lists
 - public repository composition: [lib/db/repositories/projectsRepository.ts](./lib/db/repositories/projectsRepository.ts)
 - admin registry: [lib/admin/registry.ts](./lib/admin/registry.ts)
 - CI workflow: [.github/workflows/ci.yml](./.github/workflows/ci.yml)
-
 

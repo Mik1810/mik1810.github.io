@@ -71,9 +71,10 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
   - versione app
   - informazioni minime di integrità
   - environment, uptime e metadati minimi di deploy
-- `❌ Non fatto` introdurre una disciplina di release leggera, per esempio:
+- `✅ Fatto` introdurre una disciplina di release leggera, tramite `CHANGELOG.md` e convenzione di tag semver, per esempio:
   - changelog minimo
   - tag coerenti con le versioni
+- `❌ Non fatto` pianificare upgrade coordinati dei principali stack di tooling (per esempio ESLint e Vite), verificando la compatibilità tra dipendenze prima del merge
 
 ### Priorità
 
@@ -252,5 +253,4 @@ Medio-Alto
 ## Nota pratica
 
 Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, le sezioni dalla `2` in poi possono anche essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.
-
 
