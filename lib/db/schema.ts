@@ -33,8 +33,8 @@ export const profile = pgTable(
 export const profileI18n = pgTable(
   'profile_i18n',
   {
-    profileId: smallint('profile_id').notNull(),
-    locale: text('locale').notNull(),
+    profileId: smallint('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     greeting: text('greeting').notNull(),
     location: text('location').notNull(),
     universityName: text('university_name').notNull(),
@@ -50,7 +50,7 @@ export const socialLinks = pgTable(
   'social_links',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    profileId: smallint('profile_id').notNull(),
+    profileId: smallint('profile_id').references(() => profile.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
     name: text('name').notNull(),
     url: text('url').notNull(),
@@ -76,8 +76,8 @@ export const heroRoles = pgTable(
 export const heroRolesI18n = pgTable(
   'hero_roles_i18n',
   {
-    heroRoleId: bigint('hero_role_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    heroRoleId: bigint('hero_role_id', { mode: 'number' }).references(() => heroRoles.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     role: text('role').notNull(),
   },
   (table) => [
@@ -98,8 +98,8 @@ export const aboutInterests = pgTable(
 export const aboutInterestsI18n = pgTable(
   'about_interests_i18n',
   {
-    aboutInterestId: bigint('about_interest_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    aboutInterestId: bigint('about_interest_id', { mode: 'number' }).references(() => aboutInterests.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     interest: text('interest').notNull(),
   },
   (table) => [
@@ -125,8 +125,8 @@ export const projects = pgTable(
 export const projectsI18n = pgTable(
   'projects_i18n',
   {
-    projectId: bigint('project_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    projectId: bigint('project_id', { mode: 'number' }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     title: text('title').notNull(),
     description: text('description').notNull(),
   },
@@ -140,7 +140,7 @@ export const projectTags = pgTable(
   'project_tags',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    projectId: bigint('project_id', { mode: 'number' }).notNull(),
+    projectId: bigint('project_id', { mode: 'number' }).references(() => projects.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
     tag: text('tag').notNull(),
   },
@@ -175,8 +175,8 @@ export const githubProjects = pgTable(
 export const githubProjectsI18n = pgTable(
   'github_projects_i18n',
   {
-    githubProjectId: bigint('github_project_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    githubProjectId: bigint('github_project_id', { mode: 'number' }).references(() => githubProjects.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     title: text('title').notNull(),
     description: text('description').notNull(),
   },
@@ -190,7 +190,7 @@ export const githubProjectTags = pgTable(
   'github_project_tags',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    githubProjectId: bigint('github_project_id', { mode: 'number' }).notNull(),
+    githubProjectId: bigint('github_project_id', { mode: 'number' }).references(() => githubProjects.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
     tag: text('tag').notNull(),
   },
@@ -205,7 +205,7 @@ export const githubProjectImages = pgTable(
   'github_project_images',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    githubProjectId: bigint('github_project_id', { mode: 'number' }).notNull(),
+    githubProjectId: bigint('github_project_id', { mode: 'number' }).references(() => githubProjects.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
     imageUrl: text('image_url').notNull(),
     altText: text('alt_text'),
@@ -235,8 +235,8 @@ export const experiences = pgTable(
 export const experiencesI18n = pgTable(
   'experiences_i18n',
   {
-    experienceId: bigint('experience_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    experienceId: bigint('experience_id', { mode: 'number' }).references(() => experiences.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     role: text('role').notNull(),
     company: text('company').notNull(),
     period: text('period').notNull(),
@@ -265,8 +265,8 @@ export const education = pgTable(
 export const educationI18n = pgTable(
   'education_i18n',
   {
-    educationId: bigint('education_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    educationId: bigint('education_id', { mode: 'number' }).references(() => education.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     degree: text('degree').notNull(),
     institution: text('institution').notNull(),
     period: text('period').notNull(),
@@ -294,8 +294,8 @@ export const techCategories = pgTable(
 export const techCategoriesI18n = pgTable(
   'tech_categories_i18n',
   {
-    techCategoryId: bigint('tech_category_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    techCategoryId: bigint('tech_category_id', { mode: 'number' }).references(() => techCategories.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     name: text('name').notNull(),
   },
   (table) => [
@@ -308,7 +308,7 @@ export const techItems = pgTable(
   'tech_items',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    techCategoryId: bigint('tech_category_id', { mode: 'number' }).notNull(),
+    techCategoryId: bigint('tech_category_id', { mode: 'number' }).references(() => techCategories.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
     name: text('name').notNull(),
     devicon: text('devicon'),
@@ -334,8 +334,8 @@ export const skillCategories = pgTable(
 export const skillCategoriesI18n = pgTable(
   'skill_categories_i18n',
   {
-    skillCategoryId: bigint('skill_category_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    skillCategoryId: bigint('skill_category_id', { mode: 'number' }).references(() => skillCategories.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     categoryName: text('category_name').notNull(),
   },
   (table) => [
@@ -348,7 +348,7 @@ export const skillItems = pgTable(
   'skill_items',
   {
     id: bigint('id', { mode: 'number' }).primaryKey().generatedByDefaultAsIdentity(),
-    skillCategoryId: bigint('skill_category_id', { mode: 'number' }).notNull(),
+    skillCategoryId: bigint('skill_category_id', { mode: 'number' }).references(() => skillCategories.id, { onDelete: 'cascade' }).notNull(),
     orderIndex: integer('order_index').notNull(),
   },
   (table) => [
@@ -362,8 +362,8 @@ export const skillItems = pgTable(
 export const skillItemsI18n = pgTable(
   'skill_items_i18n',
   {
-    skillItemId: bigint('skill_item_id', { mode: 'number' }).notNull(),
-    locale: text('locale').notNull(),
+    skillItemId: bigint('skill_item_id', { mode: 'number' }).references(() => skillItems.id, { onDelete: 'cascade' }).notNull(),
+    locale: text('locale').references(() => locales.code, { onDelete: 'cascade' }).notNull(),
     label: text('label').notNull(),
   },
   (table) => [

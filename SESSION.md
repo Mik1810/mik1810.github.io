@@ -3343,3 +3343,17 @@ pm run build passed
 - Updated [TODO.md](./TODO.md):
   - marked the `_i18n` uniqueness item as `✅ Fatto` because composite primary keys already enforce it
   - marked the indexing task as `🟡 Partial` after this first pass
+
+## 2026-03-16 23:16 CET - Aligned Drizzle schema with existing public foreign keys
+
+- Updated [schema.ts](./lib/db/schema.ts) so Drizzle now declares the foreign-key relationships that were already present in the actual PostgreSQL schema.
+- Added `.references(..., { onDelete: 'cascade' })` across the public content graph, including:
+  - `profile_i18n` / `social_links`
+  - `hero_roles_i18n`
+  - `about_interests_i18n`
+  - `projects_i18n` / `project_tags`
+  - `github_projects_i18n` / `github_project_tags` / `github_project_images`
+  - `experiences_i18n` / `education_i18n`
+  - `tech_categories_i18n` / `tech_items`
+  - `skill_categories_i18n` / `skill_items` / `skill_items_i18n`
+- This pass does not change the live DB shape; it makes the ORM schema stricter and closer to the real dump.
