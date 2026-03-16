@@ -1,4 +1,4 @@
-# TODO.md
+# todo.md
 
 ## Scopo
 
@@ -10,6 +10,12 @@ Sono state rimosse:
 - le attività escluse per scelta progettuale
 
 L'obiettivo è tenere una roadmap corta, reale e utile.
+
+### Legenda stato
+
+- `✅ Fatto`: chiuso
+- `🟡 Partial`: avviato o completato solo in parte
+- `❌ Non fatto`: ancora da affrontare
 
 ---
 
@@ -35,13 +41,11 @@ Rendere il backend più rigoroso lato validazione, sicurezza e comportamento sot
 
 ### Interventi residui
 
-- introdurre validazione input strutturata con Zod
-- introdurre validazione esplicita delle variabili ambiente all’avvio, con errori chiari su configurazioni mancanti o invalide
-- aggiungere rate limiting almeno su:
-  - endpoint pubblici più sensibili
-  - login/admin
-- rifinire ancora gestione errori e risposta uniforme delle API
-- rafforzare ulteriormente i controlli sul path admin dove serve
+- `✅ Fatto` introdurre validazione input strutturata con Zod come base condivisa per query/body sui principali endpoint pubblici e admin sensibili
+- `✅ Fatto` introdurre validazione esplicita delle variabili ambiente all’avvio, con errori chiari su configurazioni mancanti o invalide
+- `✅ Fatto` aggiungere rate limiting sui path pubblici più sensibili e su login/admin
+- `✅ Fatto` rifinire gestione errori e risposta uniforme delle API sui path principali già hardenizzati
+- `✅ Fatto` rafforzare ulteriormente i controlli sul path admin dove serviva di più (`login` e `table`)
 
 ### Priorità
 
@@ -61,12 +65,12 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
 
 ### Interventi residui
 
-- introdurre `Dependabot` o `Renovate` per aggiornamenti automatici delle dipendenze
-- aggiungere una health/dashboard minima per stato applicativo e operativo, per esempio:
+- `❌ Non fatto` introdurre `Dependabot` o `Renovate` per aggiornamenti automatici delle dipendenze
+- `❌ Non fatto` aggiungere una health/dashboard minima per stato applicativo e operativo, per esempio:
   - stato DB
   - versione app
   - informazioni minime di integrità
-- introdurre una disciplina di release leggera, per esempio:
+- `❌ Non fatto` introdurre una disciplina di release leggera, per esempio:
   - changelog minimo
   - tag coerenti con le versioni
 
@@ -88,16 +92,16 @@ Rendere lo schema più robusto contro inconsistenze e query inefficienti.
 
 ### Interventi residui
 
-- aggiungere vincoli `unique` per le tabelle `_i18n`, per esempio:
+- `❌ Non fatto` aggiungere vincoli `unique` per le tabelle `_i18n`, per esempio:
   - `(project_id, locale)`
   - `(experience_id, locale)`
   - equivalenti per le altre entità localizzate
-- aggiungere o rivedere indici su:
+- `❌ Non fatto` aggiungere o rivedere indici su:
   - `locale`
   - foreign key più usate
   - `order_index`
   - eventuali flag come `featured`
-- verificare se esistono ancora punti dove l’ordinamento o l’unicità dipendono solo dalla logica applicativa
+- `❌ Non fatto` verificare se esistono ancora punti dove l’ordinamento o l’unicità dipendono solo dalla logica applicativa
 
 ### Priorità
 
@@ -117,9 +121,9 @@ Rendere la sezione contatti più completa e più resistente, senza complicarla i
 
 ### Interventi residui
 
-- migliorare stati di successo/errore lato UX
-- valutare invio reale o gestione più strutturata del form, se desiderato
-- aggiungere protezione minima anti-spam se il form diventa operativo
+- `❌ Non fatto` migliorare stati di successo/errore lato UX
+- `❌ Non fatto` valutare invio reale o gestione più strutturata del form, se desiderato
+- `❌ Non fatto` aggiungere protezione minima anti-spam se il form diventa operativo
 
 ### Priorità
 
@@ -139,15 +143,15 @@ Rendere le sezioni pubbliche più espressive e più collegate tra loro, senza ca
 
 ### Interventi residui
 
-- collegare skill e progetti, per esempio:
+- `❌ Non fatto` collegare skill e progetti, per esempio:
   - click su una skill
   - evidenza dei progetti correlati
-- aggiungere una sezione `Cloud & Infra` con tecnologie come:
+- `❌ Non fatto` aggiungere una sezione `Cloud & Infra` con tecnologie come:
   - AWS / GCP / Azure
   - Supabase
   - Vercel
   - database e strumenti infrastrutturali
-- aggiungere un fallback per le icone devicon mancanti o non risolvibili
+- `❌ Non fatto` aggiungere un fallback per le icone devicon mancanti o non risolvibili
 
 ### Priorità
 
@@ -167,8 +171,8 @@ Fare un ultimo pass mirato sui colli di bottiglia rimasti, senza overengineering
 
 ### Interventi residui
 
-- ridurre dipendenze esterne chatty dove ha senso
-- fare un audit Lighthouse/Web Vitals finale
+- `❌ Non fatto` ridurre dipendenze esterne chatty dove ha senso
+- `❌ Non fatto` fare un audit Lighthouse/Web Vitals finale
 
 ### Priorità
 
@@ -188,13 +192,13 @@ Aggiungere una rete di sicurezza leggera sopra la CI già presente.
 
 ### Interventi residui
 
-- smoke test per:
+- `❌ Non fatto` smoke test per:
   - homepage
   - `/api/profile`
   - `/api/projects`
   - `/api/skills`
-- valutare un test minimo di accesso admin o sessione
-- creare una suite di test dedicata agli endpoint che eseguono query sul database, con focus iniziale su:
+- `❌ Non fatto` valutare un test minimo di accesso admin o sessione
+- `❌ Non fatto` creare una suite di test dedicata agli endpoint che eseguono query sul database, con focus iniziale su:
   - `/api/profile`
   - `/api/about`
   - `/api/projects`
@@ -219,12 +223,12 @@ Chiudere gli ultimi punti deboli dell’admin e della gestione asset senza riapr
 
 ### Interventi residui
 
-- riprendere con calma il tema upload file in produzione, con percorso ideale:
+- `❌ Non fatto` riprendere con calma il tema upload file in produzione, con percorso ideale:
   - endpoint admin protetto per upload
   - storage persistente
   - salvataggio di `path` / `publicUrl` nel DB
   - integrazione dell’admin con preview e UX coerente
-- chiarire prima il modello dati e la UX dell’upload prima di implementarlo
+- `❌ Non fatto` chiarire prima il modello dati e la UX dell’upload prima di implementarlo
 
 ### Priorità
 
@@ -234,22 +238,20 @@ Media-Bassa
 
 Medio-Alto
 
-
---- 
+---
 
 ## Ordine consigliato
 
-1. Hardening backend
-2. Tooling e manutenzione operativa
-3. Hardening schema e database
-4. Contact flow
-5. Skills, contenuti e discoverability
-6. Performance finale
-7. Test automatici minimi
-8. Admin UX e media workflow
+1. Tooling e manutenzione operativa
+2. Hardening schema e database
+3. Contact flow
+4. Skills, contenuti e discoverability
+5. Performance finale
+6. Test automatici minimi
+7. Admin UX e media workflow
 
 ---
 
 ## Nota pratica
 
-Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, le sezioni dalla `3` in poi possono anche essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.
+Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, le sezioni dalla `2` in poi possono anche essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.

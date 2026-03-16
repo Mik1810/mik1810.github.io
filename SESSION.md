@@ -3310,3 +3310,13 @@ pm run build passed
   - `npm run test:db`
   - `npm run test:db:watch`
 - Kept the same handler-level coverage for public DB-backed endpoints while switching assertions and spies to Vitest.
+
+## 2026-03-16 22:31 CET - Wired DB-backed Vitest suite into GitHub CI
+
+- Updated [.github/workflows/ci.yml](./.github/workflows/ci.yml) to run `npm run test:db` between `typecheck` and `build`.
+- Added CI environment wiring for DB-backed tests:
+  - `NODE_ENV=test`
+  - `AUTH_SESSION_SECRET=ci-test-secret`
+  - `DATABASE_URL` from GitHub secret `DATABASE_URL` or fallback `SUPABASE_DB_URL`
+- Added an explicit preflight failure in CI when the DB secret is missing, so the run fails with a clear message instead of an opaque Vitest error.
+- Marked the DB-backed endpoint suite in [TODO.md](./TODO.md) as `🟡 Partial` rather than `❌ Non fatto`.

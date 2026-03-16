@@ -17,6 +17,9 @@ jobs:
       FORCE_COLOR: '0'
       NO_COLOR: '1'
       npm_config_color: 'false'
+      NODE_ENV: test
+      AUTH_SESSION_SECRET: ci-test-secret
+      DATABASE_URL: ${{ secrets.DATABASE_URL || secrets.SUPABASE_DB_URL }}
 
     steps:
       # Download the repository contents into the runner workspace.
@@ -72,6 +75,24 @@ jobs:
           set -o pipefail
           npm run typecheck 2>&1 | tee -a logs/ci.log
 
+      # Verify the DB-backed public API handlers against the configured CI database.
+      - name: DB-backed API tests
+        shell: bash
+        run: |
+          {
+            echo
+            echo "===== DB-backed API tests ====="
+            echo
+          } | tee -a logs/ci.log
+
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Missing DATABASE_URL or SUPABASE_DB_URL GitHub secret for npm run test:db" | tee -a logs/ci.log
+            exit 1
+          fi
+
+          set -o pipefail
+          npm run test:db 2>&1 | tee -a logs/ci.log
+
       # Ensure the production bundle can actually be generated.
       - name: Build
         shell: bash
@@ -99,11 +120,12 @@ jobs:
             echo "- \`npm ci --no-fund --no-audit\`"
             echo "- \`npm run lint\`"
             echo "- \`npm run typecheck\`"
+            echo "- \`npm run test:db\`"
             echo "- \`npm run build\`"
             echo
           } >> "$GITHUB_STEP_SUMMARY"
 
-          for section in "Install dependencies" "Lint" "Typecheck" "Build"; do
+          for section in "Install dependencies" "Lint" "Typecheck" "DB-backed API tests" "Build"; do
             {
               echo "### ${section}"
               echo '```text'
