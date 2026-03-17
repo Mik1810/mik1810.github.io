@@ -123,6 +123,7 @@ Rendere la sezione contatti più completa e più resistente, senza complicarla i
 - `✅ Fatto` introdurre un flusso di invio strutturato lato server con Resend, con endpoint dedicato, validazione, test API e fallback UI coerente
 - `✅ Fatto` aggiungere protezione minima anti-spam tramite rate limit e honeypot
 - `🟡 Partial` sostituire il sender di test `onboarding@resend.dev` con un sender verificato su dominio proprio, se in futuro si vorrà passare a una configurazione pienamente production-grade
+- `❌ Non fatto` estrarre il template email in un file dedicato, caricarlo a runtime o build-time, sostituire i campi dinamici in modo esplicito e rifinirne ulteriormente il layout
 
 ### Priorità
 
@@ -254,5 +255,113 @@ Medio-Alto
 ## Nota pratica
 
 Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, le sezioni dalla `2` in poi possono anche essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.
+
+---
+
+## 9. UI/UX e accessibilità
+
+### Obiettivo
+
+Rendere l’esperienza utente più curata e accessibile, con attenzione a dettagli visivi e responsive.
+
+### Interventi residui
+
+- `🟡 Partial` migliorare lo stile dei tag (project-tag, about-interest-tag) per maggiore visibilità e coerenza visiva
+- `❌ Non fatto` rendere il badge "site-live" verde se il sito è online
+- `❌ Non fatto` sistemare il lightbox dei progetti GitHub su mobile: i bottoni di navigazione e chiusura si spostano/ridimensionano in modo non ottimale
+
+### Priorità
+
+Media
+
+### Effort
+
+Basso-Medio
+
+---
+
+## 10. README, quickstart e documentazione
+
+### Obiettivo
+
+Rendere la repo immediatamente comprensibile e avviabile anche da reviewer esterni, con quickstart operativo, status snapshot e badge di stato.
+
+### Interventi residui
+
+- `❌ Non fatto` aggiungere blocco quickstart (prerequisiti, .env, npm ci, run dev, test, build)
+- `❌ Non fatto` aggiungere tabella app/admin/tests/deploy
+- `❌ Non fatto` aggiungere status snapshot (Done/Partial/Open) e badge di stato veri (build, test, version, deploy)
+- `❌ Non fatto` aggiungere sezione "Architecture at a glance" con diagramma e richiesta end-to-end
+- `❌ Non fatto` rendere esplicita la strategia di test e mostrare un esempio reale di comando/scope
+
+### Priorità
+
+Alta
+
+### Effort
+
+Basso-Medio
+
+---
+
+## 11. Test CRUD e copertura database
+
+### Obiettivo
+
+Garantire che tutte le operazioni CRUD sulle tabelle principali siano coperte da test automatici, non solo gli endpoint pubblici.
+
+### Interventi residui
+
+- `❌ Non fatto` aggiungere test CRUD completi per tutte le tabelle principali (insert, update, delete, read), sia lato API che repository
+
+### Priorità
+
+Alta
+
+### Effort
+
+Medio
+
+---
+
+## 12. Sicurezza e rate limiting distribuito
+
+### Obiettivo
+
+Rendere il rate limiting e i controlli di sicurezza robusti anche in ambienti multi-instance/serverless.
+
+### Interventi residui
+
+- `🟡 Partial` documentare i limiti del rate limit attuale (in-memory, non condiviso tra istanze)
+- `❌ Non fatto` valutare e implementare una soluzione di rate limiting distribuito (es. Redis, edge, o provider esterno)
+
+### Priorità
+
+Alta
+
+### Effort
+
+Medio
+
+---
+
+## 13. Health endpoint, privacy e dashboard admin
+
+### Obiettivo
+
+Rendere le informazioni di health più accurate e meno esposte pubblicamente, con dashboard protetta per dati sensibili.
+
+### Interventi residui
+
+- `❌ Non fatto` correggere il calcolo di uptimeSeconds (mostra sempre 1, va verificato il ciclo di vita reale del processo)
+- `❌ Non fatto` evitare di esporre pubblicamente dati sensibili (uptime, env, metadati deploy): valutare una route protetta e una dashboard admin
+
+### Priorità
+
+Media-Alta
+
+### Effort
+
+Medio
 
 

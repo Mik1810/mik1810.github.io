@@ -3442,3 +3442,7 @@ pm run test:api.
 
 - Updated [todo.md](./todo.md) so the contact-flow block now marks the server-side Resend path as completed and leaves only the production sender/domain upgrade as `🟡 Partial`.
 - Updated [CHANGELOG.md](./CHANGELOG.md) to record the new contact endpoint, Resend integration, API coverage, and contact-form UX changes under `Unreleased`.
+
+## 2026-03-17 01:32 CET - Added email-template extraction follow-up to the roadmap
+
+- Extended the contact-flow section in [TODO.md](./TODO.md) with a dedicated follow-up item for extracting the email template into its own file, replacing dynamic fields explicitly, and refining the rendered layout further.

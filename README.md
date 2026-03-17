@@ -15,7 +15,7 @@
   <a href="./docs/API_CONTRACT.md">
     <img src="https://img.shields.io/badge/api-contract-2563eb?style=for-the-badge" alt="API contract" />
   </a>
-  <a href="./TODO.md">
+  <a href="./todo.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
 </p>
@@ -74,7 +74,8 @@ At the current `main` state, the repository provides the following verified prop
 - Drizzle-backed public repositories for profile, about, projects, experiences, and skills;
 - a schema-driven admin plane whose generic CRUD is bounded by compile-time metadata under [lib/admin](./lib/admin);
 - Supabase used only as hosted PostgreSQL/Auth infrastructure, not as the runtime query abstraction;
-- GitHub Actions CI that runs `npm ci --no-fund --no-audit`, `npm run lint`, `npm run typecheck`, and `npm run build`, then publishes a Markdown summary and log artifact;
+- a server-side contact flow under `/api/contact`, backed by Resend, with request validation, rate limiting, honeypot filtering, and dedicated API tests;
+- GitHub Actions CI that runs `npm ci --no-fund --no-audit`, `npm run lint`, `npm run typecheck`, `npm run test:api`, and `npm run build`, then publishes a Markdown summary and log artifact;
 - Vercel-compatible serverless tuning, including explicit avoidance of the deprecated `req.query` runtime path under Node 24;
 - public progressive rendering with coordinated skeleton states and staged section unlocks.
 
@@ -211,8 +212,8 @@ This fragment is representative of the broader modeling philosophy:
 | `/api/projects` | portfolio projects, GitHub projects, tags, gallery images |
 | `/api/skills` | tech stack, skill categories, localized skill items |
 | `/api/experiences` | professional experience and education |
-| /api/health | operational sanity check |
-| /api/contact | validated contact submission with rate limiting and Resend-backed delivery | 
+| `/api/health` | operational sanity check |
+| `/api/contact` | validated contact submission with rate limiting, honeypot filtering, and Resend-backed delivery |
 
 ### 5.2 Handler protocol
 
@@ -307,10 +308,10 @@ The runtime expects a local `.env.local` containing at least:
 | --- | --- |
 | `SUPABASE_URL` | Supabase HTTP base URL used for auth REST calls |
 | `SUPABASE_SECRET_KEY` | secret/service credential used for admin auth requests |
-| DATABASE_URL | PostgreSQL DSN used by Drizzle, postgres, and DB tooling |
-| RESEND_API_KEY | Resend API key used by the contact endpoint |
-| CONTACT_FROM_EMAIL | sender address for contact submissions (onboarding@resend.dev for test mode) |
-| CONTACT_TO_EMAIL | destination inbox for contact submissions | 
+| `DATABASE_URL` | PostgreSQL DSN used by Drizzle, postgres, and DB tooling |
+| `RESEND_API_KEY` | Resend API key used by the contact endpoint |
+| `CONTACT_FROM_EMAIL` | sender address for contact submissions (`onboarding@resend.dev` for test mode) |
+| `CONTACT_TO_EMAIL` | destination inbox for contact submissions |
 
 For Vercel production, the DSN should target the Supabase IPv4 transaction pooler.
 
@@ -330,6 +331,7 @@ Quality gates:
 ```bash
 npm run lint
 npm run typecheck
+npm run test:api
 npm run build
 npm run format
 ```
@@ -346,7 +348,7 @@ npm run db:studio
 
 The repository currently contains two operational workflows:
 
-- [CI test](./.github/workflows/ci.yml): installation, lint, typecheck, build, Markdown summary, log artifact;
+- [CI test](./.github/workflows/ci.yml): installation, lint, typecheck, API tests, build, Markdown summary, log artifact;
 - [Cleanup Deployments](./.github/workflows/cleanup-deployments.yml): keeps only the latest production and preview deployments on GitHub.
 
 The CI pipeline is intentionally small, but it establishes a reproducible minimum verification floor before deployment.
@@ -376,8 +378,9 @@ These choices are intentionally conservative: they improve runtime behavior with
 The artifact is structurally mature, but not complete. Current limits include:
 
 - cache and rate limiting remain process-local rather than distributed;
+- the contact pipeline still uses the Resend test sender when no owned domain is available;
 - no full admin upload flow exists for persistent media management;
-- several roadmap items remain intentionally open, especially around contact flow, content discoverability, final performance work, and admin upload UX.
+- several roadmap items remain intentionally open, especially around coordinated tooling upgrades, content discoverability, final performance work, smoke tests, and admin upload UX.
 
 The active roadmap is maintained in [todo.md](./todo.md) and intentionally lists only open work.
 

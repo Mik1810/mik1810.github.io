@@ -5,19 +5,28 @@ loadEnv({ path: '.env.local', quiet: true })
 loadEnv({ quiet: true })
 
 const emailStringSchema = z.string().trim().email()
+const emptyStringToUndefined = (value: unknown) => {
+  if (typeof value !== 'string') return value
+  const trimmed = value.trim()
+  return trimmed.length === 0 ? undefined : trimmed
+}
+const optionalTrimmedString = () =>
+  z.preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
+const optionalUrlString = () =>
+  z.preprocess(emptyStringToUndefined, z.string().trim().url().optional())
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
   API_PORT: z.coerce.number().int().positive().max(65535).optional(),
-  AUTH_SESSION_SECRET: z.string().trim().min(1).optional(),
-  DATABASE_URL: z.string().trim().min(1).optional(),
-  SUPABASE_DB_URL: z.string().trim().min(1).optional(),
-  SUPABASE_URL: z.string().trim().url().optional(),
-  SUPABASE_SECRET_KEY: z.string().trim().min(1).optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().trim().min(1).optional(),
-  RESEND_API_KEY: z.string().trim().min(1).optional(),
-  CONTACT_FROM_EMAIL: z.string().trim().min(1).optional(),
-  CONTACT_TO_EMAIL: z.string().trim().min(1).optional(),
+  AUTH_SESSION_SECRET: optionalTrimmedString(),
+  DATABASE_URL: optionalTrimmedString(),
+  SUPABASE_DB_URL: optionalTrimmedString(),
+  SUPABASE_URL: optionalUrlString(),
+  SUPABASE_SECRET_KEY: optionalTrimmedString(),
+  SUPABASE_SERVICE_ROLE_KEY: optionalTrimmedString(),
+  RESEND_API_KEY: optionalTrimmedString(),
+  CONTACT_FROM_EMAIL: optionalTrimmedString(),
+  CONTACT_TO_EMAIL: optionalTrimmedString(),
 })
 
 const env = envSchema.parse(process.env)
