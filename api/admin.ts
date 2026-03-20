@@ -1,11 +1,11 @@
-import { handleAdminEnvironmentRoute } from '../../lib/services/admin-routes/environmentRoute.js'
-import { handleAdminHealthRoute } from '../../lib/services/admin-routes/healthRoute.js'
-import { handleAdminLoginRoute } from '../../lib/services/admin-routes/loginRoute.js'
-import { handleAdminLogoutRoute } from '../../lib/services/admin-routes/logoutRoute.js'
-import { handleAdminSessionRoute } from '../../lib/services/admin-routes/sessionRoute.js'
-import { handleAdminTableRoute } from '../../lib/services/admin-routes/tableRoute.js'
-import { handleAdminTablesRoute } from '../../lib/services/admin-routes/tablesRoute.js'
-import type { ApiHandler, ApiRequest } from '../../lib/types/http.js'
+import { handleAdminEnvironmentRoute } from '../lib/services/admin-routes/environmentRoute.js'
+import { handleAdminHealthRoute } from '../lib/services/admin-routes/healthRoute.js'
+import { handleAdminLoginRoute } from '../lib/services/admin-routes/loginRoute.js'
+import { handleAdminLogoutRoute } from '../lib/services/admin-routes/logoutRoute.js'
+import { handleAdminSessionRoute } from '../lib/services/admin-routes/sessionRoute.js'
+import { handleAdminTableRoute } from '../lib/services/admin-routes/tableRoute.js'
+import { handleAdminTablesRoute } from '../lib/services/admin-routes/tablesRoute.js'
+import type { ApiHandler, ApiRequest } from '../lib/types/http.js'
 
 const REQUEST_URL_BASE = 'http://localhost'
 
@@ -14,6 +14,9 @@ const getAdminRoute = (req: ApiRequest) => {
 
   try {
     const url = new URL(req.url, REQUEST_URL_BASE)
+    const queryRoute = url.searchParams.get('route')
+    if (queryRoute) return queryRoute
+
     const parts = url.pathname.split('/').filter(Boolean)
     if (parts.length < 3 || parts[0] !== 'api' || parts[1] !== 'admin') return null
     return parts[2] ?? null

@@ -55,7 +55,7 @@ import healthHandler from '../../api/health.ts'
 import profileHandler from '../../api/profile.ts'
 import projectsHandler from '../../api/projects.ts'
 import skillsHandler from '../../api/skills.ts'
-import adminHandler from '../../api/admin/[route].ts'
+import adminHandler from '../../api/admin.ts'
 import {
   createSessionCookie,
   createSessionToken,

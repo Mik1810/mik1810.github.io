@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import adminHandler from '../../api/admin/[route].ts'
+import adminHandler from '../../api/admin.ts'
 import {
   createSessionCookie,
   createSessionToken,

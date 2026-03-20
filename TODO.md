@@ -71,7 +71,8 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
   - versione app
   - informazioni minime di integrità pubblica
   - environment, uptime e metadati minimi di deploy lato admin
-- `✅ Fatto` consolidare le route admin in un entrypoint serverless unico (`/api/admin/[route]`) con handler modulari in `lib/services/admin-routes`, per rientrare nel limite Vercel Hobby sulle function
+- `✅ Fatto` consolidare le route admin in un entrypoint serverless unico (`/api/admin` con rewrite da `/api/admin/*`) con handler modulari in `lib/services/admin-routes`, per rientrare nel limite Vercel Hobby sulle function
+- `❌ Non fatto [CRITICO - prossimo step]` rivedere la logica di routing API in ottica limite Vercel Hobby (max 12 Serverless Functions), definendo una strategia stabile di consolidamento/dispatch per evitare nuovi blocchi deploy
 - `✅ Fatto` introdurre una disciplina di release leggera, tramite `CHANGELOG.md` e convenzione di tag semver, per esempio:
   - changelog minimo
   - tag coerenti con le versioni

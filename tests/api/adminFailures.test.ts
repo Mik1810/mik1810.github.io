@@ -13,7 +13,7 @@ vi.mock('../../lib/services/adminAuthService.ts', async () => {
   }
 })
 
-import adminHandler from '../../api/admin/[route].ts'
+import adminHandler from '../../api/admin.ts'
 import {
   createSessionCookie,
   createSessionToken,

@@ -36,7 +36,7 @@ The release discipline is intentionally lightweight:
 - the admin home UI has been refactored into smaller components with a simpler grid layout and component-local skeleton states
 - environment-variable rendering in admin now keeps public values visible by default, limits reveal controls to secrets, and uses uniform value fields with keyboard-friendly overflow behavior
 - admin type definitions now include `AdminHealthResponse`, `AdminEnvironmentResponse`, and `AdminEnvironmentVariable` to align frontend and API contracts
-- admin endpoints are now dispatched through a single serverless entrypoint (`/api/admin/[route]`) with modular route handlers under `lib/services/admin-routes`, reducing function count pressure on Vercel Hobby while preserving existing admin API paths
+- admin endpoints are now dispatched through a single serverless entrypoint (`/api/admin`, with rewrite from `/api/admin/*`) and modular route handlers under `lib/services/admin-routes`, reducing function count pressure on Vercel Hobby while preserving existing admin API paths
 - local dev API resolution now supports dynamic API route files (such as `[route]`) in addition to direct static matches
 
 ### Planned

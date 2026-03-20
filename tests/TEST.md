@@ -15,7 +15,7 @@ Ad oggi la copertura automatica è focalizzata sul backend:
 Nota architetturale aggiornata:
 
 - gli endpoint admin restano esposti come path distinti (`/api/admin/login`, `/api/admin/table`, ecc.)
-- internamente, lato serverless, sono instradati da un entrypoint unico `api/admin/[route].ts` con handler modulari sotto `lib/services/admin-routes`
+- internamente, lato serverless, sono instradati da un entrypoint unico `api/admin.ts` con handler modulari sotto `lib/services/admin-routes`
 
 Non sono invece ancora presenti:
 

@@ -33,6 +33,8 @@ const resolveHandlerPath = (pathname: string) => {
   const dynamicCandidates =
     parts.length > 1
       ? [
+          `${parts[0]}.ts`,
+          `${parts[0]}.js`,
           `${parts.slice(0, -1).join('/')}/[route].ts`,
           `${parts.slice(0, -1).join('/')}/[route].js`,
           `${parts.slice(0, -1).join('/')}/[...route].ts`,

@@ -3424,7 +3424,8 @@ pm run build passed
 ## 2026-03-17 00:30 CET - Added a first server-side contact flow with Resend test sender
 
 - Added [contact.ts](./api/contact.ts) with Zod validation, rate limiting, and JSON success/error responses.
-- Added [contactService.ts](./lib/services/contactService.ts) backed by Resend, including eplyTo and a safe contact_unavailable fallback when email config is missing.
+- Added [contactService.ts](./lib/services/contactService.ts) backed by Resend, including 
+eplyTo and a safe contact_unavailable fallback when email config is missing.
 - Extended [env.ts](./lib/config/env.ts) with RESEND_API_KEY, CONTACT_FROM_EMAIL, and CONTACT_TO_EMAIL getters.
 - Upgraded [Contact.tsx](./src/components/jsx/Contact.tsx) from mailto: navigation to a real POST flow with sending, success, and rror UI states plus a honeypot field.
 - Added [contact.test.ts](./tests/api/contact.test.ts) and widened the API test runner/CI path to 
@@ -3694,7 +3695,7 @@ pm run test:api.
 ## 2026-03-20 04:30 CET - Consolidated admin serverless routing and aligned docs
 
 - Solved Vercel Hobby deploy blocking issue (`No more than 12 Serverless Functions`) by consolidating admin API files into a single entrypoint:
-  - [api/admin/[route].ts](./api/admin/[route].ts)
+  - [api/admin.ts](./api/admin.ts)
 - Kept route behavior unchanged at HTTP level (`/api/admin/session`, `/api/admin/login`, `/api/admin/logout`, `/api/admin/tables`, `/api/admin/table`, `/api/admin/health`, `/api/admin/environment`), while moving logic to dedicated modules:
   - [lib/services/admin-routes/sessionRoute.ts](./lib/services/admin-routes/sessionRoute.ts)
   - [lib/services/admin-routes/loginRoute.ts](./lib/services/admin-routes/loginRoute.ts)

@@ -14,7 +14,7 @@ vi.mock('../../lib/db/client.ts', async () => {
 })
 
 import healthHandler from '../../api/health.ts'
-import adminHandler from '../../api/admin/[route].ts'
+import adminHandler from '../../api/admin.ts'
 import {
   createSessionCookie,
   createSessionToken,

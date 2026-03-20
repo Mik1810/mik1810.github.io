@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { and, eq } from 'drizzle-orm'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import adminHandler from '../../api/admin/[route].ts'
+import adminHandler from '../../api/admin.ts'
 import { getAdminTableConfig } from '../../lib/adminTables.ts'
 import {
   createSessionCookie,
