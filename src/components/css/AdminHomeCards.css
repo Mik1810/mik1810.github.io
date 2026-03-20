@@ -365,6 +365,7 @@
   display: grid;
   gap: 0.2rem;
   min-width: 0;
+  justify-items: start;
 }
 
 .admin-home-env-key {
@@ -377,14 +378,17 @@
 .admin-home-env-kind {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 1.45rem;
+  justify-content: flex-start;
+  justify-self: start;
+  width: fit-content;
+  min-height: 0;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  text-align: left;
 }
 
 .admin-home-env-kind.is-secret {

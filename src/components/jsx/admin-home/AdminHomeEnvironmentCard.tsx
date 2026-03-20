@@ -43,14 +43,15 @@ function AdminHomeEnvironmentCard({
 
       <p className="admin-home-card-copy">
         Mostriamo solo le variabili attualmente valorizzate. I valori restano
-        nascosti con pallini finche non premi l'icona occhio.
+        nascosti con pallini solo per le variabili secret.
       </p>
 
       {hasEnvironmentVariables ? (
         <div className="admin-home-env-list">
           {configuredEnvironmentVariables.map((variable) => {
             const value = typeof variable.value === 'string' ? variable.value : ''
-            const isVisible = Boolean(visibleEnvironmentValues[variable.key])
+            const isPublic = !variable.isSecret
+            const isVisible = isPublic || Boolean(visibleEnvironmentValues[variable.key])
             const displayValue = isVisible ? value : maskEnvironmentValue(value)
 
             return (
@@ -72,23 +73,25 @@ function AdminHomeEnvironmentCard({
                 </div>
 
                 <div className="admin-home-env-row-value-wrap">
-                  <button
-                    type="button"
-                    className="admin-home-env-toggle admin-home-env-toggle-inline"
-                    onClick={() => onToggleEnvironmentValue(variable.key)}
-                    aria-label={
-                      isVisible
-                        ? `Nascondi il valore di ${variable.key}`
-                        : `Mostra il valore di ${variable.key}`
-                    }
-                    title={isVisible ? 'Nascondi valore' : 'Mostra valore'}
-                  >
-                    {isVisible ? (
-                      <EyeOffIcon className="admin-home-env-toggle-icon" />
-                    ) : (
-                      <EyeIcon className="admin-home-env-toggle-icon" />
-                    )}
-                  </button>
+                  {variable.isSecret && (
+                    <button
+                      type="button"
+                      className="admin-home-env-toggle admin-home-env-toggle-inline"
+                      onClick={() => onToggleEnvironmentValue(variable.key)}
+                      aria-label={
+                        isVisible
+                          ? `Nascondi il valore di ${variable.key}`
+                          : `Mostra il valore di ${variable.key}`
+                      }
+                      title={isVisible ? 'Nascondi valore' : 'Mostra valore'}
+                    >
+                      {isVisible ? (
+                        <EyeOffIcon className="admin-home-env-toggle-icon" />
+                      ) : (
+                        <EyeIcon className="admin-home-env-toggle-icon" />
+                      )}
+                    </button>
+                  )}
                   <code
                     className={`admin-home-env-inline-value ${
                       isVisible ? 'is-visible' : ''
