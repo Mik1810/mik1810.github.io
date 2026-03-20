@@ -1,0 +1,49 @@
+.admin-page-home {
+  width: 100%;
+  display: block;
+  min-height: calc(100dvh - var(--admin-nav-height, 64px));
+  padding: calc(var(--admin-nav-height, 64px) + 1.25rem) 1rem 2rem;
+  overflow: auto;
+}
+
+.admin-home-shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-areas:
+    'hero hero hero hero hero hero hero hero hero hero hero hero'
+    'database database database database database database database database database database database database'
+    'trio trio trio trio trio trio trio trio trio trio trio trio'
+    'env env env env env env env env env env env env';
+  gap: 1rem;
+}
+
+.admin-home-hero-card {
+  grid-area: hero;
+}
+
+.admin-home-card-database {
+  grid-area: database;
+}
+
+.admin-home-grid-trio {
+  grid-area: trio;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-home-env-card {
+  grid-area: env;
+}
+
+@media (max-width: 960px) {
+  .admin-page-home {
+    padding: calc(var(--admin-nav-height, 68px) + 1rem) 0.9rem 1.4rem;
+  }
+
+  .admin-home-grid-trio {
+    grid-template-columns: 1fr;
+  }
+}
