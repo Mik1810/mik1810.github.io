@@ -3,6 +3,7 @@ import type { AdminHealthResponse } from '../../../types/app.js'
 import { ReleaseIcon, RuntimeIcon, WorkspaceIcon } from './AdminHomeIcons'
 
 interface AdminHomeInfoCardsProps {
+  isLoading?: boolean
   health: AdminHealthResponse | null
   runtimeUptimeLabel: string
   commitSha?: string | null
@@ -14,6 +15,7 @@ interface AdminHomeInfoCardsProps {
 }
 
 function AdminHomeInfoCards({
+  isLoading = false,
   health,
   runtimeUptimeLabel,
   commitSha,
@@ -23,6 +25,34 @@ function AdminHomeInfoCards({
   totalGroups,
   totalTables,
 }: AdminHomeInfoCardsProps) {
+  if (isLoading) {
+    return (
+      <section className="admin-home-grid-trio">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <article key={`admin-home-info-card-skeleton-${index}`} className="admin-card admin-home-card">
+            <div className="admin-home-card-header">
+              <div className="admin-home-card-title">
+                <span className="admin-skeleton admin-home-skeleton-icon" />
+                <div className="admin-home-skeleton-stack">
+                  <span className="admin-skeleton admin-home-skeleton-eyebrow" />
+                  <span className="admin-skeleton admin-home-skeleton-card-title" />
+                </div>
+              </div>
+            </div>
+            <div className="admin-home-metrics">
+              {Array.from({ length: 3 }).map((__, metricIndex) => (
+                <div key={`admin-home-info-metric-skeleton-${index}-${metricIndex}`}>
+                  <span className="admin-skeleton admin-home-skeleton-metric-label" />
+                  <span className="admin-skeleton admin-home-skeleton-metric-value" />
+                </div>
+              ))}
+            </div>
+          </article>
+        ))}
+      </section>
+    )
+  }
+
   return (
     <section className="admin-home-grid-trio">
       <article className="admin-card admin-home-card">

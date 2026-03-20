@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { RefreshIcon } from './AdminHomeIcons'
 
 interface AdminHomeHeroProps {
+  isLoading?: boolean
   loading: boolean
   refreshing: boolean
   runtimeUptimeLabel: string
@@ -13,6 +14,7 @@ interface AdminHomeHeroProps {
 }
 
 function AdminHomeHero({
+  isLoading = false,
   loading,
   refreshing,
   runtimeUptimeLabel,
@@ -21,6 +23,32 @@ function AdminHomeHero({
   totalGroups,
   onRefresh,
 }: AdminHomeHeroProps) {
+  if (isLoading) {
+    return (
+      <header className="admin-card admin-home-hero admin-home-hero-card">
+        <div className="admin-home-hero-copy">
+          <div className="admin-home-hero-title-row">
+            <span className="admin-skeleton admin-home-skeleton-title" />
+            <span className="admin-skeleton admin-home-skeleton-refresh-icon" />
+          </div>
+          <span className="admin-skeleton admin-home-skeleton-copy" />
+          <span className="admin-skeleton admin-home-skeleton-copy admin-home-skeleton-copy-short" />
+          <div className="admin-home-hero-summary">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={`admin-home-summary-skeleton-${index}`} className="admin-home-summary-chip">
+                <span className="admin-skeleton admin-home-skeleton-chip-label" />
+                <span className="admin-skeleton admin-home-skeleton-chip-value" />
+              </div>
+            ))}
+          </div>
+          <div className="admin-home-hero-actions">
+            <span className="admin-skeleton admin-home-skeleton-button" />
+          </div>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <header className="admin-card admin-home-hero admin-home-hero-card">
       <div className="admin-home-hero-copy">

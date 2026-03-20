@@ -27,10 +27,8 @@ const FALLBACK_ENVIRONMENT_VARIABLES: AdminEnvironmentVariable[] = [
   { key: 'API_PORT', value: null, isSecret: false },
   { key: 'AUTH_SESSION_SECRET', value: null, isSecret: true },
   { key: 'DATABASE_URL', value: null, isSecret: true },
-  { key: 'SUPABASE_DB_URL', value: null, isSecret: true },
   { key: 'SUPABASE_URL', value: null, isSecret: false },
   { key: 'SUPABASE_SECRET_KEY', value: null, isSecret: true },
-  { key: 'SUPABASE_SERVICE_ROLE_KEY', value: null, isSecret: true },
   { key: 'RESEND_API_KEY', value: null, isSecret: true },
   { key: 'CONTACT_FROM_EMAIL', value: null, isSecret: false },
   { key: 'CONTACT_TO_EMAIL', value: null, isSecret: false },
@@ -130,7 +128,11 @@ const maskEnvironmentValue = (value: string | null) => {
   return '•'.repeat(maskLength)
 }
 
-function AdminHome() {
+interface AdminHomeProps {
+  forceSkeleton?: boolean
+}
+
+function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
   const { user } = useAuth()
   const [snapshot, setSnapshot] = useState<DashboardSnapshot>({
     health: null,
@@ -209,6 +211,8 @@ function AdminHome() {
   }, [])
 
   useEffect(() => {
+    if (forceSkeleton) return undefined
+
     const bootstrap = async () => {
       setLoading(true)
       try {
@@ -225,7 +229,8 @@ function AdminHome() {
     }
 
     void bootstrap()
-  }, [loadDashboard])
+    return undefined
+  }, [forceSkeleton, loadDashboard])
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -306,6 +311,7 @@ function AdminHome() {
     <main className="admin-page admin-page-home">
       <section className="admin-home-shell">
         <AdminHomeHero
+          isLoading={loading}
           loading={loading}
           refreshing={refreshing}
           runtimeUptimeLabel={runtimeUptimeLabel}
@@ -315,9 +321,10 @@ function AdminHome() {
           onRefresh={handleRefresh}
         />
 
-        {error && <p className="admin-error admin-home-error">{error}</p>}
+        {!loading && error && <p className="admin-error admin-home-error">{error}</p>}
 
         <AdminHomeDatabaseCard
+          isLoading={loading}
           databaseHealthy={databaseHealthy}
           statusLabel={databaseStatusLabel}
           latencyLabel={latencyLabel}
@@ -325,6 +332,7 @@ function AdminHome() {
         />
 
         <AdminHomeInfoCards
+          isLoading={loading}
           health={health}
           runtimeUptimeLabel={runtimeUptimeLabel}
           commitSha={commitSha}
@@ -336,6 +344,7 @@ function AdminHome() {
         />
 
         <AdminHomeEnvironmentCard
+          isLoading={loading}
           configuredEnvironmentVariables={configuredEnvironmentVariables}
           environmentVariables={environmentVariables}
           visibleEnvironmentValues={visibleEnvironmentValues}

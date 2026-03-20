@@ -5,7 +5,7 @@ const TABLE_COLUMNS = 5
 const TABLE_ROWS = 6
 const EDITOR_FIELDS = 5
 
-function AdminDashboardSkeleton() {
+function AdminTableSkeleton() {
   return (
     <main className="admin-page">
       <section className="admin-card admin-card-wide">
@@ -100,4 +100,4 @@ function AdminDashboardSkeleton() {
   )
 }
 
-export default AdminDashboardSkeleton
+export default AdminTableSkeleton

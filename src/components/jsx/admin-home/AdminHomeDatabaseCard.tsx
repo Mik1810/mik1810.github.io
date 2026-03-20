@@ -1,6 +1,7 @@
 import { DatabaseIcon } from './AdminHomeIcons'
 
 interface AdminHomeDatabaseCardProps {
+  isLoading?: boolean
   databaseHealthy: boolean
   statusLabel: string
   latencyLabel: string
@@ -8,11 +9,37 @@ interface AdminHomeDatabaseCardProps {
 }
 
 function AdminHomeDatabaseCard({
+  isLoading = false,
   databaseHealthy,
   statusLabel,
   latencyLabel,
   checkedAtLabel,
 }: AdminHomeDatabaseCardProps) {
+  if (isLoading) {
+    return (
+      <article className="admin-card admin-home-card admin-home-card-database">
+        <div className="admin-home-card-header">
+          <div className="admin-home-card-title">
+            <span className="admin-skeleton admin-home-skeleton-icon" />
+            <div className="admin-home-skeleton-stack">
+              <span className="admin-skeleton admin-home-skeleton-eyebrow" />
+              <span className="admin-skeleton admin-home-skeleton-card-title" />
+            </div>
+          </div>
+          <span className="admin-skeleton admin-home-skeleton-pill" />
+        </div>
+        <div className="admin-home-stat-grid admin-home-stat-grid-database">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <div key={`admin-home-database-metric-skeleton-${index}`} className="admin-home-stat-tile">
+              <span className="admin-skeleton admin-home-skeleton-metric-label" />
+              <span className="admin-skeleton admin-home-skeleton-metric-value" />
+            </div>
+          ))}
+        </div>
+      </article>
+    )
+  }
+
   return (
     <article className="admin-card admin-home-card admin-home-card-database">
       <div className="admin-home-card-header">

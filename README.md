@@ -15,7 +15,7 @@
   <a href="./docs/API_CONTRACT.md">
     <img src="https://img.shields.io/badge/api-contract-2563eb?style=for-the-badge" alt="API contract" />
   </a>
-  <a href="./todo.md">
+  <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
 </p>
@@ -288,7 +288,7 @@ This provides a meaningful midpoint between a hardcoded backoffice and unconstra
 
 ### 6.4 Admin UI synthesis
 
-The frontend dashboard in [src/components/jsx/AdminDashboard.tsx](./src/components/jsx/AdminDashboard.tsx) synthesizes its UI from registry metadata:
+The frontend dashboard in [src/components/jsx/AdminTable.tsx](./src/components/jsx/AdminTable.tsx) synthesizes its UI from registry metadata:
 
 - grouped and nested sidebar navigation;
 - typed editors and relation-backed selects;
@@ -382,12 +382,12 @@ The artifact is structurally mature, but not complete. Current limits include:
 - no full admin upload flow exists for persistent media management;
 - several roadmap items remain intentionally open, especially around coordinated tooling upgrades, content discoverability, final performance work, smoke tests, and admin upload UX.
 
-The active roadmap is maintained in [todo.md](./todo.md) and intentionally lists only open work.
+The active roadmap is maintained in [TODO.md](./TODO.md) and intentionally lists only open work.
 
 ## 10. Internal References
 
 - changelog: [CHANGELOG.md](./CHANGELOG.md)
-- current roadmap: [todo.md](./todo.md)
+- current roadmap: [TODO.md](./TODO.md)
 - session log: [SESSION.md](./SESSION.md)
 - API contract: [docs/API_CONTRACT.md](./docs/API_CONTRACT.md)
 - schema definition: [lib/db/schema.ts](./lib/db/schema.ts)

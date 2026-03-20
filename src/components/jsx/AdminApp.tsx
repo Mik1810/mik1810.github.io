@@ -1,8 +1,9 @@
-import AdminDashboard from './AdminDashboard'
+import AdminTable from './AdminTable'
+import AdminHome from './AdminHome'
 import AdminLogin from './AdminLogin'
 import RequireAdmin from './RequireAdmin'
 
-type AdminAppMode = 'login' | 'dashboard'
+type AdminAppMode = 'login' | 'home' | 'tables'
 
 interface AdminAppProps {
   mode: AdminAppMode
@@ -14,8 +15,8 @@ function AdminApp({ mode }: AdminAppProps) {
   }
 
   return (
-    <RequireAdmin>
-      <AdminDashboard />
+    <RequireAdmin fallback={mode === 'home' ? <AdminHome forceSkeleton /> : undefined}>
+      {mode === 'home' ? <AdminHome /> : <AdminTable />}
     </RequireAdmin>
   )
 }

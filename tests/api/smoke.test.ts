@@ -55,6 +55,8 @@ import healthHandler from '../../api/health.ts'
 import profileHandler from '../../api/profile.ts'
 import projectsHandler from '../../api/projects.ts'
 import skillsHandler from '../../api/skills.ts'
+import adminHealthHandler from '../../api/admin/health.ts'
+import adminEnvironmentHandler from '../../api/admin/environment.ts'
 import adminLoginHandler from '../../api/admin/login.ts'
 import adminLogoutHandler from '../../api/admin/logout.ts'
 import adminSessionHandler from '../../api/admin/session.ts'
@@ -248,6 +250,46 @@ describe('Smoke checks', () => {
     expect(tablesResponse.body).toEqual(
       expect.objectContaining({
         tables: expect.any(Array),
+      })
+    )
+
+    const adminHealthResponse = await invokeApiHandler(adminHealthHandler, {
+      url: '/api/admin/health',
+      ip: '127.0.3.255',
+      headers: {
+        host: 'localhost',
+        cookie: adminCookie,
+      },
+    })
+
+    expect(adminHealthResponse.statusCode).toBe(200)
+    expect(adminHealthResponse.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        checks: expect.objectContaining({
+          database: expect.objectContaining({
+            ok: true,
+          }),
+        }),
+      })
+    )
+
+    const adminEnvironmentResponse = await invokeApiHandler(
+      adminEnvironmentHandler,
+      {
+        url: '/api/admin/environment',
+        ip: '127.0.3.256',
+        headers: {
+          host: 'localhost',
+          cookie: adminCookie,
+        },
+      }
+    )
+
+    expect(adminEnvironmentResponse.statusCode).toBe(200)
+    expect(adminEnvironmentResponse.body).toEqual(
+      expect.objectContaining({
+        environmentVariables: expect.any(Array),
       })
     )
 

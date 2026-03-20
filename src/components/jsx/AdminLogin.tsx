@@ -39,7 +39,7 @@ function AdminLogin() {
 
   return (
     <main className="admin-page admin-page-login">
-      <section className="admin-card">
+      <section className="admin-card admin-login-card">
         <h3>Admin Login</h3>
         <form className="admin-form" onSubmit={handleLogin}>
           <label className="admin-label" htmlFor="admin-email">

@@ -303,6 +303,10 @@
   font-weight: 700;
 }
 
+.admin-home-env-card {
+  --admin-env-value-width: 280px;
+}
+
 .admin-home-env-list {
   display: grid;
   gap: 0;
@@ -404,6 +408,7 @@
 .admin-home-env-row-value-wrap {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.6rem;
   min-width: 0;
 }
@@ -431,8 +436,9 @@
   display: inline-flex;
   align-items: center;
   min-height: 2.2rem;
-  min-width: 220px;
-  max-width: 100%;
+  width: var(--admin-env-value-width);
+  min-width: var(--admin-env-value-width);
+  max-width: var(--admin-env-value-width);
   padding: 0.4rem 0.75rem;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--color-border) 86%, transparent);
@@ -443,10 +449,33 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: all;
+  cursor: text;
 }
 
-.admin-home-env-inline-value.is-visible {
+.admin-home-env-inline-input {
+  min-height: 2.2rem;
+  width: var(--admin-env-value-width);
+  min-width: var(--admin-env-value-width);
+  max-width: var(--admin-env-value-width);
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 86%, transparent);
   background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-primary));
+  color: var(--color-text-primary);
+  font-family: 'Consolas', 'SFMono-Regular', 'Liberation Mono', monospace;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-home-env-inline-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  text-overflow: clip;
+  overflow-x: auto;
 }
 
 .admin-home-env-footnote {
@@ -496,7 +525,16 @@
   }
 
   .admin-home-env-inline-value {
+    width: 100%;
     min-width: 0;
+    max-width: 100%;
+    flex: 1;
+  }
+
+  .admin-home-env-inline-input {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     flex: 1;
   }
 }

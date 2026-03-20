@@ -68,7 +68,7 @@ function App() {
 
   return (
     <>
-      <ScrollProgress />
+      {!isAdminRoute && <ScrollProgress />}
       <Navbar />
       <Routes>
         <Route
@@ -83,7 +83,15 @@ function App() {
           path="/admin"
           element={
             <Suspense fallback={<AdminRouteFallback />}>
-              <AdminApp mode="dashboard" />
+              <AdminApp mode="home" />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/tables"
+          element={
+            <Suspense fallback={<AdminRouteFallback />}>
+              <AdminApp mode="tables" />
             </Suspense>
           }
         />

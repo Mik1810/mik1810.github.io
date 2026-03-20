@@ -20,10 +20,8 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().max(65535).optional(),
   AUTH_SESSION_SECRET: optionalTrimmedString(),
   DATABASE_URL: optionalTrimmedString(),
-  SUPABASE_DB_URL: optionalTrimmedString(),
   SUPABASE_URL: optionalUrlString(),
   SUPABASE_SECRET_KEY: optionalTrimmedString(),
-  SUPABASE_SERVICE_ROLE_KEY: optionalTrimmedString(),
   RESEND_API_KEY: optionalTrimmedString(),
   CONTACT_FROM_EMAIL: optionalTrimmedString(),
   CONTACT_TO_EMAIL: optionalTrimmedString(),
@@ -31,24 +29,87 @@ const envSchema = z.object({
 
 const env = envSchema.parse(process.env)
 
+export interface AdminEnvironmentVariableSnapshot {
+  key: string
+  value: string | null
+  isSecret: boolean
+}
+
 export const appEnv = Object.freeze({
   nodeEnv: env.NODE_ENV ?? 'development',
   isProduction: (env.NODE_ENV ?? 'development') === 'production',
   apiPort: env.API_PORT ?? 3000,
 })
 
+const serializeEnvValue = (value: string | number | undefined) => {
+  if (typeof value === 'number') {
+    return String(value)
+  }
+
+  return typeof value === 'string' && value.trim().length > 0 ? value : null
+}
+
+export const getAdminEnvironmentSnapshot =
+  (): AdminEnvironmentVariableSnapshot[] => [
+    {
+      key: 'NODE_ENV',
+      value: appEnv.nodeEnv,
+      isSecret: false,
+    },
+    {
+      key: 'API_PORT',
+      value: serializeEnvValue(appEnv.apiPort),
+      isSecret: false,
+    },
+    {
+      key: 'AUTH_SESSION_SECRET',
+      value: serializeEnvValue(env.AUTH_SESSION_SECRET),
+      isSecret: true,
+    },
+    {
+      key: 'DATABASE_URL',
+      value: serializeEnvValue(env.DATABASE_URL),
+      isSecret: true,
+    },
+    {
+      key: 'SUPABASE_URL',
+      value: serializeEnvValue(env.SUPABASE_URL),
+      isSecret: false,
+    },
+    {
+      key: 'SUPABASE_SECRET_KEY',
+      value: serializeEnvValue(env.SUPABASE_SECRET_KEY),
+      isSecret: true,
+    },
+    {
+      key: 'RESEND_API_KEY',
+      value: serializeEnvValue(env.RESEND_API_KEY),
+      isSecret: true,
+    },
+    {
+      key: 'CONTACT_FROM_EMAIL',
+      value: serializeEnvValue(env.CONTACT_FROM_EMAIL),
+      isSecret: false,
+    },
+    {
+      key: 'CONTACT_TO_EMAIL',
+      value: serializeEnvValue(env.CONTACT_TO_EMAIL),
+      isSecret: false,
+    },
+  ]
+
 export const getDatabaseUrl = () => {
-  const connectionString = env.DATABASE_URL || env.SUPABASE_DB_URL
+  const connectionString = env.DATABASE_URL
 
   if (!connectionString) {
     throw new Error(
-      'Missing DATABASE_URL or SUPABASE_DB_URL. Drizzle requires a PostgreSQL DSN and cannot use SUPABASE_URL, which is the HTTP project endpoint.'
+      'Missing DATABASE_URL. Drizzle requires a PostgreSQL DSN and cannot use SUPABASE_URL, which is the HTTP project endpoint.'
     )
   }
 
   if (!/^postgres(ql)?:\/\//i.test(connectionString)) {
     throw new Error(
-      'Invalid database connection string. Expected a PostgreSQL DSN in DATABASE_URL or SUPABASE_DB_URL.'
+      'Invalid database connection string. Expected a PostgreSQL DSN in DATABASE_URL.'
     )
   }
 
@@ -60,13 +121,10 @@ export const getSupabaseAuthConfig = () => {
     throw new Error('Missing SUPABASE_URL')
   }
 
-  const supabaseSecretKey =
-    env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseSecretKey = env.SUPABASE_SECRET_KEY
 
   if (!supabaseSecretKey) {
-    throw new Error(
-      'Missing SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY)'
-    )
+    throw new Error('Missing SUPABASE_SECRET_KEY')
   }
 
   return {

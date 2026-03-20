@@ -6,12 +6,15 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
   version?: string
 }
 
-const startedAt = new Date()
+const processStartedAt = new Date(
+  Date.now() -
+    (typeof process.uptime === 'function' ? process.uptime() * 1000 : 0)
+)
 
 export const appMetadata = Object.freeze({
   name: packageJson.name || 'app',
   version: packageJson.version || '0.0.0',
-  startedAt,
+  startedAt: processStartedAt,
 })
 
 export const getDeploymentMetadata = () => ({
@@ -19,4 +22,12 @@ export const getDeploymentMetadata = () => ({
   branch: process.env.VERCEL_GIT_COMMIT_REF || process.env.GITHUB_REF_NAME || null,
 })
 
-export const getUptimeSeconds = () => Math.round((Date.now() - startedAt.getTime()) / 1000)
+export const getUptimeSeconds = () =>
+  Math.max(
+    0,
+    Math.floor(
+      typeof process.uptime === 'function'
+        ? process.uptime()
+        : (Date.now() - processStartedAt.getTime()) / 1000
+    )
+  )

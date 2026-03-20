@@ -54,8 +54,7 @@ Questo ordine evita che le suite repository leggano lo stesso DB mentre le suite
 
 Alla data di questo documento, la suite completa conta:
 
-- `14` file di test
-- `96` test case
+- `15` file di test
 
 Il perimetro backend attuale è considerato coperto per lo scope del progetto.
 
@@ -85,10 +84,12 @@ Cosa testa:
   - `/api/contact`
 - smoke check di tutti gli endpoint admin:
   - `/api/admin/session`
+  - `/api/admin/health`
   - `/api/admin/login`
   - `/api/admin/logout`
   - `/api/admin/tables`
   - `/api/admin/table`
+  - `/api/admin/environment`
 
 Note:
 
@@ -146,8 +147,11 @@ Scopo:
 
 Cosa testa:
 
-- `200` quando il controllo DB è sano
-- `503` quando il controllo DB fallisce
+- `200` quando `/api/health` ha un controllo DB sano
+- `503` quando `/api/health` fallisce sul DB
+- assenza dei metadati sensibili nel payload pubblico
+- `200` su `/api/admin/health` autenticato con payload operativo più ricco
+- `401` su `/api/admin/health` senza sessione admin
 
 ### [authSession.test.ts](./api/authSession.test.ts)
 
@@ -183,6 +187,19 @@ Cosa testa:
 - `PATCH` senza campi mutabili
 - payload con colonne sconosciute
 - create con body vuoto
+
+### [adminEnvironment.test.ts](./api/adminEnvironment.test.ts)
+
+Scopo:
+
+- validare il boundary HTTP dell'endpoint `/api/admin/environment`
+
+Cosa testa:
+
+- `200` con sessione admin valida
+- shape minima stabile del payload (`variables`, contatori e metadati derivati)
+- `401` senza sessione admin
+- fallback coerente in caso di errore interno del servizio
 
 ### [adminTableCrud.test.ts](./api/adminTableCrud.test.ts)
 

@@ -66,11 +66,11 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
 ### Interventi residui
 
 - `✅ Fatto` introdotto `Dependabot` per aggiornamenti automatici di dipendenze npm e GitHub Actions con pianificazione settimanale
-- `✅ Fatto` aggiungere una health/dashboard minima per stato applicativo e operativo, tramite `/api/health`, con:
+- `✅ Fatto` aggiungere una health/dashboard minima per stato applicativo e operativo, tramite `/api/health`, `/api/admin/health` e home admin, con:
   - stato DB
   - versione app
-  - informazioni minime di integrità
-  - environment, uptime e metadati minimi di deploy
+  - informazioni minime di integrità pubblica
+  - environment, uptime e metadati minimi di deploy lato admin
 - `✅ Fatto` introdurre una disciplina di release leggera, tramite `CHANGELOG.md` e convenzione di tag semver, per esempio:
   - changelog minimo
   - tag coerenti con le versioni
@@ -202,11 +202,14 @@ Aggiungere una rete di sicurezza leggera sopra la CI già presente.
   - `/api/health`
   - `/api/contact`
   - `/api/admin/session`
+  - `/api/admin/health`
   - `/api/admin/login`
   - `/api/admin/logout`
   - `/api/admin/tables`
   - `/api/admin/table`
+  - `/api/admin/environment`
 - `✅ Fatto` aggiungere una verifica minima di sessione admin anonima e autenticata
+- `✅ Fatto` aggiungere test handler dedicati per `/api/admin/environment` (auth, payload e fallback), oltre allo smoke endpoint
 - `✅ Fatto` creare una suite di test dedicata agli endpoint che eseguono query sul database, con focus iniziale su:
   - `/api/profile`
   - `/api/about`
@@ -233,6 +236,13 @@ Chiudere gli ultimi punti deboli dell’admin e della gestione asset senza riapr
 
 ### Interventi residui
 
+- `✅ Fatto` rifattorizzare `AdminHome` in sottocomponenti con layout grid semplice e struttura visuale: hero in alto, database sotto, runtime/release/workspace in riga, environment variables in fondo
+- `✅ Fatto` separare e ripulire il CSS admin home in file dedicati, riducendo accoppiamento e regole duplicate
+- `✅ Fatto` spostare lo skeleton dentro ogni sottocomponente admin home (rimozione skeleton monolitico)
+- `✅ Fatto` migliorare UX della lista environment variables:
+  - badge `PUBLIC`/`SECRET` allineati a sinistra e con larghezza a contenuto
+  - variabili pubbliche mostrate in chiaro senza reveal
+  - campo valore con larghezza uniforme, ellissi visiva e navigazione completa da tastiera
 - `❌ Non fatto` riprendere con calma il tema upload file in produzione, con percorso ideale:
   - endpoint admin protetto per upload
   - storage persistente
@@ -365,12 +375,72 @@ Rendere le informazioni di health più accurate e meno esposte pubblicamente, co
 
 ### Interventi residui
 
-- `❌ Non fatto` correggere il calcolo di uptimeSeconds (mostra sempre 1, va verificato il ciclo di vita reale del processo)
-- `❌ Non fatto` evitare di esporre pubblicamente dati sensibili (uptime, env, metadati deploy): valutare una route protetta e una dashboard admin
+- `✅ Fatto` correggere il calcolo di uptimeSeconds usando il ciclo di vita reale del processo invece di un timestamp modulo-locale fragile
+- `✅ Fatto` ridurre `/api/health` a un payload pubblico minimale e spostare env, uptime, startedAt e metadati deploy su `/api/admin/health`, protetto da sessione admin
+- `✅ Fatto` aggiungere una dashboard admin iniziale su `/admin` con stato health, metadati runtime/deploy e accesso esplicito alla console tabelle su `/admin/tables`
+- `✅ Fatto` aggiungere `/api/admin/environment` per snapshot variabili tracciate/configurate e mostrare i valori in admin home con mascheramento solo per i secret
 
 ### Priorità
 
 Media-Alta
+
+### Effort
+
+Medio
+
+---
+
+## 14. Osservabilita latenza DB
+
+### Obiettivo
+
+Visualizzare l'andamento della latenza database nel tempo direttamente nella admin home.
+
+### Interventi residui
+
+- `❌ Non fatto` aggiungere un grafico trend della latenza DB nella admin home
+- `❌ Non fatto` introdurre polling periodico (target iniziale: ogni 5 secondi) per aggiornare i punti del grafico senza refresh pagina
+
+### Priorità
+
+Media
+
+### Effort
+
+Medio
+
+---
+
+## 15. Stabilita caricamento homepage pubblica
+
+### Obiettivo
+
+Ridurre i casi in cui la homepage resta in skeleton per troppo tempo e richiede refresh multipli prima di popolarsi.
+
+### Contesto emerso
+
+- su produzione (`https://michaelpiccirilli.vercel.app/`) il caricamento iniziale puo` restare in skeleton per molti secondi
+- il problema principale sembra la strategia di fetch, non il componente skeleton in se`
+- oggi il flusso client e` soggetto a effetto waterfall:
+  - `ContentProvider` parte dopo `profileLoading`
+  - `about/projects/experiences/skills` vengono caricati in sequenza
+  - con timeout a 8s per chiamata il worst case percepito puo` arrivare a ~40s
+- vari componenti usano "dati vuoti" come condizione per mostrare skeleton, quindi una failure/timeout puo` sembrare caricamento infinito
+- lato backend alcuni endpoint fanno query DB sequenziali; con pool Postgres `max: 1` la concorrenza e` limitata e i timeout diventano piu` probabili
+
+### Interventi residui
+
+- `❌ Non fatto` avviare fetch contenuti in parallelo (`Promise.all`) in `ContentContext`, eliminando la cascata sequenziale
+- `❌ Non fatto` separare stati `loading`, `error` e `empty` nei componenti pubblici (About/Projects/Skills/Experience), evitando `empty => skeleton`
+- `❌ Non fatto` disaccoppiare avvio `ContentProvider` da `profileLoading` per non bloccare il resto della homepage
+- `❌ Non fatto` introdurre error state esplicito lato UI quando una fetch fallisce o va in timeout
+- `❌ Non fatto` ritarare timeout client (o timeout differenziati per endpoint) per ridurre il tempo morto percepito
+- `❌ Non fatto` valutare endpoint bootstrap unico per homepage (`/api/bootstrap`) per ridurre round-trip iniziali
+- `❌ Non fatto` valutare ottimizzazioni query lato server sui path piu` lenti (accorpamento letture, minor serializzazione)
+
+### Priorità
+
+Alta
 
 ### Effort
 

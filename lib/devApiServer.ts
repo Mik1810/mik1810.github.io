@@ -93,7 +93,10 @@ const server = createServer(async (req, res) => {
       return res.end('API route not found')
     }
 
-    const mod = (await import(pathToFileURL(handlerPath).href)) as {
+    const handlerUrl = new URL(pathToFileURL(handlerPath).href)
+    handlerUrl.searchParams.set('ts', String(Date.now()))
+
+    const mod = (await import(handlerUrl.href)) as {
       default?: (req: DevApiRequest, res: ApiResponse) => Promise<unknown> | unknown
     }
     const handler = mod.default

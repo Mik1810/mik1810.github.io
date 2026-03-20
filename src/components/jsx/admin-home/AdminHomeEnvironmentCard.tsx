@@ -3,6 +3,7 @@ import type { AdminEnvironmentVariable } from '../../../types/app.js'
 import { EnvVariableIcon, EyeIcon, EyeOffIcon, RuntimeIcon } from './AdminHomeIcons'
 
 interface AdminHomeEnvironmentCardProps {
+  isLoading?: boolean
   configuredEnvironmentVariables: AdminEnvironmentVariable[]
   environmentVariables: AdminEnvironmentVariable[]
   visibleEnvironmentValues: Record<string, boolean>
@@ -13,6 +14,7 @@ interface AdminHomeEnvironmentCardProps {
 }
 
 function AdminHomeEnvironmentCard({
+  isLoading = false,
   configuredEnvironmentVariables,
   environmentVariables,
   visibleEnvironmentValues,
@@ -21,6 +23,41 @@ function AdminHomeEnvironmentCard({
   onToggleEnvironmentValue,
   maskEnvironmentValue,
 }: AdminHomeEnvironmentCardProps) {
+  if (isLoading) {
+    return (
+      <section className="admin-card admin-home-card admin-home-env-card">
+        <div className="admin-home-card-header admin-home-card-header-wrap">
+          <div className="admin-home-card-title">
+            <span className="admin-skeleton admin-home-skeleton-icon" />
+            <div className="admin-home-skeleton-stack">
+              <span className="admin-skeleton admin-home-skeleton-eyebrow" />
+              <span className="admin-skeleton admin-home-skeleton-card-title" />
+            </div>
+          </div>
+          <span className="admin-skeleton admin-home-skeleton-pill" />
+        </div>
+
+        <div className="admin-home-env-list">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <article key={`admin-home-env-skeleton-${index}`} className="admin-home-env-row">
+              <div className="admin-home-env-row-main">
+                <span className="admin-skeleton admin-home-skeleton-icon" />
+                <div className="admin-home-skeleton-stack">
+                  <span className="admin-skeleton admin-home-skeleton-env-key" />
+                  <span className="admin-skeleton admin-home-skeleton-env-badge" />
+                </div>
+              </div>
+              <div className="admin-home-env-row-value-wrap">
+                <span className="admin-skeleton admin-home-skeleton-toggle" />
+                <span className="admin-skeleton admin-home-skeleton-env-value" />
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
   const hasEnvironmentVariables = configuredEnvironmentVariables.length > 0
 
   return (
@@ -92,13 +129,18 @@ function AdminHomeEnvironmentCard({
                       )}
                     </button>
                   )}
-                  <code
-                    className={`admin-home-env-inline-value ${
-                      isVisible ? 'is-visible' : ''
-                    }`.trim()}
-                  >
-                    {displayValue}
-                  </code>
+                  {isVisible ? (
+                    <input
+                      type="text"
+                      readOnly
+                      className="admin-home-env-inline-input"
+                      value={displayValue}
+                      aria-label={`Valore di ${variable.key}`}
+                      title={value}
+                    />
+                  ) : (
+                    <code className="admin-home-env-inline-value">{displayValue}</code>
+                  )}
                 </div>
               </article>
             )

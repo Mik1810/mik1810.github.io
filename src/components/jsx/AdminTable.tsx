@@ -18,7 +18,7 @@ import type {
   AdminTablesResponse,
 } from '../../types/app.js'
 import icons from '../../data/icons.js'
-import AdminDashboardSkeleton from './AdminDashboardSkeleton'
+import AdminTableSkeleton from './AdminTableSkeleton'
 import '../css/AdminAuth.css'
 
 const PAGE_SIZE = 15
@@ -325,7 +325,7 @@ const LinkPreviewIcon = () => (
   </svg>
 )
 
-function AdminDashboard() {
+function AdminTable() {
   const [tables, setTables] = useState<AdminTableDefinition[]>([])
   const [loadingTables, setLoadingTables] = useState(true)
   const [activeTableName, setActiveTableName] = useState('')
@@ -1372,7 +1372,7 @@ function AdminDashboard() {
   }
 
   if (loadingTables && tables.length === 0) {
-    return <AdminDashboardSkeleton />
+    return <AdminTableSkeleton />
   }
 
   return (
@@ -1933,4 +1933,4 @@ function AdminDashboard() {
   )
 }
 
-export default AdminDashboard
+export default AdminTable

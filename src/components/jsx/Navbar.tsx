@@ -45,16 +45,23 @@ function Navbar() {
   return (
     <nav className={`navbar ${isAdminRoute ? 'admin-navbar' : ''}`.trim()}>
       <div className="navbar-container">
-        <a href={showHomeLinks ? '#hero' : '/'} className="navbar-logo">
-          {isAdminIdentityLoading ? (
-            <span
-              className="navbar-logo-skeleton"
-              aria-hidden="true"
-            />
-          ) : (
-            name
-          )}
-        </a>
+        {isAdminRoute ? (
+          <Link to="/admin" className="navbar-logo">
+            {isAdminIdentityLoading ? (
+              <span className="navbar-logo-skeleton" aria-hidden="true" />
+            ) : (
+              name
+            )}
+          </Link>
+        ) : (
+          <a href={showHomeLinks ? '#hero' : '/'} className="navbar-logo">
+            {isAdminIdentityLoading ? (
+              <span className="navbar-logo-skeleton" aria-hidden="true" />
+            ) : (
+              name
+            )}
+          </a>
+        )}
         {showHomeLinks && (
           <ul className={`navbar-menu ${menuOpen ? 'open' : ''}`}>
             {navLinks.map((link) => (

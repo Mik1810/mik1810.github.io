@@ -2,17 +2,18 @@ import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../context/useAuth'
-import AdminDashboardSkeleton from './AdminDashboardSkeleton'
+import AdminTableSkeleton from './AdminTableSkeleton'
 
 interface RequireAdminProps {
   children: ReactNode
+  fallback?: ReactNode
 }
 
-function RequireAdmin({ children }: RequireAdminProps) {
+function RequireAdmin({ children, fallback }: RequireAdminProps) {
   const { authLoading, authenticated } = useAuth()
 
   if (authLoading) {
-    return <AdminDashboardSkeleton />
+    return <>{fallback || <AdminTableSkeleton />}</>
   }
 
   if (!authenticated) {

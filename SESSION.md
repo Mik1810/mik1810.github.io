@@ -3645,3 +3645,48 @@ pm run test:api.
   - backend test log artifact upload
 - Verification:
   - `npm run test:api`
+
+## 2026-03-20 01:35 CET - Hardened the health boundary by splitting public and admin visibility
+
+- Added [healthService.ts](./lib/services/healthService.ts) to centralize:
+  - DB health probing
+  - public health payload creation
+  - admin health payload creation
+- Updated [appMetadata.ts](./lib/appMetadata.ts) so uptime now uses real process uptime semantics, with a fallback only when needed.
+- Simplified [health.ts](./api/health.ts) into a public minimal snapshot that exposes only:
+  - service identity
+  - timestamp
+  - app name/version
+  - DB check state and latency
+- Added [api/admin/health.ts](./api/admin/health.ts) as a protected endpoint that returns the richer operational payload, including:
+  - environment
+  - uptimeSeconds
+  - startedAt
+  - deployment metadata
+- Updated tests to reflect the new split:
+  - [health.test.ts](./tests/api/health.test.ts)
+  - [smoke.test.ts](./tests/api/smoke.test.ts)
+  - [adminFailures.test.ts](./tests/api/adminFailures.test.ts)
+- Updated [todo.md](./todo.md) so the health/privacy block is now marked as completed for the current scope.
+
+## 2026-03-20 01:48 CET - Turned `/admin` into an operational home and moved CRUD tables to `/admin/tables`
+
+- Added [AdminHome.tsx](./src/components/jsx/AdminHome.tsx) as the new admin landing page.
+- Updated [App.tsx](./src/App.tsx) routes so:
+  - `/admin` now renders the operational home
+  - `/admin/tables` now renders the existing CRUD console
+- Updated [AdminApp.tsx](./src/components/jsx/AdminApp.tsx) to support:
+  - `login`
+  - `home`
+  - `tables`
+- Updated [Navbar.tsx](./src/components/jsx/Navbar.tsx) so the admin shell logo now routes back to `/admin` instead of exiting the admin area.
+- Extended [AdminAuth.css](./src/components/css/AdminAuth.css) with the new admin-home layout:
+  - hero summary
+  - health/runtime/release/workspace cards
+  - CTA to `/admin/tables`
+  - refresh action
+- Added [AdminHealthResponse](./src/types/app.ts) to type the richer admin health payload in the frontend.
+- Verification:
+  - `npm run typecheck`
+  - `npm run lint`
+  - `npm run build`

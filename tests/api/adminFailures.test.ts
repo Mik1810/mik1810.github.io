@@ -15,6 +15,7 @@ vi.mock('../../lib/services/adminAuthService.ts', async () => {
 
 import adminLoginHandler from '../../api/admin/login.ts'
 import adminLogoutHandler from '../../api/admin/logout.ts'
+import adminHealthHandler from '../../api/admin/health.ts'
 import adminSessionHandler from '../../api/admin/session.ts'
 import adminTableHandler from '../../api/admin/table.ts'
 import adminTablesHandler from '../../api/admin/tables.ts'
@@ -107,6 +108,19 @@ describe('Admin failure paths', () => {
     const response = await invokeApiHandler(adminTableHandler, {
       url: '/api/admin/table?table=projects',
       ip: '127.0.5.14',
+    })
+
+    expect(response.statusCode).toBe(401)
+    expect(response.body).toEqual({
+      error: 'Unauthorized',
+      code: 'unauthorized',
+    })
+  })
+
+  it('rejects admin health access without an authenticated session', async () => {
+    const response = await invokeApiHandler(adminHealthHandler, {
+      url: '/api/admin/health',
+      ip: '127.0.5.145',
     })
 
     expect(response.statusCode).toBe(401)
