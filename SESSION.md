@@ -3446,3 +3446,182 @@ pm run test:api.
 ## 2026-03-17 01:32 CET - Added email-template extraction follow-up to the roadmap
 
 - Extended the contact-flow section in [TODO.md](./TODO.md) with a dedicated follow-up item for extracting the email template into its own file, replacing dynamic fields explicitly, and refining the rendered layout further.
+
+## 2026-03-20 00:01 CET - Extracted the contact email template into a dedicated module
+
+- Added [contactEmailTemplate.ts](./lib/templates/contactEmailTemplate.ts) as the dedicated contact-email renderer.
+- Moved the HTML email markup out of [contactService.ts](./lib/services/contactService.ts) into a build-time-loaded template module with:
+  - explicit `{{token}}` placeholder replacement
+  - localized copy selection
+  - HTML escaping for all dynamic user-controlled fields
+- Refined the inbox layout a bit while keeping the same delivery flow through Resend.
+- Added [contactTemplate.test.ts](./tests/api/contactTemplate.test.ts) to verify:
+  - placeholders are fully resolved
+  - dynamic values are escaped before injection
+- Updated [TODO.md](./TODO.md) to mark the email-template extraction task as completed.
+- Updated [CHANGELOG.md](./CHANGELOG.md) so the `Unreleased` section reflects the extracted template and its new coverage.
+
+## 2026-03-20 00:08 CET - Added the first lightweight smoke suite and closed TODO point 7
+
+- Added [smoke.test.ts](./tests/api/smoke.test.ts) with lightweight checks for:
+  - homepage shell integrity from [index.html](./index.html)
+  - `/api/profile`
+  - `/api/projects`
+  - `/api/skills`
+  - anonymous and authenticated admin session state via [session.ts](./api/admin/session.ts)
+- Fixed [index.html](./index.html) so the module entry now points to [main.tsx](./src/main.tsx) instead of the stale `main.jsx` path.
+- Updated [TODO.md](./TODO.md) so the `Test automatici minimi` block now marks as completed:
+  - smoke coverage for homepage + key public endpoints
+  - minimal admin/session coverage
+- Updated [CHANGELOG.md](./CHANGELOG.md) to record the new smoke suite and the corrected frontend entry path.
+- Verification:
+  - `npx vitest run tests/api/smoke.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`
+
+## 2026-03-20 00:13 CET - Extended the smoke suite to every current API endpoint
+
+- Expanded [smoke.test.ts](./tests/api/smoke.test.ts) so the smoke layer now covers:
+  - all public read endpoints
+  - `/api/health`
+  - `/api/contact`
+  - all current admin endpoints (`session`, `login`, `logout`, `tables`, `table`)
+- Kept the suite lightweight by:
+  - using the real handlers and DB-backed paths for the main public read endpoints
+  - mocking side-effecting or operational dependencies only where useful, such as:
+    - contact delivery
+    - admin login
+    - health DB ping
+    - generic admin table row listing
+- Updated [TODO.md](./TODO.md) so the smoke-test bullet now explicitly lists the full API surface covered.
+- Updated [CHANGELOG.md](./CHANGELOG.md) to reflect that the smoke suite now spans the full current endpoint set.
+- Verification:
+  - `npx vitest run tests/api/smoke.test.ts`
+
+## 2026-03-20 00:21 CET - Added the first real admin CRUD integration test against the DB
+
+- Added [adminTableCrud.test.ts](./tests/api/adminTableCrud.test.ts) as the first DB-backed CRUD integration suite for the admin path.
+- Chosen scope:
+  - endpoint: [table.ts](./api/admin/table.ts)
+  - table: `social_links`
+- Covered operations:
+  - `POST` create
+  - `GET` read/list visibility
+  - `PATCH` update
+  - `DELETE` remove
+- The test uses:
+  - a real signed admin session cookie
+  - the real database through Drizzle
+  - explicit cleanup before and after the run so no residual row remains
+- Updated [TODO.md](./TODO.md) to mark the CRUD/database block as `🟡 Partial` rather than untouched.
+- Updated [CHANGELOG.md](./CHANGELOG.md) so `Unreleased` includes the first DB-backed admin CRUD integration test.
+- Verification:
+  - `npx vitest run tests/api/adminTableCrud.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`
+
+## 2026-03-20 00:31 CET - Expanded admin CRUD coverage to the whole current admin table set
+
+- Reworked [adminTableCrud.test.ts](./tests/api/adminTableCrud.test.ts) from a single-table check into a parameterized DB-backed integration suite.
+- The suite now performs real `create -> read -> update -> delete` flows through [table.ts](./api/admin/table.ts) for all admin tables that can safely use artificial records, including:
+  - `social_links`
+  - `hero_roles`, `hero_roles_i18n`
+  - `about_interests`, `about_interests_i18n`
+  - `projects`, `projects_i18n`, `project_tags`
+  - `github_projects`, `github_projects_i18n`, `github_project_tags`, `github_project_images`
+  - `experiences`, `experiences_i18n`
+  - `education`, `education_i18n`
+  - `tech_categories`, `tech_categories_i18n`, `tech_items`
+  - `skill_categories`, `skill_categories_i18n`, `skill_items`, `skill_items_i18n`
+- Added safe singleton handling for:
+  - `profile`
+  - `profile_i18n`
+  These do not support a normal artificial-record CRUD cycle because the live schema/data model already occupies the only safe key space, so the suite performs update/restore checks instead of destructive singleton recreation.
+- The test harness now:
+  - generates unique payloads and order indexes per test
+  - creates fixture parents through the same admin API when child rows need FK dependencies
+  - keeps an explicit cleanup stack and falls back to direct DB cleanup after each test
+- Updated [TODO.md](./TODO.md) so the CRUD/database block now reflects broad API-side coverage, while leaving repository-level CRUD coverage open.
+- Updated [CHANGELOG.md](./CHANGELOG.md) to reflect the expanded admin CRUD integration suite.
+- Verification:
+  - `npx vitest run tests/api/adminTableCrud.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`
+
+## 2026-03-20 00:46 CET - Added failure-path coverage for admin, health, and auth-session utilities
+
+- Added [adminFailures.test.ts](./tests/api/adminFailures.test.ts) covering:
+  - invalid admin session cookie
+  - login failure mapping
+  - unauthorized access to `logout`, `tables`, and `table`
+  - invalid admin table requests such as:
+    - disallowed table
+    - invalid limit
+    - missing primary keys
+    - no mutable fields
+    - unknown columns
+    - empty create payload
+- Added [health.test.ts](./tests/api/health.test.ts) for:
+  - healthy DB response (`200`)
+  - unhealthy DB response (`503`)
+- Added [authSession.test.ts](./tests/api/authSession.test.ts) for:
+  - cookie parsing
+  - token create/verify
+  - request session extraction
+  - tampered token rejection
+  - expired token rejection
+- Renamed the contact/email test file to [email.test.ts](./tests/api/email.test.ts) and kept the template assertions in the same suite.
+- Verification performed for this tranche:
+  - `npx vitest run tests/api/adminFailures.test.ts tests/api/health.test.ts tests/api/authSession.test.ts`
+  - `npx vitest run tests/api/adminFailures.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`
+
+## 2026-03-20 01:00 CET - Extended repository-level coverage to public project read models
+
+- Added [profileRepository.test.ts](./tests/repositories/profileRepository.test.ts) to cover:
+  - locale normalization
+  - stable payload shape for Italian and English profile reads
+  - DB-aligned ordering for social links
+  - localized role extraction by locale
+- Added [projectsRepository.test.ts](./tests/repositories/projectsRepository.test.ts) to cover:
+  - locale normalization
+  - stable payload shape for Italian and English project reads
+  - DB-aligned ordering and localization for local projects
+  - featured GitHub project filtering, ordered tags, and ordered images
+- Kept [adminTableRepository.test.ts](./tests/repositories/adminTableRepository.test.ts) as the repository-side CRUD/failure suite for the admin data layer.
+- Updated [TODO.md](./TODO.md) so the CRUD/database block now reflects that repository-level coverage has started on multiple repositories, not only `adminTableRepository`.
+- Updated [CHANGELOG.md](./CHANGELOG.md) so `Unreleased` mentions the expanded repository-level DB-backed coverage.
+- Verification for the new project repository suite:
+  - `npx vitest run tests/repositories/projectsRepository.test.ts`
+
+## 2026-03-20 01:03 CET - Extended repository-level coverage to the skills read model
+
+- Added [skillsRepository.test.ts](./tests/repositories/skillsRepository.test.ts) to cover:
+  - stable payload shape for Italian and English skill reads
+  - DB-aligned tech stack category ordering and localized labels
+  - DB-aligned tech item ordering with fallback handling for `devicon` and `color`
+  - DB-aligned skill category ordering and localized skill labels
+- Updated [TODO.md](./TODO.md) so the CRUD/database block now mentions `skillsRepository` alongside the previously covered repositories.
+- Updated [CHANGELOG.md](./CHANGELOG.md) so `Unreleased` reflects the additional repository-level coverage.
+- Verification for this suite:
+  - `npx vitest run tests/repositories/skillsRepository.test.ts`
+
+## 2026-03-20 01:06 CET - Closed the CRUD and database coverage block with the remaining repositories
+
+- Added [aboutRepository.test.ts](./tests/repositories/aboutRepository.test.ts) to cover:
+  - stable payload shape for Italian and English about reads
+  - DB-aligned interest ordering for both locales
+- Added [experiencesRepository.test.ts](./tests/repositories/experiencesRepository.test.ts) to cover:
+  - stable payload shape for Italian and English experience reads
+  - DB-aligned ordering and localization for both `experiences` and `education`
+- Added [adminAuthRepository.test.ts](./tests/repositories/adminAuthRepository.test.ts) to cover:
+  - successful admin sign-in mapping
+  - provider auth error mapping
+  - generic fallback error handling
+  - invalid successful payload rejection
+- Updated [TODO.md](./TODO.md) so the `Test CRUD e copertura database` block is now marked as completed for the current repository/API scope.
+- Updated [CHANGELOG.md](./CHANGELOG.md) so `Unreleased` reflects repository-level coverage across all current repositories.
+- Verification for this closing pass:
+  - `npx vitest run tests/repositories/aboutRepository.test.ts tests/repositories/experiencesRepository.test.ts`
+  - `npx vitest run tests/repositories/adminAuthRepository.test.ts`

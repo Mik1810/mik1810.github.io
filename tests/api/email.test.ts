@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { HttpError } from '../../lib/http/apiUtils.ts'
+import { renderContactEmailTemplate } from '../../lib/templates/contactEmailTemplate.ts'
 import { invokeApiHandler } from './testUtils.ts'
 import { sendContactMessage } from '../../lib/services/contactService.ts'
 import contactHandler from '../../api/contact.ts'
@@ -112,5 +113,34 @@ describe('Contact API', () => {
         error: 'Unable to deliver message right now',
       })
     )
+  })
+
+  it('renders localized template content with resolved placeholders', () => {
+    const html = renderContactEmailTemplate({
+      name: 'Mario Rossi',
+      email: 'mario@example.com',
+      message: 'Ciao Michael,\nparliamo del progetto.',
+      locale: 'it',
+    })
+
+    expect(html).toContain('Hai ricevuto un nuovo messaggio dal form contatti del portfolio.')
+    expect(html).toContain('Mario Rossi')
+    expect(html).toContain('mailto:mario@example.com')
+    expect(html).toContain('Ciao Michael,\nparliamo del progetto.')
+    expect(html).not.toContain('{{intro}}')
+    expect(html).not.toContain('{{message}}')
+  })
+
+  it('escapes dynamic fields before injecting them into the contact template', () => {
+    const html = renderContactEmailTemplate({
+      name: '<Mario & Co.>',
+      email: 'mario@example.com',
+      message: '<script>alert("x")</script>',
+      locale: 'en',
+    })
+
+    expect(html).toContain('&lt;Mario &amp; Co.&gt;')
+    expect(html).toContain('&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;')
+    expect(html).not.toContain('<script>alert("x")</script>')
   })
 })

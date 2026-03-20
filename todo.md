@@ -2,14 +2,14 @@
 
 ## Scopo
 
-Questo file contiene solo le migliorie ancora aperte davvero per il progetto.
+Questo file ormai funziona come roadmap corta + status board dei blocchi principali del progetto.
 
 Sono state rimosse:
 
 - le attività già completate
 - le attività escluse per scelta progettuale
 
-L'obiettivo è tenere una roadmap corta, reale e utile.
+L'obiettivo è tenere una roadmap corta, reale e utile, senza perdere visibilità su ciò che è già stato chiuso di recente.
 
 ### Legenda stato
 
@@ -29,7 +29,7 @@ La base del progetto oggi è già solida:
 - admin schema-driven e UI admin sono già a buon livello
 - SEO, performance base e deploy Vercel sono già stati messi in ordine
 
-Quello che segue è quindi solo lavoro residuo.
+Quello che segue è quindi soprattutto lavoro residuo, con alcuni blocchi già chiusi lasciati visibili come riferimento di stato.
 
 ---
 
@@ -123,7 +123,7 @@ Rendere la sezione contatti più completa e più resistente, senza complicarla i
 - `✅ Fatto` introdurre un flusso di invio strutturato lato server con Resend, con endpoint dedicato, validazione, test API e fallback UI coerente
 - `✅ Fatto` aggiungere protezione minima anti-spam tramite rate limit e honeypot
 - `🟡 Partial` sostituire il sender di test `onboarding@resend.dev` con un sender verificato su dominio proprio, se in futuro si vorrà passare a una configurazione pienamente production-grade
-- `❌ Non fatto` estrarre il template email in un file dedicato, caricarlo a runtime o build-time, sostituire i campi dinamici in modo esplicito e rifinirne ulteriormente il layout
+- `✅ Fatto` estrarre il template email in un file dedicato, caricarlo a build-time, sostituire i campi dinamici in modo esplicito e rifinirne ulteriormente il layout
 
 ### Priorità
 
@@ -192,18 +192,28 @@ Aggiungere una rete di sicurezza leggera sopra la CI già presente.
 
 ### Interventi residui
 
-- `❌ Non fatto` smoke test per:
+- `✅ Fatto` smoke test per homepage e tutti gli endpoint API attuali:
   - homepage
+  - `/api/about`
   - `/api/profile`
   - `/api/projects`
   - `/api/skills`
-- `❌ Non fatto` valutare un test minimo di accesso admin o sessione
+  - `/api/experiences`
+  - `/api/health`
+  - `/api/contact`
+  - `/api/admin/session`
+  - `/api/admin/login`
+  - `/api/admin/logout`
+  - `/api/admin/tables`
+  - `/api/admin/table`
+- `✅ Fatto` aggiungere una verifica minima di sessione admin anonima e autenticata
 - `✅ Fatto` creare una suite di test dedicata agli endpoint che eseguono query sul database, con focus iniziale su:
   - `/api/profile`
   - `/api/about`
   - `/api/projects`
   - `/api/experiences`
   - `/api/skills`
+- `❌ Non fatto` valutare in una fase successiva test frontend/component-level o browser-level, se il progetto avrà bisogno di coprire anche il comportamento UI oltre ai boundary backend
 
 ### Priorità
 
@@ -240,21 +250,22 @@ Medio-Alto
 
 ---
 
-## Ordine consigliato
+## Ordine consigliato aggiornato
 
-1. Tooling e manutenzione operativa
-2. Hardening schema e database
-3. Contact flow
+1. README, quickstart e documentazione
+2. Health endpoint, privacy e dashboard admin
+3. Sicurezza e rate limiting distribuito
 4. Skills, contenuti e discoverability
-5. Performance finale
-6. Test automatici minimi
-7. Admin UX e media workflow
+5. UI/UX e accessibilità
+6. Tooling e manutenzione operativa
+7. Performance finale
+8. Admin UX e media workflow
 
 ---
 
 ## Nota pratica
 
-Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, le sezioni dalla `2` in poi possono anche essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.
+Se il progetto resta volutamente single-page e già soddisfa il livello desiderato, molte sezioni da qui in poi possono essere trattate come rifiniture opzionali e non come blocchi obbligatori prima della chiusura.
 
 ---
 
@@ -312,7 +323,8 @@ Garantire che tutte le operazioni CRUD sulle tabelle principali siano coperte da
 
 ### Interventi residui
 
-- `❌ Non fatto` aggiungere test CRUD completi per tutte le tabelle principali (insert, update, delete, read), sia lato API che repository
+- `✅ Fatto` aggiunta una suite CRUD DB-backed estesa su `/api/admin/table` che copre tutte le tabelle admin attuali testabili con record artificiali, più test sicuri di update/restore per i casi singleton `profile` e `profile_i18n`
+- `✅ Fatto` aggiunte suite repository-level per tutti i repository attuali (`adminTableRepository`, `adminAuthRepository`, `aboutRepository`, `experiencesRepository`, `profileRepository`, `projectsRepository`, `skillsRepository`), con copertura di CRUD admin, auth admin, localizzazione, ordinamento, tag, immagini e read model pubblici principali
 
 ### Priorità
 
