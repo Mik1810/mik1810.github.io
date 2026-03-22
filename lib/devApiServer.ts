@@ -196,6 +196,13 @@ const server = createServer(async (req, res) => {
 server.listen(port, () => {
   console.log(`[dev-api] listening on http://localhost:${port}`)
   if (appEnv.nodeEnv === 'production') return
+  if (!appEnv.devApiWarmup) {
+    console.info('[timing] dev-api.ready', {
+      message:
+        'Dev API pronta senza warmup (imposta DEV_API_WARMUP=true per abilitarlo).',
+    })
+    return
+  }
 
   const warmupEndpoints = [
     '/api/about?lang=it',

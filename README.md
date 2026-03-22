@@ -331,8 +331,8 @@ npm run dev:vercel
 ```
 
 Note for local DX:
-- `npm run dev:fast` now performs a lightweight API warmup of public endpoints at startup.
-- Wait for the terminal log `dev-api.warmup.ready` before evaluating first-load behavior on `/home`.
+- `npm run dev:fast` supports optional API warmup via `DEV_API_WARMUP=true` (default: disabled).
+- with warmup enabled, wait for `dev-api.warmup.ready` before evaluating first-load behavior on `/home`.
 - opening `/` in local/dev now redirects immediately to `/home` from `index.html`, reducing pre-mount blank time.
 
 Quality gates:

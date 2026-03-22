@@ -14,10 +14,16 @@ const optionalTrimmedString = () =>
   z.preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
 const optionalUrlString = () =>
   z.preprocess(emptyStringToUndefined, z.string().trim().url().optional())
+const optionalBooleanString = () =>
+  z.preprocess(
+    emptyStringToUndefined,
+    z.string().trim().toLowerCase().optional()
+  )
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
   API_PORT: z.coerce.number().int().positive().max(65535).optional(),
+  DEV_API_WARMUP: optionalBooleanString(),
   DB_POOL_MAX: z.coerce.number().int().positive().max(30).optional(),
   DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).optional(),
   AUTH_SESSION_SECRET: optionalTrimmedString(),
@@ -41,6 +47,10 @@ export const appEnv = Object.freeze({
   nodeEnv: env.NODE_ENV ?? 'development',
   isProduction: (env.NODE_ENV ?? 'development') === 'production',
   apiPort: env.API_PORT ?? 3000,
+  devApiWarmup:
+    env.DEV_API_WARMUP === '1' ||
+    env.DEV_API_WARMUP === 'true' ||
+    env.DEV_API_WARMUP === 'yes',
   dbPoolMax: env.DB_POOL_MAX ?? 4,
   dbStatementTimeoutMs: env.DB_STATEMENT_TIMEOUT_MS ?? 20000,
 })
@@ -63,6 +73,11 @@ export const getAdminEnvironmentSnapshot =
     {
       key: 'API_PORT',
       value: serializeEnvValue(appEnv.apiPort),
+      isSecret: false,
+    },
+    {
+      key: 'DEV_API_WARMUP',
+      value: serializeEnvValue(appEnv.devApiWarmup ? 'true' : 'false'),
       isSecret: false,
     },
     {
