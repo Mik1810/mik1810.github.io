@@ -1,5 +1,13 @@
 # SESSION
 
+## Aggiornamento release 1.1.2 (2026-03-23)
+
+- Corretto errore lint CI (`react-hooks/set-state-in-effect`) in `HeroTyping`.
+- Rimosse transizioni di stato sincrone dentro `useEffect` e mantenuto il reset immediato al cambio lingua con remount keyed.
+- Verifiche locali eseguite prima del push:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+
 ## Aggiornamento release 1.1.1 (2026-03-23)
 
 - Consolidato fallback hero in `src/data/heroFallback.json` per evitare costanti sparse nei componenti.

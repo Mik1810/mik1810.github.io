@@ -11,6 +11,13 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.1.2] - 2026-03-23
+
+### Fixed
+- resolved GitHub Actions lint failure (`react-hooks/set-state-in-effect`) in `HeroTyping`
+- refactored typing state transitions to avoid synchronous `setState` inside effects, keeping language-switch reset immediate via keyed remount
+- preserved role swap behavior at typing boundaries without cascading render warnings
+
 ## [1.1.1] - 2026-03-23
 
 ### Added

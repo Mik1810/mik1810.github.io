@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useLanguage } from '../../context/useLanguage'
 import { useProfile } from '../../context/useProfile'
@@ -95,7 +95,6 @@ function HeroPortrait({
 interface HeroTypingAnimationTextProps
   extends Omit<HeroTypingAnimationProps, 'photo'> {
   fallbackRole: string
-  languageKey: string
 }
 
 const areRoleListsEqual = (current: string[], next: string[]) => {
@@ -112,74 +111,64 @@ function HeroTypingAnimationText({
   uniName,
   t,
   fallbackRole,
-  languageKey,
 }: HeroTypingAnimationTextProps) {
   const roleSource = useMemo(
     () => (roles.length > 0 ? roles : [fallbackRole || FALLBACK_HERO.roles.en]),
     [roles, fallbackRole]
   )
   const [activeRoles, setActiveRoles] = useState<string[]>(roleSource)
-  const [pendingRoles, setPendingRoles] = useState<string[] | null>(null)
   const [roleIndex, setRoleIndex] = useState(0)
   const [roleCharIndex, setRoleCharIndex] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
   const [hasRoleRendered, setHasRoleRendered] = useState(false)
+  const latestRoleSourceRef = useRef<string[]>(roleSource)
 
   useEffect(() => {
-    if (areRoleListsEqual(activeRoles, roleSource)) return
-    setPendingRoles(roleSource)
-  }, [activeRoles, roleSource])
+    latestRoleSourceRef.current = roleSource
+  }, [roleSource])
 
   useEffect(() => {
-    setActiveRoles([fallbackRole || FALLBACK_HERO.roles.en])
-    setPendingRoles(null)
-    setRoleIndex(0)
-    setRoleCharIndex(0)
-    setIsDeleting(false)
-  }, [languageKey, fallbackRole])
-
-  useEffect(() => {
-    if (!pendingRoles) return
-    if (!isDeleting || roleCharIndex !== 0) return
-
-    setActiveRoles(pendingRoles)
-    setPendingRoles(null)
-    setRoleIndex(0)
-    setRoleCharIndex(0)
-    setIsDeleting(false)
-  }, [pendingRoles, isDeleting, roleCharIndex])
-
-  useEffect(() => {
-    const currentRole = activeRoles[roleIndex]
+    const safeActiveRoles =
+      activeRoles.length > 0 ? activeRoles : [fallbackRole || FALLBACK_HERO.roles.en]
+    const currentRole = safeActiveRoles[roleIndex] ?? safeActiveRoles[0] ?? ''
     if (!currentRole) return
 
     let timeout: number | ReturnType<typeof setTimeout> | undefined
 
-    if (!isDeleting && roleCharIndex < currentRole.length) {
+    if (roleIndex >= safeActiveRoles.length) {
       timeout = setTimeout(() => {
-        setRoleCharIndex(roleCharIndex + 1)
+        setRoleIndex(0)
+        setRoleCharIndex(0)
+        setIsDeleting(false)
+      }, 0)
+    } else if (!isDeleting && roleCharIndex < currentRole.length) {
+      timeout = setTimeout(() => {
+        setRoleCharIndex((current) => current + 1)
         setHasRoleRendered(true)
       }, 65)
     } else if (!isDeleting && roleCharIndex === currentRole.length) {
       timeout = setTimeout(() => setIsDeleting(true), 1800)
     } else if (isDeleting && roleCharIndex > 0) {
-      timeout = setTimeout(() => setRoleCharIndex(roleCharIndex - 1), 32)
+      timeout = setTimeout(() => setRoleCharIndex((current) => current - 1), 32)
     } else if (isDeleting && roleCharIndex === 0) {
       timeout = setTimeout(() => {
+        const nextRoles = latestRoleSourceRef.current
+        const rolesChanged = !areRoleListsEqual(activeRoles, nextRoles)
+
+        if (rolesChanged) {
+          setActiveRoles(nextRoles)
+          setRoleIndex(0)
+        } else {
+          setRoleIndex((current) => (current + 1) % safeActiveRoles.length)
+        }
+
         setIsDeleting(false)
-        setRoleIndex((roleIndex + 1) % activeRoles.length)
+        setRoleCharIndex(0)
       }, 120)
     }
 
     return () => clearTimeout(timeout)
-  }, [roleCharIndex, isDeleting, roleIndex, activeRoles])
-
-  useEffect(() => {
-    if (roleIndex < activeRoles.length) return
-    setRoleIndex(0)
-    setRoleCharIndex(0)
-    setIsDeleting(false)
-  }, [roleIndex, activeRoles.length])
+  }, [activeRoles, fallbackRole, isDeleting, roleCharIndex, roleIndex])
 
   const displayRole = activeRoles[roleIndex]
     ? activeRoles[roleIndex].substring(0, roleCharIndex)
@@ -275,6 +264,7 @@ function HeroTyping() {
     <section id="hero" className="hero-typing">
       <div className="hero-typing-container hero-animate">
         <HeroTypingAnimationText
+          key={lang}
           nameText={nameText}
           roles={roles}
           university={university}
@@ -283,7 +273,6 @@ function HeroTyping() {
           uniName={uniName}
           t={t}
           fallbackRole={fallbackRole}
-          languageKey={lang}
         />
         <HeroPortrait
           photo={photo}
