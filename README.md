@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.2.0-2563eb?style=for-the-badge" alt="Version 1.2.0" />
+  <img src="https://img.shields.io/badge/version-1.2.1-2563eb?style=for-the-badge" alt="Version 1.2.1" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -34,7 +34,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.2.0`  
+**Artifact version:** `1.2.1`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 
@@ -436,7 +436,7 @@ npm run dev:vercel
 
 Note for local DX:
 - `npm run dev:fast` supports optional API warmup via `DEV_API_WARMUP=true` (default: disabled).
-- `npm run dev:api` starts the plain `tsx watch` runtime; `npm run dev:api:log` starts the instrumented launcher that reports `tsxWatchOverheadMs` and total startup elapsed.
+- `npm run dev:api` starts the plain `tsx watch` runtime; `npm run dev:api:log` starts the instrumented launcher that reports startup timing (`launcher.start` -> `launcher.end`) and total ready elapsed in human-readable format.
 - dev API backend logs can be toggled with `DEV_API_DEBUG_LOGS=true|false`.
 - frontend debug logs are disabled by default and can be enabled explicitly with `VITE_DEBUG_LOGS=true`.
 - with warmup enabled, wait for `dev-api.warmup.ready` before evaluating first-load behavior on `/home`.

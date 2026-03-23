@@ -8,7 +8,6 @@ import type { ApiHeaders, ApiQuery, ApiResponse } from './types/http.js'
 const port = appEnv.apiPort
 const debugLogsEnabled = appEnv.devApiDebugLogs
 const serverBootStartedAt = Date.now()
-const serverBootStartedAtIso = new Date(serverBootStartedAt).toISOString()
 const startupTimingEnabled =
   process.env.DEV_API_STARTUP_TIMING === '1' ||
   process.env.DEV_API_STARTUP_TIMING === 'true' ||
@@ -39,10 +38,25 @@ interface DevApiRequest {
   signal?: AbortSignal
 }
 
+const pad2 = (value: number) => String(value).padStart(2, '0')
+const formatLogDateTime = (ms: number) => {
+  const date = new Date(ms)
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())} ${pad2(date.getDate())}:${pad2(date.getMonth() + 1)}:${date.getFullYear()}`
+}
+
+const formatElapsed = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}m ${seconds}s`
+}
+
 if (startupTimingEnabled) {
-  console.log('[dev-api] bootstrap.start', {
-    startedAt: serverBootStartedAtIso,
-    ...(tsxWatchOverheadMs !== null ? { tsxWatchOverheadMs } : {}),
+  console.log('[dev-api] launcher.end', {
+    endedAt: formatLogDateTime(serverBootStartedAt),
+    ...(tsxWatchOverheadMs !== null
+      ? { elapsedTime: formatElapsed(tsxWatchOverheadMs) }
+      : {}),
   })
 }
 
@@ -233,7 +247,9 @@ server.listen(port, () => {
       if (startupTimingEnabled) {
         const readyAtMs = Date.now()
         console.log(
-          `[dev-api] ready (warmup disabled, elapsed ${readyAtMs - serverBootStartedAt}ms${hasParentStart ? `, total ${readyAtMs - parentStartMs}ms` : ''}). Set DEV_API_WARMUP=true to enable startup warmup.`
+          `[dev-api] ready (${formatLogDateTime(readyAtMs)}) (warmup disabled, elapsed ${formatElapsed(
+            readyAtMs - serverBootStartedAt
+          )}${hasParentStart ? `, total ${formatElapsed(readyAtMs - parentStartMs)}` : ''}). Set DEV_API_WARMUP=true to enable startup warmup.`
         )
       } else {
         console.log(
@@ -312,7 +328,11 @@ server.listen(port, () => {
       if (startupTimingEnabled) {
         const readyAtMs = Date.now()
         console.log(
-          `[dev-api] ready (warmup completed, elapsed ${readyAtMs - serverBootStartedAt}ms${hasParentStart ? `, total ${readyAtMs - parentStartMs}ms` : ''}): puoi aprire /home`
+          `[dev-api] ready (${formatLogDateTime(
+            readyAtMs
+          )}) (warmup completed, elapsed ${formatElapsed(
+            readyAtMs - serverBootStartedAt
+          )}${hasParentStart ? `, total ${formatElapsed(readyAtMs - parentStartMs)}` : ''}): puoi aprire /home`
         )
       } else {
         console.log('[dev-api] ready (warmup completed): puoi aprire /home')

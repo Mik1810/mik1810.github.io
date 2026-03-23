@@ -1,5 +1,15 @@
 # SESSION
 
+## Aggiornamento release 1.2.1 (2026-03-23)
+
+- Rifiniti i log startup del profilo `dev:api:log`:
+  - `bootstrap.start` rinominato in `launcher.end`
+  - timestamp formattati `HH:mm:ss gg:mm:yyyy`
+  - elapsed in formato `Xm Ys`
+- Isolato il timing startup solo al percorso strumentato `dev:api:log` (nessun rumore extra su `dev:api` standard).
+- Corretto typecheck/lint residuo su `AdminHomeDatabaseCard` dopo il refactor dell'asse temporale.
+- Esteso `TODO.md` con sottopunti concreti per i test UI performance basati su elapsed di riempimento contenuti (`heroReadyMs`, `sectionReadyMs`, `allSectionsReadyMs`) e rollout CI progressivo warning->hard gate.
+
 ## Aggiornamento release 1.2.0 (2026-03-23)
 
 - Completato il pacchetto evolutivo del grafico latenza DB in admin:

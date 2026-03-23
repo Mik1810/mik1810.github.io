@@ -1,11 +1,16 @@
 import { spawn } from 'node:child_process'
 
 const parentStartedAtMs = Date.now()
-const parentStartedAt = new Date(parentStartedAtMs).toISOString()
 const tsxBin = process.platform === 'win32' ? 'tsx.cmd' : 'tsx'
 
+const pad2 = (value: number) => String(value).padStart(2, '0')
+const formatLogDateTime = (ms: number) => {
+  const date = new Date(ms)
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())} ${pad2(date.getDate())}:${pad2(date.getMonth() + 1)}:${date.getFullYear()}`
+}
+
 console.log('[dev-api] launcher.start', {
-  startedAt: parentStartedAt,
+  startedAt: formatLogDateTime(parentStartedAtMs),
 })
 
 const child = spawn(tsxBin, ['watch', 'lib/devApiServer.ts'], {

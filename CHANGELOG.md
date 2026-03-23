@@ -11,6 +11,22 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.1] - 2026-03-23
+
+### Changed
+- dev startup timing logs were refined for `npm run dev:api:log`:
+  - `bootstrap.start` renamed to `launcher.end`
+  - timestamps now use `HH:mm:ss dd:mm:yyyy`
+  - elapsed startup values are shown in `Xm Ys`
+- startup timing output is now scoped to `dev:api:log` only (`dev:api` stays plain)
+
+### Fixed
+- resolved TypeScript mismatch in `AdminHomeDatabaseCard` date label formatting (`string` return type consistency)
+- resolved lint issues in admin latency chart component after timestamp-axis refactor
+
+### Added
+- TODO follow-up for UI performance testing based on elapsed content-fill metrics (`heroReadyMs`, `sectionReadyMs`, `allSectionsReadyMs`) with phased CI rollout
+
 ## [1.2.0] - 2026-03-23
 
 ### Added

@@ -223,6 +223,15 @@ Aggiungere una rete di sicurezza leggera sopra la CI già presente.
   - `/api/skills`
 - `❌ Non fatto` valutare in una fase successiva test frontend/component-level o browser-level, se il progetto avrà bisogno di coprire anche il comportamento UI oltre ai boundary backend
 - `❌ Non fatto` introdurre una GitHub Action separata dalle altre pipeline per eseguire i test UI/component-level (frontend) in modo dedicato
+- `❌ Non fatto` valutare test di performance UX basati su elapsed time di riempimento contenuti (from skeleton/loading to content ready) per le sezioni alimentate dal DB, con soglie stabili e non troppo fragili
+  - target metriche da valutare:
+    - `heroReadyMs`: tempo da mount pagina `/home` a hero pronto (no skeleton)
+    - `sectionReadyMs`: tempo di sblocco per singola sezione pubblica (`about`, `projects`, `experiences`, `skills`, `profile`)
+    - `allSectionsReadyMs`: tempo da mount a tutte le sezioni pubbliche sbloccate (contenuto o errore esplicito, mai skeleton infinito)
+    - guardrail: nessuna sezione in skeleton oltre una soglia massima (es. 20s)
+  - strategia rollout consigliata:
+    - fase 1: raccolta metrica in CI come warning/non-bloccante
+    - fase 2: soglie hard pass/fail dopo stabilizzazione dei valori baseline
 
 ### Priorità
 

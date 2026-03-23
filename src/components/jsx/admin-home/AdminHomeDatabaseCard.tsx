@@ -44,7 +44,7 @@ const LATENCY_ALERT_THRESHOLD_MS = 1000
 
 const formatTrendLabel = (value: string | number) => {
   const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return value
+  if (Number.isNaN(parsed.getTime())) return String(value)
   return new Intl.DateTimeFormat('it-IT', {
     hour: '2-digit',
     minute: '2-digit',
