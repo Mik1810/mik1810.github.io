@@ -1,7 +1,7 @@
 {
   "name": "piccirilli_michael_portfolio",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.2.0",
   "type": "module",
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -42,6 +42,7 @@
     "dev": "vite",
     "dev:web": "vite",
     "dev:api": "tsx watch lib/devApiServer.ts",
+    "dev:apilog": "tsx scripts/devApiLauncher.ts",
     "dev:api:vercel": "vercel dev --yes -p 3000",
     "dev:fast": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "dev:vercel": "vercel dev",

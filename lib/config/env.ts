@@ -24,6 +24,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).optional(),
   API_PORT: z.coerce.number().int().positive().max(65535).optional(),
   DEV_API_WARMUP: optionalBooleanString(),
+  DEV_API_DEBUG_LOGS: optionalBooleanString(),
   DB_POOL_MAX: z.coerce.number().int().positive().max(30).optional(),
   DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).optional(),
   AUTH_SESSION_SECRET: optionalTrimmedString(),
@@ -51,6 +52,12 @@ export const appEnv = Object.freeze({
     env.DEV_API_WARMUP === '1' ||
     env.DEV_API_WARMUP === 'true' ||
     env.DEV_API_WARMUP === 'yes',
+  devApiDebugLogs:
+    env.DEV_API_DEBUG_LOGS === undefined
+      ? (env.NODE_ENV ?? 'development') !== 'production'
+      : env.DEV_API_DEBUG_LOGS === '1' ||
+        env.DEV_API_DEBUG_LOGS === 'true' ||
+        env.DEV_API_DEBUG_LOGS === 'yes',
   dbPoolMax: env.DB_POOL_MAX ?? 4,
   dbStatementTimeoutMs: env.DB_STATEMENT_TIMEOUT_MS ?? 20000,
 })
@@ -78,6 +85,11 @@ export const getAdminEnvironmentSnapshot =
     {
       key: 'DEV_API_WARMUP',
       value: serializeEnvValue(appEnv.devApiWarmup ? 'true' : 'false'),
+      isSecret: false,
+    },
+    {
+      key: 'DEV_API_DEBUG_LOGS',
+      value: serializeEnvValue(appEnv.devApiDebugLogs ? 'true' : 'false'),
       isSecret: false,
     },
     {

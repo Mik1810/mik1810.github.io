@@ -9,22 +9,39 @@ The release discipline is intentionally lightweight:
 
 ## [Unreleased]
 
-### Changed
-- expanded `README.md` with an operational quickstart section (prerequisites, `.env.local`, install/run/validation commands)
-- added a compact status snapshot and an app/admin/tests/deploy operational map to improve onboarding clarity
-- added an `Architecture At A Glance` section with a Mermaid diagram and a concrete end-to-end request example
-- documented test strategy/scope with explicit commands and noted the planned dedicated UI/component test workflow
+_No entries yet._
 
-### Fixed
-- corrected Mermaid syntax in the new README architecture diagram to ensure stable rendering in Markdown previewers
+## [1.2.0] - 2026-03-23
 
 ### Added
-- updated TODO roadmap with:
+- instrumented admin DB latency chart improvements:
+  - view toggle `Ultimi 30` / `Sessione`
+  - client-side capped sample buffer (max 300) for long sessions
+  - `Over threshold` counter and explicit 1000ms threshold reference line
+  - red highlight on the line only for the segment portions above threshold
+  - `Latest latency` and `Average latency` summary tiles
+- new local dev script `npm run dev:apilog` to measure startup with a launcher and report `tsxWatchOverheadMs` and total elapsed
+- `.env.example` template with safe placeholders for runtime/dev flags and required secrets
+
+### Changed
+- `npm run dev:api` now remains the plain `tsx watch` command, while startup timing instrumentation is isolated to `dev:apilog`
+- dev API startup logs were simplified to reduce noise and keep `bootstrap.start`, `listening`, and `ready` output concise
+- README expanded and aligned with:
+  - operational quickstart
+  - app/admin/tests/deploy map
+  - status snapshot and architecture-at-a-glance
+  - explicit test strategy and dedicated UI-test workflow follow-up
+  - updated commands/env docs for `DEV_API_DEBUG_LOGS` and `dev:apilog`
+- TODO roadmap updated with:
   - explicit frontend UI/component test item plus dedicated GitHub Action follow-up
-  - low-priority legal/privacy evaluation item for optional site-access logging table
+  - low-priority legal/privacy evaluation for optional access logging table
   - low-priority content refresh section (profile labels, highlighted GitHub repos, bio/hero copy)
-  - chart-improvement follow-up item for admin DB latency visualization UX
-- completed all checklist items under TODO section `10. README, quickstart e documentazione`
+  - closure of section `10. README, quickstart e documentazione`
+  - closure of section 14 chart-functional follow-up
+
+### Fixed
+- Mermaid syntax in README architecture diagram now renders reliably in Markdown previewers
+- admin release metadata in local dev now falls back to git (`commit`/`branch`) when deploy env vars are not exposed
 
 ## [1.1.5] - 2026-03-23
 

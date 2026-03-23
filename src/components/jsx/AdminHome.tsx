@@ -30,7 +30,10 @@ interface DbLatencySample {
 }
 
 const DB_LATENCY_POLL_INTERVAL_MS = 5000
-const DB_LATENCY_MAX_SAMPLES = 24
+const DB_LATENCY_MAX_STORED_SAMPLES = 300
+const DB_LATENCY_WINDOW_SAMPLES = 30
+
+type DbLatencyViewMode = 'window' | 'session'
 
 const FALLBACK_ENVIRONMENT_VARIABLES: AdminEnvironmentVariable[] = [
   { key: 'NODE_ENV', value: null, isSecret: false },
@@ -153,6 +156,8 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dbLatencyTrend, setDbLatencyTrend] = useState<DbLatencySample[]>([])
+  const [dbLatencyViewMode, setDbLatencyViewMode] =
+    useState<DbLatencyViewMode>('window')
   const [visibleEnvironmentValues, setVisibleEnvironmentValues] = useState<
     Record<string, boolean>
   >({})
@@ -160,7 +165,7 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
   const appendDbLatencySample = useCallback((sample: DbLatencySample) => {
     setDbLatencyTrend((current) => {
       const next = [...current, sample]
-      return next.slice(-DB_LATENCY_MAX_SAMPLES)
+      return next.slice(-DB_LATENCY_MAX_STORED_SAMPLES)
     })
   }, [])
 
@@ -323,6 +328,14 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
     }
   }, [snapshot.tables])
 
+  const visibleDbLatencyTrend = useMemo(() => {
+    if (dbLatencyViewMode === 'session') {
+      return dbLatencyTrend
+    }
+
+    return dbLatencyTrend.slice(-DB_LATENCY_WINDOW_SAMPLES)
+  }, [dbLatencyTrend, dbLatencyViewMode])
+
   const health = snapshot.health
   const databaseHealthy = Boolean(health?.checks.database.ok)
   const commitSha = health?.deployment.commitSha
@@ -390,7 +403,10 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
           statusLabel={databaseStatusLabel}
           latencyLabel={latencyLabel}
           checkedAtLabel={checkedAtLabel}
-          latencyTrend={dbLatencyTrend}
+          latencyTrend={visibleDbLatencyTrend}
+          totalSamples={dbLatencyTrend.length}
+          trendViewMode={dbLatencyViewMode}
+          onTrendViewModeChange={setDbLatencyViewMode}
         />
 
         <AdminHomeInfoCards

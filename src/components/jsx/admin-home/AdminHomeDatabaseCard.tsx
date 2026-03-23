@@ -3,6 +3,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,6 +16,9 @@ interface AdminHomeDatabaseCardProps {
   statusLabel: string
   latencyLabel: string
   checkedAtLabel: string
+  totalSamples: number
+  trendViewMode: 'window' | 'session'
+  onTrendViewModeChange: (mode: 'window' | 'session') => void
   latencyTrend: Array<{
     timestamp: string
     latencyMs: number | null
@@ -24,11 +28,22 @@ interface AdminHomeDatabaseCardProps {
 
 interface LatencyTrendPoint {
   label: string
+  timestampMs: number
   latencyMs: number | null
   timestamp: string
+  overThreshold: boolean
 }
 
-const formatTrendLabel = (value: string) => {
+interface OverThresholdSegment {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+}
+
+const LATENCY_ALERT_THRESHOLD_MS = 1000
+
+const formatTrendLabel = (value: string | number) => {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return value
   return new Intl.DateTimeFormat('it-IT', {
@@ -53,13 +68,92 @@ function AdminHomeDatabaseCard({
   statusLabel,
   latencyLabel,
   checkedAtLabel,
+  totalSamples,
+  trendViewMode,
+  onTrendViewModeChange,
   latencyTrend,
 }: AdminHomeDatabaseCardProps) {
-  const trendData: LatencyTrendPoint[] = latencyTrend.map((sample) => ({
-    label: formatTrendLabel(sample.timestamp),
-    latencyMs: sample.latencyMs,
-    timestamp: sample.timestamp,
-  }))
+  const trendData: LatencyTrendPoint[] = latencyTrend.map((sample) => {
+    const timestampMs = new Date(sample.timestamp).getTime()
+    const latencyValue = sample.latencyMs
+    const overThreshold =
+      typeof latencyValue === 'number' && latencyValue > LATENCY_ALERT_THRESHOLD_MS
+
+    return {
+      label: formatTrendLabel(sample.timestamp),
+      timestampMs: Number.isNaN(timestampMs) ? Date.now() : timestampMs,
+      latencyMs: latencyValue,
+      timestamp: sample.timestamp,
+      overThreshold,
+    }
+  })
+  const overThresholdSegments = trendData.reduce<OverThresholdSegment[]>(
+    (segments, point, index, points) => {
+      if (index === 0) return segments
+      const prev = points[index - 1]
+      if (!prev) return segments
+
+      const prevY = prev.latencyMs
+      const currY = point.latencyMs
+
+      if (typeof prevY !== 'number' || typeof currY !== 'number') return segments
+
+      const prevAbove = prevY > LATENCY_ALERT_THRESHOLD_MS
+      const currAbove = currY > LATENCY_ALERT_THRESHOLD_MS
+
+      if (!prevAbove && !currAbove) return segments
+
+      const x1 = prev.timestampMs
+      const x2 = point.timestampMs
+      const y1 = prevY
+      const y2 = currY
+
+      if (prevAbove && currAbove) {
+        segments.push({ x1, y1, x2, y2 })
+        return segments
+      }
+
+      if (y2 === y1) return segments
+
+      const t = (LATENCY_ALERT_THRESHOLD_MS - y1) / (y2 - y1)
+      const xIntersection = x1 + t * (x2 - x1)
+
+      if (prevAbove && !currAbove) {
+        segments.push({
+          x1,
+          y1,
+          x2: xIntersection,
+          y2: LATENCY_ALERT_THRESHOLD_MS,
+        })
+      } else if (!prevAbove && currAbove) {
+        segments.push({
+          x1: xIntersection,
+          y1: LATENCY_ALERT_THRESHOLD_MS,
+          x2,
+          y2,
+        })
+      }
+
+      return segments
+    },
+    []
+  )
+  const overThresholdCount = trendData.reduce(
+    (total, point) => (point.overThreshold ? total + 1 : total),
+    0
+  )
+  const validLatencyValues = trendData
+    .map((point) => point.latencyMs)
+    .filter((value): value is number => typeof value === 'number')
+  const averageLatencyValue =
+    validLatencyValues.length > 0
+      ? Math.round(
+          validLatencyValues.reduce((total, value) => total + value, 0) /
+            validLatencyValues.length
+        )
+      : null
+  const averageLatencyLabel =
+    averageLatencyValue === null ? 'N/A' : `${averageLatencyValue} ms`
 
   if (isLoading) {
     return (
@@ -127,8 +221,12 @@ function AdminHomeDatabaseCard({
 
       <div className="admin-home-stat-grid admin-home-stat-grid-database">
         <div className="admin-home-stat-tile">
-          <span>Latency</span>
+          <span>Latest latency</span>
           <strong>{latencyLabel}</strong>
+        </div>
+        <div className="admin-home-stat-tile">
+          <span>Average latency</span>
+          <strong>{averageLatencyLabel}</strong>
         </div>
         <div className="admin-home-stat-tile">
           <span>Checked at</span>
@@ -137,7 +235,35 @@ function AdminHomeDatabaseCard({
       </div>
 
       <div className="admin-home-latency-trend-wrap">
-        <p className="admin-home-card-eyebrow">Latency trend</p>
+        <div className="admin-home-latency-trend-head">
+          <p className="admin-home-card-eyebrow">Latency trend</p>
+          <div className="admin-home-latency-meta">
+            <span className="admin-home-latency-count">Samples: {latencyTrend.length}</span>
+            <span className="admin-home-latency-alert-count">
+              Over threshold: {overThresholdCount}
+            </span>
+          </div>
+        </div>
+        <div className="admin-home-segmented-control" role="group" aria-label="Periodo grafico latenza">
+          <button
+            type="button"
+            className={`admin-home-segmented-control-button ${
+              trendViewMode === 'window' ? 'is-active' : ''
+            }`.trim()}
+            onClick={() => onTrendViewModeChange('window')}
+          >
+            Ultimi 30
+          </button>
+          <button
+            type="button"
+            className={`admin-home-segmented-control-button ${
+              trendViewMode === 'session' ? 'is-active' : ''
+            }`.trim()}
+            onClick={() => onTrendViewModeChange('session')}
+          >
+            Sessione
+          </button>
+        </div>
         {latencyTrend.length === 0 ? (
           <p className="admin-home-inline-note">In attesa dei primi campioni…</p>
         ) : (
@@ -155,18 +281,33 @@ function AdminHomeDatabaseCard({
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.25)" />
                 <XAxis
-                  dataKey="label"
-                  minTickGap={18}
+                  type="number"
+                  dataKey="timestampMs"
+                  domain={['dataMin', 'dataMax']}
+                  tickCount={8}
+                  tickFormatter={(value) => formatTrendLabel(value)}
                   tick={{ fill: '#94a3b8', fontSize: 12 }}
                   axisLine={{ stroke: 'rgba(148, 163, 184, 0.26)' }}
                   tickLine={{ stroke: 'rgba(148, 163, 184, 0.26)' }}
                 />
                 <YAxis
-                  tickFormatter={(value) => `${value} ms`}
-                  width={62}
+                  tickFormatter={(value) => `${value}ms`}
+                  width={72}
                   tick={{ fill: '#94a3b8', fontSize: 12 }}
                   axisLine={{ stroke: 'rgba(148, 163, 184, 0.26)' }}
                   tickLine={{ stroke: 'rgba(148, 163, 184, 0.26)' }}
+                />
+                <ReferenceLine
+                  y={LATENCY_ALERT_THRESHOLD_MS}
+                  stroke="rgba(248, 113, 113, 0.9)"
+                  strokeDasharray="4 4"
+                  ifOverflow="extendDomain"
+                  label={{
+                    value: 'Soglia 1000ms',
+                    position: 'right',
+                    fill: '#fca5a5',
+                    fontSize: 11,
+                  }}
                 />
                 <Tooltip
                   content={({ active, payload }) => {
@@ -198,17 +339,68 @@ function AdminHomeDatabaseCard({
                     )
                   }}
                   cursor={{ stroke: 'rgba(56, 189, 248, 0.45)', strokeWidth: 1 }}
+                  isAnimationActive={false}
                 />
                 <Area
-                  type="monotone"
+                  type="linear"
                   dataKey="latencyMs"
                   connectNulls={false}
                   stroke="#38bdf8"
                   strokeWidth={2.5}
                   fill="url(#admin-latency-fill)"
-                  dot={{ r: 3.5, stroke: '#38bdf8', strokeWidth: 2, fill: '#0f172a' }}
-                  activeDot={{ r: 5.5, stroke: '#7dd3fc', strokeWidth: 2, fill: '#0f172a' }}
+                  dot={false}
+                  isAnimationActive={false}
+                  activeDot={(dotProps) => {
+                    const payload = dotProps?.payload as LatencyTrendPoint | undefined
+                    const isOverThreshold = Boolean(payload?.overThreshold)
+                    return (
+                      <circle
+                        cx={dotProps.cx}
+                        cy={dotProps.cy}
+                        r={4.5}
+                        stroke={isOverThreshold ? '#ef4444' : '#7dd3fc'}
+                        strokeWidth={2}
+                        fill={isOverThreshold ? '#7f1d1d' : '#0f172a'}
+                      />
+                    )
+                  }}
                 />
+                {overThresholdSegments.map((segment, index) => (
+                  <ReferenceLine
+                    key={`over-threshold-segment-${index}`}
+                    segment={[
+                      { x: segment.x1, y: segment.y1 },
+                      { x: segment.x2, y: segment.y2 },
+                    ]}
+                    stroke="#ef4444"
+                    strokeWidth={2.8}
+                  />
+                ))}
+                {overThresholdCount > 0 && (
+                  <Area
+                    type="linear"
+                    dataKey="latencyMs"
+                    connectNulls={false}
+                    stroke="transparent"
+                    fill="transparent"
+                    isAnimationActive={false}
+                    activeDot={false}
+                    dot={(dotProps) => {
+                      const payload = dotProps?.payload as LatencyTrendPoint | undefined
+                      if (!payload?.overThreshold) return <></>
+                      return (
+                        <circle
+                          cx={dotProps.cx}
+                          cy={dotProps.cy}
+                          r={4}
+                          fill="#ef4444"
+                          stroke="#fecaca"
+                          strokeWidth={1.5}
+                        />
+                      )
+                    }}
+                  />
+                )}
               </AreaChart>
             </ResponsiveContainer>
           </div>

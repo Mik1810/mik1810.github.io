@@ -409,8 +409,8 @@ Visualizzare l'andamento della latenza database nel tempo direttamente nella adm
 
 - `✅ Fatto` aggiungere un grafico trend della latenza DB nella admin home
 - `✅ Fatto` introdurre polling periodico (target iniziale: ogni 5 secondi) per aggiornare i punti del grafico senza refresh pagina
-- `❌ Non fatto` valutare se mantenere nel grafico solo gli ultimi sample (finestra mobile) oppure accumulare tutti i sample dalla visita corrente della pagina `/admin`
-- `❌ Non fatto` rendere il grafico più funzionale lato UX/analisi (per esempio: range temporale selezionabile, media/min/max, evidenza picchi, reset storico sessione)
+- `✅ Fatto` implementata policy ibrida nel grafico: toggle `Ultimi 30`/`Sessione` con cap memoria lato client per evitare crescita non controllata dei sample
+- `✅ Fatto` rendere il grafico più funzionale lato UX/analisi (toggle vista `Ultimi 30`/`Sessione`, latest/average latency, soglia 1000ms con evidenza picchi e conteggio over-threshold)
 
 ### Priorità
 

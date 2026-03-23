@@ -6,6 +6,12 @@ import { appEnv } from './config/env.js'
 import type { ApiHeaders, ApiQuery, ApiResponse } from './types/http.js'
 
 const port = appEnv.apiPort
+const debugLogsEnabled = appEnv.devApiDebugLogs
+const serverBootStartedAt = Date.now()
+const serverBootStartedAtIso = new Date(serverBootStartedAt).toISOString()
+const parentStartMs = Number(process.env.DEV_API_PARENT_START_MS || '')
+const hasParentStart = Number.isFinite(parentStartMs) && parentStartMs > 0
+const tsxWatchOverheadMs = hasParentStart ? serverBootStartedAt - parentStartMs : null
 let requestCounter = 0
 const publicRouteSet = new Set([
   'about',
@@ -26,6 +32,11 @@ interface DevApiRequest {
   ip?: string
   signal?: AbortSignal
 }
+
+console.log('[dev-api] bootstrap.start', {
+  startedAt: serverBootStartedAtIso,
+  ...(tsxWatchOverheadMs !== null ? { tsxWatchOverheadMs } : {}),
+})
 
 const resolveHandler = (pathname: string) => {
   const parts = pathname.split('/').filter(Boolean)
@@ -89,7 +100,7 @@ const server = createServer(async (req, res) => {
   let completed = false
   const requestAbortController = new AbortController()
 
-  if (appEnv.nodeEnv !== 'production') {
+  if (debugLogsEnabled) {
     console.info('[DEBUG] dev-api.request.start', {
       requestId,
       url: req.url,
@@ -99,7 +110,7 @@ const server = createServer(async (req, res) => {
 
   res.on('finish', () => {
     completed = true
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.response.finish', {
         requestId,
         url: req.url,
@@ -112,7 +123,7 @@ const server = createServer(async (req, res) => {
 
   res.on('close', () => {
     requestAbortController.abort()
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.response.close', {
         requestId,
         url: req.url,
@@ -140,14 +151,14 @@ const server = createServer(async (req, res) => {
       return res.end('API route not found')
     }
 
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.parseBody.start', {
         requestId,
         url: req.url,
       })
     }
     const body = await parseBody(req)
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.parseBody.end', {
         requestId,
         url: req.url,
@@ -168,7 +179,7 @@ const server = createServer(async (req, res) => {
     const apiRes = createRes(res)
 
     await handler(apiReq, apiRes)
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.handler.end', {
         requestId,
         url: req.url,
@@ -179,7 +190,7 @@ const server = createServer(async (req, res) => {
     }
   } catch (error) {
     console.error('[dev-api] error:', error)
-    if (appEnv.nodeEnv !== 'production') {
+    if (debugLogsEnabled) {
       console.info('[DEBUG] dev-api.handler.error', {
         requestId,
         url: req.url,
@@ -195,20 +206,22 @@ const server = createServer(async (req, res) => {
 
 server.listen(port, () => {
   console.log(`[dev-api] listening on http://localhost:${port}`)
-  if (appEnv.nodeEnv === 'production') return
-
-  console.info('[DEBUG] dev-api.debug_mode', {
-    enabled: true,
-    nodeEnv: appEnv.nodeEnv,
-    warmupEnabled: appEnv.devApiWarmup,
-    message: 'Debug mode attivo: timing estesi e bootstrap endpoint monitorati.',
-  })
-
   if (!appEnv.devApiWarmup) {
-    console.info('[DEBUG] dev-api.ready', {
-      message:
-        'Dev API pronta senza warmup (imposta DEV_API_WARMUP=true per abilitarlo).',
-    })
+    if (debugLogsEnabled) {
+      const readyAtMs = Date.now()
+      console.info('[DEBUG] dev-api.ready', {
+        message:
+          'Dev API pronta senza warmup (imposta DEV_API_WARMUP=true per abilitarlo).',
+        elapsedMs: readyAtMs - serverBootStartedAt,
+        ...(hasParentStart ? { totalElapsedMs: readyAtMs - parentStartMs } : {}),
+      })
+    }
+    if (!debugLogsEnabled) {
+      const readyAtMs = Date.now()
+      console.log(
+        `[dev-api] ready (warmup disabled, elapsed ${readyAtMs - serverBootStartedAt}ms${hasParentStart ? `, total ${readyAtMs - parentStartMs}ms` : ''}). Set DEV_API_WARMUP=true to enable startup warmup.`
+      )
+    }
     return
   }
 
@@ -222,9 +235,17 @@ server.listen(port, () => {
 
   void (async () => {
     await new Promise((resolve) => setTimeout(resolve, 50))
-    console.info('[DEBUG] dev-api.warmup.start', {
-      endpoints: warmupEndpoints.length,
-    })
+    if (debugLogsEnabled) {
+      console.info('[DEBUG] dev-api.debug_mode', {
+        enabled: true,
+        nodeEnv: appEnv.nodeEnv,
+        warmupEnabled: appEnv.devApiWarmup,
+        message: 'Debug mode attivo: timing estesi e bootstrap endpoint monitorati.',
+      })
+      console.info('[DEBUG] dev-api.warmup.start', {
+        endpoints: warmupEndpoints.length,
+      })
+    }
 
     for (const endpoint of warmupEndpoints) {
       const startedAt = Date.now()
@@ -236,25 +257,39 @@ server.listen(port, () => {
           cache: 'no-store',
           signal: warmupController.signal,
         })
-        console.info('[DEBUG] dev-api.warmup.end', {
-          endpoint,
-          status: response.status,
-          durationMs: Date.now() - startedAt,
-        })
+        if (debugLogsEnabled) {
+          console.info('[DEBUG] dev-api.warmup.end', {
+            endpoint,
+            status: response.status,
+            durationMs: Date.now() - startedAt,
+          })
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        console.info('[DEBUG] dev-api.warmup.error', {
-          endpoint,
-          durationMs: Date.now() - startedAt,
-          message,
-        })
+        if (debugLogsEnabled) {
+          console.info('[DEBUG] dev-api.warmup.error', {
+            endpoint,
+            durationMs: Date.now() - startedAt,
+            message,
+          })
+        }
       } finally {
         clearTimeout(timeoutId)
       }
     }
 
-    console.info('[DEBUG] dev-api.warmup.ready', {
-      message: 'Warmup completato: puoi aprire /home',
-    })
+    if (debugLogsEnabled) {
+      const readyAtMs = Date.now()
+      console.info('[DEBUG] dev-api.warmup.ready', {
+        message: 'Warmup completato: puoi aprire /home',
+        bootDurationMs: readyAtMs - serverBootStartedAt,
+        ...(hasParentStart ? { totalElapsedMs: readyAtMs - parentStartMs } : {}),
+      })
+    } else {
+      const readyAtMs = Date.now()
+      console.log(
+        `[dev-api] ready (warmup completed, elapsed ${readyAtMs - serverBootStartedAt}ms${hasParentStart ? `, total ${readyAtMs - parentStartMs}ms` : ''}): puoi aprire /home`
+      )
+    }
   })()
 })

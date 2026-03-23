@@ -1,5 +1,26 @@
 # SESSION
 
+## Aggiornamento release 1.2.0 (2026-03-23)
+
+- Completato il pacchetto evolutivo del grafico latenza DB in admin:
+  - toggle vista `Ultimi 30` / `Sessione`
+  - cap memoria client a 300 sample
+  - metrica `Over threshold` e soglia visuale a 1000ms
+  - evidenza rossa solo sulle porzioni di linea sopra soglia
+  - tile `Latest latency` + `Average latency`
+  - ottimizzazioni anti-lag (`no animation`, dot ridotti)
+- Migliorata osservabilita` dev API:
+  - nuovo flag `DEV_API_DEBUG_LOGS` separato da `DEV_API_WARMUP`
+  - log `ready` sempre disponibile anche con debug disattivato
+  - log bootstrap semplificati con elapsed chiaro
+- Introdotto `npm run dev:apilog` con launcher dedicato per misurare l’overhead startup di `tsx watch` (`tsxWatchOverheadMs` + total elapsed).
+- Aggiunto `.env.example` con variabili runtime/dev principali senza secret.
+- `Admin health` ora mostra in locale commit/branch reali tramite fallback Git quando le variabili deploy non sono esposte.
+- Allineata la documentazione:
+  - `README.md` (quickstart, mappe operative, strategia test, comandi dev aggiornati)
+  - `TODO.md` (sezione 10 chiusa; punto 14 grafico funzionale chiuso)
+  - `CHANGELOG.md` consolidato su release `1.2.0`.
+
 ## Aggiornamento release 1.1.5 (2026-03-23)
 
 - Rifinito il caricamento route admin evitando fallback intermedi non coerenti:

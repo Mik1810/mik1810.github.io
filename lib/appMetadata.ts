@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 const packageJsonPath = new URL('../package.json', import.meta.url)
@@ -17,9 +18,34 @@ export const appMetadata = Object.freeze({
   startedAt: processStartedAt,
 })
 
+const readGitMetadata = (command: string) => {
+  try {
+    const value = execSync(command, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+    return value.length > 0 ? value : null
+  } catch {
+    return null
+  }
+}
+
+const localGitMetadata = Object.freeze({
+  commitSha: readGitMetadata('git rev-parse HEAD'),
+  branch:
+    readGitMetadata('git branch --show-current') ||
+    readGitMetadata('git rev-parse --abbrev-ref HEAD'),
+})
+
 export const getDeploymentMetadata = () => ({
-  commitSha: process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || null,
-  branch: process.env.VERCEL_GIT_COMMIT_REF || process.env.GITHUB_REF_NAME || null,
+  commitSha:
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.GITHUB_SHA ||
+    localGitMetadata.commitSha,
+  branch:
+    process.env.VERCEL_GIT_COMMIT_REF ||
+    process.env.GITHUB_REF_NAME ||
+    localGitMetadata.branch,
 })
 
 export const getUptimeSeconds = () =>

@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.1.5-2563eb?style=for-the-badge" alt="Version 1.1.5" />
+  <img src="https://img.shields.io/badge/version-1.2.0-2563eb?style=for-the-badge" alt="Version 1.2.0" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -34,7 +34,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.1.5`  
+**Artifact version:** `1.2.0`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 
@@ -49,7 +49,13 @@
 
 ### Environment setup
 
-Create `.env.local` in repo root:
+Create `.env.local` in repo root (you can start from `.env.example`):
+
+```bash
+cp .env.example .env.local
+```
+
+Then fill the required values:
 
 ```bash
 SUPABASE_URL=...
@@ -64,6 +70,7 @@ Optional local debug flags:
 
 ```bash
 DEV_API_WARMUP=true
+DEV_API_DEBUG_LOGS=true
 VITE_DEBUG_LOGS=true
 ```
 
@@ -422,12 +429,15 @@ When no owned domain is available yet, the initial contact-flow setup can use Re
 ```bash
 npm run dev
 npm run dev:api
+npm run dev:apilog
 npm run dev:fast
 npm run dev:vercel
 ```
 
 Note for local DX:
 - `npm run dev:fast` supports optional API warmup via `DEV_API_WARMUP=true` (default: disabled).
+- `npm run dev:api` starts the plain `tsx watch` runtime; `npm run dev:apilog` starts the instrumented launcher that reports `tsxWatchOverheadMs` and total startup elapsed.
+- dev API backend logs can be toggled with `DEV_API_DEBUG_LOGS=true|false`.
 - frontend debug logs are disabled by default and can be enabled explicitly with `VITE_DEBUG_LOGS=true`.
 - with warmup enabled, wait for `dev-api.warmup.ready` before evaluating first-load behavior on `/home`.
 - opening `/` in local/dev now redirects immediately to `/home` from `index.html`, reducing pre-mount blank time.
