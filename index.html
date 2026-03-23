@@ -37,13 +37,6 @@
     <meta name="twitter:image" content="https://michaelpiccirilli.vercel.app/imgs/thumbnail.png" />
     <meta name="twitter:image:alt" content="Portrait of Michael Piccirilli" />
 
-    <link
-      rel="preload"
-      as="image"
-      href="/imgs/michael.jpg"
-      type="image/jpeg"
-      fetchpriority="high"
-    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -111,6 +104,21 @@
         if (window.location.pathname === '/') {
           window.location.replace('/home' + window.location.search + window.location.hash);
         }
+      })();
+    </script>
+    <script>
+      // Preload hero image only on public home route to avoid unused-preload warnings on admin pages.
+      (function() {
+        var path = window.location.pathname;
+        var isHomeSurface = path === '/' || path === '/home';
+        if (!isHomeSurface) return;
+        var preload = document.createElement('link');
+        preload.rel = 'preload';
+        preload.as = 'image';
+        preload.href = '/imgs/michael.jpg';
+        preload.type = 'image/jpeg';
+        preload.fetchPriority = 'high';
+        document.head.appendChild(preload);
       })();
     </script>
     <script>

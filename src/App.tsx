@@ -82,7 +82,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <Suspense fallback={<AdminRouteFallback />}>
+            <Suspense fallback={null}>
               <AdminApp mode="home" />
             </Suspense>
           }
@@ -90,7 +90,7 @@ function App() {
         <Route
           path="/admin/tables"
           element={
-            <Suspense fallback={<AdminRouteFallback />}>
+            <Suspense fallback={null}>
               <AdminApp mode="tables" />
             </Suspense>
           }
@@ -115,21 +115,6 @@ function App() {
       <Footer className={isAdminRoute ? 'footer-admin' : ''} />
       <ScrollToTop />
     </>
-  )
-}
-
-function AdminRouteFallback() {
-  return (
-    <main
-      className="section-loading-wrapper"
-      aria-busy="true"
-      aria-live="polite"
-    >
-      <div className="section-loading-content">
-        <span className="section-loading-line section-loading-line-title" />
-        <span className="section-loading-line section-loading-line-copy" />
-      </div>
-    </main>
   )
 }
 

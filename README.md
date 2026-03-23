@@ -332,6 +332,7 @@ npm run dev:vercel
 
 Note for local DX:
 - `npm run dev:fast` supports optional API warmup via `DEV_API_WARMUP=true` (default: disabled).
+- frontend debug logs are disabled by default and can be enabled explicitly with `VITE_DEBUG_LOGS=true`.
 - with warmup enabled, wait for `dev-api.warmup.ready` before evaluating first-load behavior on `/home`.
 - opening `/` in local/dev now redirects immediately to `/home` from `index.html`, reducing pre-mount blank time.
 

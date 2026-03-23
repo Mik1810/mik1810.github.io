@@ -48,10 +48,7 @@ const QUICK_ABORT_THRESHOLD_MS = 1200
 const FETCH_CONCURRENCY = 2
 type ContentSectionKey = 'about' | 'projects' | 'experiences' | 'skills'
 type ContentSectionStatus = 'loading' | 'ready' | 'empty' | 'error'
-const isDebugLoggingEnabled =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1')
+const isDebugLoggingEnabled = import.meta.env.VITE_DEBUG_LOGS === 'true'
 
 export function ContentProvider({ children }: ProviderProps) {
   const { lang } = useLanguage()
@@ -208,7 +205,7 @@ export function ContentProvider({ children }: ProviderProps) {
       })
 
       if (isDebugLoggingEnabled) {
-        console.info('[debug] content.bootstrap.start', {
+        console.info('[DEBUG] content.bootstrap.start', {
           lang,
           concurrency: FETCH_CONCURRENCY,
           endpoints: [
@@ -329,7 +326,7 @@ export function ContentProvider({ children }: ProviderProps) {
       setLoading(false)
 
       if (isDebugLoggingEnabled) {
-        console.info('[debug] content.bootstrap.end', {
+        console.info('[DEBUG] content.bootstrap.end', {
           lang,
           message: 'Bootstrap richieste pubbliche completato.',
         })

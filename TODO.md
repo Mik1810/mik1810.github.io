@@ -407,6 +407,7 @@ Visualizzare l'andamento della latenza database nel tempo direttamente nella adm
 
 - `✅ Fatto` aggiungere un grafico trend della latenza DB nella admin home
 - `✅ Fatto` introdurre polling periodico (target iniziale: ogni 5 secondi) per aggiornare i punti del grafico senza refresh pagina
+- `❌ Non fatto` valutare se mantenere nel grafico solo gli ultimi sample (finestra mobile) oppure accumulare tutti i sample dalla visita corrente della pagina `/admin`
 
 ### Priorità
 

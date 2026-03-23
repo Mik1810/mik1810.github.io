@@ -7,10 +7,7 @@ import { useLanguage } from './useLanguage'
 const PROFILE_REQUEST_TIMEOUT_MS = 15000
 const PROFILE_RETRY_DELAY_MS = 250
 const PROFILE_QUICK_ABORT_THRESHOLD_MS = 1200
-const isDebugLoggingEnabled =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1')
+const isDebugLoggingEnabled = import.meta.env.VITE_DEBUG_LOGS === 'true'
 
 const areSocialListsEqual = (
   current: ProfileData['socials'],
@@ -89,7 +86,7 @@ export function ProfileProvider({ children }: ProviderProps) {
       setLoading(true)
       let profileLoaded = false
       if (isDebugLoggingEnabled) {
-        console.info('[debug] profile.bootstrap.start', {
+        console.info('[DEBUG] profile.bootstrap.start', {
           lang,
           endpoint: `/api/profile?lang=${lang}`,
         })
@@ -164,7 +161,7 @@ export function ProfileProvider({ children }: ProviderProps) {
       }
       setLoading(false)
       if (isDebugLoggingEnabled) {
-        console.info('[debug] profile.bootstrap.end', {
+        console.info('[DEBUG] profile.bootstrap.end', {
           lang,
           profileLoaded,
         })
