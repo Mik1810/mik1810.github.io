@@ -1,5 +1,19 @@
 # SESSION
 
+## Aggiornamento release 1.1.5 (2026-03-23)
+
+- Rifinito il caricamento route admin evitando fallback intermedi non coerenti:
+  - suspense fallback allineati agli skeleton reali admin (`AdminHome forceSkeleton` / `AdminTableSkeleton`)
+  - eliminato il flash del rettangolo transitorio prima dello skeleton principale
+- Corretto il tooltip del grafico latenza DB:
+  - valore sempre coerente al punto attivo (niente valore bloccato)
+  - formattazione temporale asse/tooltip in `HH:mm:ss`
+- Log frontend bootstrap (`content/profile`) esposti solo con variabile ambiente `VITE_DEBUG_LOGS=true`.
+- Preload dell'immagine hero applicato solo su `/` e `/home` per evitare warning browser su route admin.
+- Verifiche pre-push:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+
 ## Aggiornamento release 1.1.4 (2026-03-23)
 
 - Completato il punto 14 TODO (osservabilita latenza DB):

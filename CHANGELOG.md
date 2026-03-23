@@ -9,10 +9,15 @@ The release discipline is intentionally lightweight:
 
 ## [Unreleased]
 
+_No entries yet._
+
+## [1.1.5] - 2026-03-23
+
 ### Changed
 - frontend debug console logs for content/profile bootstrap are now gated behind `VITE_DEBUG_LOGS=true` (disabled by default)
-- admin route loading no longer shows the generic suspense skeleton before admin-specific loading states
+- admin route loading now uses admin-specific suspense fallbacks, removing generic/intermediate flashes and preventing footer jumps during lazy route resolution
 - homepage hero image preload is now injected only on `/` and `/home`, reducing unused-preload warnings on admin routes
+- DB latency chart tooltip now resolves the active sample correctly and formats time labels with `HH:mm:ss`
 
 ### Added
 - TODO note to evaluate DB latency chart retention policy (rolling window vs full in-session history on `/admin`)

@@ -2,9 +2,11 @@ import { lazy, Suspense, useEffect, useRef } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 
 import About from './components/jsx/About'
+import AdminHome from './components/jsx/AdminHome'
 import Contact from './components/jsx/Contact'
 import Experience from './components/jsx/Experience'
 import AdminLogin from './components/jsx/AdminLogin'
+import AdminTableSkeleton from './components/jsx/AdminTableSkeleton'
 import Footer from './components/jsx/Footer'
 import HeroTyping from './components/jsx/HeroTyping'
 import Navbar from './components/jsx/Navbar'
@@ -82,7 +84,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<AdminHome forceSkeleton />}>
               <AdminApp mode="home" />
             </Suspense>
           }
@@ -90,7 +92,7 @@ function App() {
         <Route
           path="/admin/tables"
           element={
-            <Suspense fallback={null}>
+            <Suspense fallback={<AdminTableSkeleton />}>
               <AdminApp mode="tables" />
             </Suspense>
           }

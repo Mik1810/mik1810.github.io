@@ -34,6 +34,16 @@ const formatTrendLabel = (value: string) => {
   return new Intl.DateTimeFormat('it-IT', {
     hour: '2-digit',
     minute: '2-digit',
+    second: '2-digit',
+  }).format(parsed)
+}
+
+const formatTooltipDateTime = (value: string) => {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return new Intl.DateTimeFormat('it-IT', {
+    dateStyle: 'short',
+    timeStyle: 'medium',
   }).format(parsed)
 }
 
@@ -159,18 +169,33 @@ function AdminHomeDatabaseCard({
                   tickLine={{ stroke: 'rgba(148, 163, 184, 0.26)' }}
                 />
                 <Tooltip
-                  formatter={(value) =>
-                    value === null || value === undefined ? 'N/A' : `${value} ms`
-                  }
-                  labelFormatter={(_, payload) => {
-                    const item = payload?.[0]?.payload as LatencyTrendPoint | undefined
-                    return item?.timestamp || ''
-                  }}
-                  contentStyle={{
-                    background: 'rgba(15, 23, 42, 0.92)',
-                    border: '1px solid rgba(148, 163, 184, 0.3)',
-                    borderRadius: '10px',
-                    color: '#e2e8f0',
+                  content={({ active, payload }) => {
+                    if (!active || !payload || payload.length === 0) return null
+                    const item = payload[0]?.payload as LatencyTrendPoint | undefined
+                    if (!item) return null
+                    const latencyLabel =
+                      item.latencyMs === null || item.latencyMs === undefined
+                        ? 'N/A'
+                        : `${item.latencyMs} ms`
+
+                    return (
+                      <div
+                        style={{
+                          background: 'rgba(15, 23, 42, 0.92)',
+                          border: '1px solid rgba(148, 163, 184, 0.3)',
+                          borderRadius: '10px',
+                          color: '#e2e8f0',
+                          padding: '0.6rem 0.75rem',
+                        }}
+                      >
+                        <p style={{ margin: 0, color: '#cbd5e1' }}>
+                          {formatTooltipDateTime(item.timestamp)}
+                        </p>
+                        <p style={{ margin: '0.25rem 0 0', color: '#38bdf8', fontWeight: 700 }}>
+                          latencyMs : {latencyLabel}
+                        </p>
+                      </div>
+                    )
                   }}
                   cursor={{ stroke: 'rgba(56, 189, 248, 0.45)', strokeWidth: 1 }}
                 />
