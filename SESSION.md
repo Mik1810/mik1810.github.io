@@ -1,5 +1,13 @@
 # SESSION
 
+## Aggiornamento release 1.2.3 (2026-03-23)
+
+- Rifinita la convenzione script dev su richiesta operativa:
+  - `npm run dev:web` ripristinato al comportamento storico (`vite`)
+  - startup web con attesa readiness API spostato su `npm run dev:wait`
+  - mantenuta la versione robusta di `dev:fast` con `--kill-others-on-fail`
+- Version bump allineato a `1.2.3` con aggiornamento documentazione release.
+
 ## Aggiornamento release 1.2.2 (2026-03-23)
 
 - Introdotto un launcher dedicato per `dev:web` in [scripts/devWebLauncher.ts](./scripts/devWebLauncher.ts):

@@ -1,7 +1,7 @@
 {
   "name": "piccirilli_michael_portfolio",
   "private": true,
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -40,8 +40,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:web": "tsx scripts/devWebLauncher.ts",
-    "dev:web:raw": "vite",
+    "dev:web": "vite",
+    "dev:wait": "tsx scripts/devWebLauncher.ts",
     "dev:api": "tsx watch lib/devApiServer.ts",
     "dev:api:log": "tsx scripts/devApiLauncher.ts",
     "dev:api:vercel": "vercel dev --yes -p 3000",

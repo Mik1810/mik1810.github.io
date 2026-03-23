@@ -11,6 +11,13 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.3] - 2026-03-23
+
+### Changed
+- restored `npm run dev:web` to direct Vite startup (`vite`)
+- moved the API-readiness-gated web startup to `npm run dev:wait` (backed by `scripts/devWebLauncher.ts`)
+- preserved the improved `dev:fast` behavior with `--kill-others-on-fail`
+
 ## [1.2.2] - 2026-03-23
 
 ### Added

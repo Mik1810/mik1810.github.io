@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.2.2-2563eb?style=for-the-badge" alt="Version 1.2.2" />
+  <img src="https://img.shields.io/badge/version-1.2.3-2563eb?style=for-the-badge" alt="Version 1.2.3" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -34,7 +34,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.2.2`  
+**Artifact version:** `1.2.3`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 
