@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useAuth } from '../../context/useAuth'
 import type {
+  AdminDbLatencyMetricResponse,
   AdminEnvironmentVariable,
   AdminEnvironmentResponse,
   AdminHealthResponse,
@@ -21,6 +22,15 @@ interface DashboardSnapshot {
   tables: AdminTableDefinition[]
   environmentVariables: AdminEnvironmentVariable[]
 }
+
+interface DbLatencySample {
+  timestamp: string
+  latencyMs: number | null
+  ok: boolean
+}
+
+const DB_LATENCY_POLL_INTERVAL_MS = 5000
+const DB_LATENCY_MAX_SAMPLES = 24
 
 const FALLBACK_ENVIRONMENT_VARIABLES: AdminEnvironmentVariable[] = [
   { key: 'NODE_ENV', value: null, isSecret: false },
@@ -142,9 +152,17 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dbLatencyTrend, setDbLatencyTrend] = useState<DbLatencySample[]>([])
   const [visibleEnvironmentValues, setVisibleEnvironmentValues] = useState<
     Record<string, boolean>
   >({})
+
+  const appendDbLatencySample = useCallback((sample: DbLatencySample) => {
+    setDbLatencyTrend((current) => {
+      const next = [...current, sample]
+      return next.slice(-DB_LATENCY_MAX_SAMPLES)
+    })
+  }, [])
 
   const loadDashboard = useCallback(async () => {
     const [healthResponse, tablesResponse, environmentResponse] = await Promise.all([
@@ -206,9 +224,14 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
         isAdminEnvironmentVariable
       ),
     })
+    appendDbLatencySample({
+      timestamp: healthData.timestamp,
+      latencyMs: healthData.checks.database.latencyMs,
+      ok: healthData.checks.database.ok,
+    })
 
     setError(null)
-  }, [])
+  }, [appendDbLatencySample])
 
   useEffect(() => {
     if (forceSkeleton) return undefined
@@ -231,6 +254,44 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
     void bootstrap()
     return undefined
   }, [forceSkeleton, loadDashboard])
+
+  useEffect(() => {
+    if (forceSkeleton) return undefined
+
+    let disposed = false
+    const pollDbLatency = async () => {
+      try {
+        const response = await fetch('/api/admin/metrics/db-latency', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        })
+        if (!response.ok) return
+
+        const payload = await readJsonSafely<AdminDbLatencyMetricResponse>(response)
+        if (!payload || disposed) return
+
+        appendDbLatencySample({
+          timestamp: payload.timestamp,
+          latencyMs: payload.database.latencyMs,
+          ok: payload.database.ok,
+        })
+      } catch {
+        // Keep silent: admin home has manual refresh and a resilient baseline snapshot.
+      }
+    }
+
+    const timerId = window.setInterval(() => {
+      void pollDbLatency()
+    }, DB_LATENCY_POLL_INTERVAL_MS)
+
+    return () => {
+      disposed = true
+      if (timerId) {
+        window.clearInterval(timerId)
+      }
+    }
+  }, [appendDbLatencySample, forceSkeleton])
 
   const handleRefresh = async () => {
     setRefreshing(true)
@@ -329,6 +390,7 @@ function AdminHome({ forceSkeleton = false }: AdminHomeProps) {
           statusLabel={databaseStatusLabel}
           latencyLabel={latencyLabel}
           checkedAtLabel={checkedAtLabel}
+          latencyTrend={dbLatencyTrend}
         />
 
         <AdminHomeInfoCards

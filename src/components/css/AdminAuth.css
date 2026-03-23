@@ -18,9 +18,9 @@
 }
 
 .admin-page-login {
-  height: calc(100dvh - var(--admin-nav-height));
-  min-height: calc(100dvh - var(--admin-nav-height));
-  padding: 0 1rem;
+  height: auto;
+  min-height: calc(100dvh - var(--admin-nav-height) - 2rem);
+  padding: 1rem 1rem 2rem;
   align-items: center;
   overflow: visible;
 }

@@ -1,15 +1,25 @@
 import icons from '../../data/icons'
+import heroFallback from '../../data/heroFallback.json'
 import { useLanguage } from '../../context/useLanguage'
-import { useProfile } from '../../context/useProfile'
 import type { FooterProps } from '../../types/app.js'
 import '../css/Footer.css'
+
+interface FooterFallbackData {
+  name: string
+  socials: Array<{
+    name: string
+    url: string
+    icon: string
+  }>
+}
+
+const FOOTER_FALLBACK = heroFallback as FooterFallbackData
 
 function Footer({ className = '' }: FooterProps) {
   const year = new Date().getFullYear()
   const { t } = useLanguage()
-  const { profile } = useProfile()
-  const name = profile?.name || ''
-  const socials = profile?.socials || []
+  const name = FOOTER_FALLBACK.name
+  const socials = FOOTER_FALLBACK.socials
 
   return (
     <footer className={`footer ${className}`.trim()}>

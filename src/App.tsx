@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import About from './components/jsx/About'
 import Contact from './components/jsx/Contact'
 import Experience from './components/jsx/Experience'
+import AdminLogin from './components/jsx/AdminLogin'
 import Footer from './components/jsx/Footer'
 import HeroTyping from './components/jsx/HeroTyping'
 import Navbar from './components/jsx/Navbar'
@@ -76,11 +77,7 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={
-            <Suspense fallback={<AdminRouteFallback />}>
-              <AdminApp mode="login" />
-            </Suspense>
-          }
+          element={<AdminLogin />}
         />
         <Route
           path="/admin"

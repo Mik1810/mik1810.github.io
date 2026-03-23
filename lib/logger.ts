@@ -33,5 +33,5 @@ export const logTiming = (
   metadata?: Record<string, unknown>
 ) => {
   if (!isTimingLoggingEnabled) return
-  console.info(`[timing] ${context}`, metadata || {})
+  console.info(`[DEBUG] ${context}`, metadata || {})
 }

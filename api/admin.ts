@@ -1,6 +1,7 @@
 import { handleAdminEnvironmentRoute } from '../lib/services/admin-routes/environmentRoute.js'
 import { handleAdminHealthRoute } from '../lib/services/admin-routes/healthRoute.js'
 import { handleAdminLoginRoute } from '../lib/services/admin-routes/loginRoute.js'
+import { handleAdminDbLatencyMetricRoute } from '../lib/services/admin-routes/metricsDbLatencyRoute.js'
 import { handleAdminLogoutRoute } from '../lib/services/admin-routes/logoutRoute.js'
 import { handleAdminSessionRoute } from '../lib/services/admin-routes/sessionRoute.js'
 import { handleAdminTableRoute } from '../lib/services/admin-routes/tableRoute.js'
@@ -19,7 +20,7 @@ const getAdminRoute = (req: ApiRequest) => {
 
     const parts = url.pathname.split('/').filter(Boolean)
     if (parts.length < 3 || parts[0] !== 'api' || parts[1] !== 'admin') return null
-    return parts[2] ?? null
+    return parts.slice(2).join('/') || null
   } catch {
     return null
   }
@@ -43,6 +44,8 @@ const handler: ApiHandler = async (req, res) => {
       return handleAdminHealthRoute(req, res)
     case 'environment':
       return handleAdminEnvironmentRoute(req, res)
+    case 'metrics/db-latency':
+      return handleAdminDbLatencyMetricRoute(req, res)
     default:
       return res.status(404).json({
         error: 'Admin route not found',

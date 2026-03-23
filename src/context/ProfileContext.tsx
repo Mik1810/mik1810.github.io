@@ -7,6 +7,10 @@ import { useLanguage } from './useLanguage'
 const PROFILE_REQUEST_TIMEOUT_MS = 15000
 const PROFILE_RETRY_DELAY_MS = 250
 const PROFILE_QUICK_ABORT_THRESHOLD_MS = 1200
+const isDebugLoggingEnabled =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1')
 
 const areSocialListsEqual = (
   current: ProfileData['socials'],
@@ -83,6 +87,13 @@ export function ProfileProvider({ children }: ProviderProps) {
 
     const loadProfile = async () => {
       setLoading(true)
+      let profileLoaded = false
+      if (isDebugLoggingEnabled) {
+        console.info('[debug] profile.bootstrap.start', {
+          lang,
+          endpoint: `/api/profile?lang=${lang}`,
+        })
+      }
       try {
         const runOnce = async () => {
           const startedAt = performance.now()
@@ -144,6 +155,7 @@ export function ProfileProvider({ children }: ProviderProps) {
               : (attempt.data as ProfileData)
           )
           setProfileLang(lang)
+          profileLoaded = true
         }
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -151,6 +163,12 @@ export function ProfileProvider({ children }: ProviderProps) {
         }
       }
       setLoading(false)
+      if (isDebugLoggingEnabled) {
+        console.info('[debug] profile.bootstrap.end', {
+          lang,
+          profileLoaded,
+        })
+      }
     }
 
     void loadProfile()

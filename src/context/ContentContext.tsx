@@ -48,6 +48,10 @@ const QUICK_ABORT_THRESHOLD_MS = 1200
 const FETCH_CONCURRENCY = 2
 type ContentSectionKey = 'about' | 'projects' | 'experiences' | 'skills'
 type ContentSectionStatus = 'loading' | 'ready' | 'empty' | 'error'
+const isDebugLoggingEnabled =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1')
 
 export function ContentProvider({ children }: ProviderProps) {
   const { lang } = useLanguage()
@@ -203,6 +207,19 @@ export function ContentProvider({ children }: ProviderProps) {
         skills: 'loading',
       })
 
+      if (isDebugLoggingEnabled) {
+        console.info('[debug] content.bootstrap.start', {
+          lang,
+          concurrency: FETCH_CONCURRENCY,
+          endpoints: [
+            `/api/about?lang=${lang}`,
+            `/api/projects?lang=${lang}`,
+            `/api/experiences?lang=${lang}`,
+            `/api/skills?lang=${lang}`,
+          ],
+        })
+      }
+
       const tasks: Array<() => Promise<void>> = [
         async () => {
           let status: ContentSectionStatus = 'error'
@@ -310,6 +327,13 @@ export function ContentProvider({ children }: ProviderProps) {
 
       if (controller.signal.aborted) return
       setLoading(false)
+
+      if (isDebugLoggingEnabled) {
+        console.info('[debug] content.bootstrap.end', {
+          lang,
+          message: 'Bootstrap richieste pubbliche completato.',
+        })
+      }
     }
 
     void loadContent()

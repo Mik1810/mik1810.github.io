@@ -53,7 +53,7 @@ function AdminHomeHero({
     <header className="admin-card admin-home-hero admin-home-hero-card">
       <div className="admin-home-hero-copy">
         <div className="admin-home-hero-title-row">
-          <h2>Admin Control Room</h2>
+          <h2>Dashboard Admin</h2>
           <button
             type="button"
             className="admin-home-refresh-icon-btn"

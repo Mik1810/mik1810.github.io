@@ -32,7 +32,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.1.3`  
+**Artifact version:** `1.1.4`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 

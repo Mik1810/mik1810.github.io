@@ -90,7 +90,7 @@ const server = createServer(async (req, res) => {
   const requestAbortController = new AbortController()
 
   if (appEnv.nodeEnv !== 'production') {
-    console.info('[timing] dev-api.request.start', {
+    console.info('[DEBUG] dev-api.request.start', {
       requestId,
       url: req.url,
       method: req.method,
@@ -100,7 +100,7 @@ const server = createServer(async (req, res) => {
   res.on('finish', () => {
     completed = true
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.response.finish', {
+      console.info('[DEBUG] dev-api.response.finish', {
         requestId,
         url: req.url,
         method: req.method,
@@ -113,7 +113,7 @@ const server = createServer(async (req, res) => {
   res.on('close', () => {
     requestAbortController.abort()
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.response.close', {
+      console.info('[DEBUG] dev-api.response.close', {
         requestId,
         url: req.url,
         method: req.method,
@@ -123,7 +123,7 @@ const server = createServer(async (req, res) => {
       })
     }
   })
-  req.on('close', () => {
+  req.on('aborted', () => {
     requestAbortController.abort()
   })
 
@@ -141,14 +141,14 @@ const server = createServer(async (req, res) => {
     }
 
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.parseBody.start', {
+      console.info('[DEBUG] dev-api.parseBody.start', {
         requestId,
         url: req.url,
       })
     }
     const body = await parseBody(req)
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.parseBody.end', {
+      console.info('[DEBUG] dev-api.parseBody.end', {
         requestId,
         url: req.url,
         durationMs: Date.now() - requestStartedAt,
@@ -169,7 +169,7 @@ const server = createServer(async (req, res) => {
 
     await handler(apiReq, apiRes)
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.handler.end', {
+      console.info('[DEBUG] dev-api.handler.end', {
         requestId,
         url: req.url,
         method: req.method,
@@ -180,7 +180,7 @@ const server = createServer(async (req, res) => {
   } catch (error) {
     console.error('[dev-api] error:', error)
     if (appEnv.nodeEnv !== 'production') {
-      console.info('[timing] dev-api.handler.error', {
+      console.info('[DEBUG] dev-api.handler.error', {
         requestId,
         url: req.url,
         method: req.method,
@@ -196,8 +196,16 @@ const server = createServer(async (req, res) => {
 server.listen(port, () => {
   console.log(`[dev-api] listening on http://localhost:${port}`)
   if (appEnv.nodeEnv === 'production') return
+
+  console.info('[DEBUG] dev-api.debug_mode', {
+    enabled: true,
+    nodeEnv: appEnv.nodeEnv,
+    warmupEnabled: appEnv.devApiWarmup,
+    message: 'Debug mode attivo: timing estesi e bootstrap endpoint monitorati.',
+  })
+
   if (!appEnv.devApiWarmup) {
-    console.info('[timing] dev-api.ready', {
+    console.info('[DEBUG] dev-api.ready', {
       message:
         'Dev API pronta senza warmup (imposta DEV_API_WARMUP=true per abilitarlo).',
     })
@@ -214,7 +222,7 @@ server.listen(port, () => {
 
   void (async () => {
     await new Promise((resolve) => setTimeout(resolve, 50))
-    console.info('[timing] dev-api.warmup.start', {
+    console.info('[DEBUG] dev-api.warmup.start', {
       endpoints: warmupEndpoints.length,
     })
 
@@ -228,14 +236,14 @@ server.listen(port, () => {
           cache: 'no-store',
           signal: warmupController.signal,
         })
-        console.info('[timing] dev-api.warmup.end', {
+        console.info('[DEBUG] dev-api.warmup.end', {
           endpoint,
           status: response.status,
           durationMs: Date.now() - startedAt,
         })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        console.info('[timing] dev-api.warmup.error', {
+        console.info('[DEBUG] dev-api.warmup.error', {
           endpoint,
           durationMs: Date.now() - startedAt,
           message,
@@ -245,7 +253,7 @@ server.listen(port, () => {
       }
     }
 
-    console.info('[timing] dev-api.warmup.ready', {
+    console.info('[DEBUG] dev-api.warmup.ready', {
       message: 'Warmup completato: puoi aprire /home',
     })
   })()

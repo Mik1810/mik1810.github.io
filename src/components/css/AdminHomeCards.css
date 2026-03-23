@@ -23,7 +23,18 @@
   margin: 0;
   font-size: clamp(1.9rem, 2.6vw, 2.6rem);
   line-height: 1;
-  max-width: 14ch;
+  max-width: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .admin-home-hero-copy h2 {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
 }
 
 .admin-home-lead {
@@ -260,6 +271,47 @@
   color: var(--color-text-primary);
   font-size: 1.05rem;
   overflow-wrap: anywhere;
+}
+
+.admin-home-latency-trend-wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-home-latency-chart,
+.admin-home-latency-trend {
+  min-height: 220px;
+  padding: 0.35rem 0.55rem 0.15rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  background: color-mix(in srgb, var(--color-bg-primary) 78%, transparent);
+}
+
+.admin-home-latency-trend-skeleton {
+  min-height: 220px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(8px, 1fr);
+  gap: 0.3rem;
+  align-items: end;
+}
+
+.admin-home-latency-bar-skeleton {
+  width: 100%;
+  border-radius: 999px;
+  min-height: 10px;
+}
+
+.admin-home-latency-trend-skeleton .admin-home-latency-bar-skeleton:nth-child(3n) {
+  height: 30%;
+}
+
+.admin-home-latency-trend-skeleton .admin-home-latency-bar-skeleton:nth-child(3n + 1) {
+  height: 65%;
+}
+
+.admin-home-latency-trend-skeleton .admin-home-latency-bar-skeleton:nth-child(3n + 2) {
+  height: 48%;
 }
 
 .admin-home-metrics {

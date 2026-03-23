@@ -1,5 +1,22 @@
 # SESSION
 
+## Aggiornamento release 1.1.4 (2026-03-23)
+
+- Completato il punto 14 TODO (osservabilita latenza DB):
+  - endpoint admin protetto e leggero `/api/admin/metrics/db-latency`
+  - polling periodico lato admin home (5s)
+  - grafico area trend con `recharts` integrato nello stile dashboard
+- Stabilizzato il flusso login admin:
+  - rimossi skeleton duplicati in sequenza su `/login`
+  - dedup/cancel delle `refreshSession` concorrenti
+  - transizione `/login -> /admin` senza flash di fallback non necessario
+- Corretto un problema del dev server API che poteva interrompere false-positive le POST login (`req.aborted` al posto di `req.close`).
+- Uniformato il logging diagnostico con prefisso `[DEBUG]` e messaggi bootstrap piu` espliciti.
+- Footer admin/login reso statico (nome + social fallback), evitando aggiornamenti visivi tardivi dal profilo DB.
+- Verifiche pre-push:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+
 ## Aggiornamento release 1.1.3 (2026-03-23)
 
 - Corretto lo switch lingua hero per usare fallback immediato della lingua attiva finché i dati profilo locale non sono effettivamente allineati (`profileLang`).

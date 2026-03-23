@@ -12,7 +12,7 @@ interface RequireAdminProps {
 function RequireAdmin({ children, fallback }: RequireAdminProps) {
   const { authLoading, authenticated } = useAuth()
 
-  if (authLoading) {
+  if (authLoading && !authenticated) {
     return <>{fallback || <AdminTableSkeleton />}</>
   }
 

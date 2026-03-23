@@ -11,6 +11,25 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.1.4] - 2026-03-23
+
+### Added
+- protected lightweight admin metric endpoint `/api/admin/metrics/db-latency` for DB-latency polling without full health payload
+- `recharts`-based latency area chart in admin home (styled to match existing admin cards)
+
+### Changed
+- admin database card now renders `Latency trend` with responsive chart + themed tooltip/grid
+- login and auth transition flow hardened to prevent post-login skeleton flicker (`/login` -> `/admin`) with session refresh dedup/cancel guards
+- login route is rendered directly (without lazy suspense fallback) to avoid double-loading skeleton chain
+- admin/login footer now uses static fallback identity/socials to avoid late re-render jumps from profile hydration
+- admin hero title updated from `Admin Control Room` to `Dashboard Admin` and kept on one line on desktop
+- login page layout spacing refined so footer is not clipped and sits lower in viewport
+- dev API/debug logging standardized with `[DEBUG]` prefix and clearer startup/bootstrap diagnostics
+
+### Fixed
+- dev API request abort handling now listens to `req.aborted` (instead of `req.close`) to avoid false aborts that could stall POST login responses
+- admin auth flows now use explicit client/server timeouts to prevent infinite pending on transient upstream stalls
+
 ## [1.1.3] - 2026-03-23
 
 ### Fixed

@@ -286,6 +286,16 @@ export interface AdminEnvironmentResponse {
   error?: string
 }
 
+export interface AdminDbLatencyMetricResponse {
+  ok: boolean
+  timestamp: string
+  database: {
+    ok: boolean
+    latencyMs: number | null
+  }
+  error?: string
+}
+
 export interface AdminRowsResponse {
   rows: Record<string, unknown>[]
   error?: string
