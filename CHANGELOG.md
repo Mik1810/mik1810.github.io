@@ -11,6 +11,13 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.1.3] - 2026-03-23
+
+### Fixed
+- hero language switches now force immediate locale-aligned fallback content until profile data for that locale is loaded
+- typing transition fallback -> DB roles now avoids repeating the same role back-to-back when the first DB role matches the displayed fallback role
+- profile context now exposes the locale associated with the currently loaded profile snapshot (`profileLang`) to prevent stale-locale UI merges during fetch transitions
+
 ## [1.1.2] - 2026-03-23
 
 ### Fixed

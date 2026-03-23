@@ -154,10 +154,13 @@ function HeroTypingAnimationText({
       timeout = setTimeout(() => {
         const nextRoles = latestRoleSourceRef.current
         const rolesChanged = !areRoleListsEqual(activeRoles, nextRoles)
+        const previousRole = safeActiveRoles[roleIndex] ?? ''
 
         if (rolesChanged) {
+          const nextStartIndex =
+            nextRoles.length > 1 && nextRoles[0] === previousRole ? 1 : 0
           setActiveRoles(nextRoles)
-          setRoleIndex(0)
+          setRoleIndex(nextStartIndex)
         } else {
           setRoleIndex((current) => (current + 1) % safeActiveRoles.length)
         }
@@ -235,7 +238,9 @@ function HeroTypingAnimationText({
 
 function HeroTyping() {
   const { t, lang } = useLanguage()
-  const { profile, loading: profileLoading } = useProfile()
+  const { profile, loading: profileLoading, profileLang } = useProfile()
+  const profileAlignedWithLang = profileLang === lang
+  const useDbProfile = !profileLoading && profileAlignedWithLang
   const nameText = profile?.name || FALLBACK_HERO.name
   const photo = profile?.photo || FALLBACK_HERO.photo
   const fallbackUniversityName =
@@ -244,17 +249,19 @@ function HeroTyping() {
       : FALLBACK_HERO.university.name.en
   const university = {
     logo: profile?.university?.logo || FALLBACK_HERO.university.logo,
-    name: profileLoading
-      ? fallbackUniversityName
-      : profile?.university?.name || fallbackUniversityName,
+    name: useDbProfile
+      ? profile?.university?.name || fallbackUniversityName
+      : fallbackUniversityName,
   }
   const socials =
-    Array.isArray(profile?.socials) && profile.socials.length > 0
+    useDbProfile && Array.isArray(profile?.socials) && profile.socials.length > 0
       ? orderHeroSocials(profile.socials)
       : orderHeroSocials(FALLBACK_HERO.socials)
   const roles =
-    profileLoading || !Array.isArray(profile?.roles) ? EMPTY_ROLES : profile.roles
-  const greeting = profileLoading ? t('hero.greeting') : profile?.greeting || t('hero.greeting')
+    useDbProfile && Array.isArray(profile?.roles) ? profile.roles : EMPTY_ROLES
+  const greeting = useDbProfile
+    ? profile?.greeting || t('hero.greeting')
+    : t('hero.greeting')
   const fallbackRole =
     lang === 'it' ? FALLBACK_HERO.roles.it : FALLBACK_HERO.roles.en
   const uniName = university.name

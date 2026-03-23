@@ -1,5 +1,14 @@
 # SESSION
 
+## Aggiornamento release 1.1.3 (2026-03-23)
+
+- Corretto lo switch lingua hero per usare fallback immediato della lingua attiva finché i dati profilo locale non sono effettivamente allineati (`profileLang`).
+- Evitata la ripetizione visiva fallback -> DB nel typing quando il primo ruolo DB coincide con l'ultimo ruolo fallback mostrato.
+- Esteso il contratto `ProfileContext` con `profileLang` per distinguere snapshot dati correnti da snapshot di lingua precedente.
+- Verifiche pre-push:
+  - `npm run lint` ✅
+  - `npm run typecheck` ✅
+
 ## Aggiornamento release 1.1.2 (2026-03-23)
 
 - Corretto errore lint CI (`react-hooks/set-state-in-effect`) in `HeroTyping`.

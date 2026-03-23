@@ -166,6 +166,7 @@ export interface ContentContextValue {
 export interface ProfileContextValue {
   profile: ProfileData | null
   loading: boolean
+  profileLang: SupportedLocale | null
   refreshProfile: () => void
 }
 

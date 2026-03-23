@@ -56,6 +56,7 @@ export function ProfileProvider({ children }: ProviderProps) {
   const { lang } = useLanguage()
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileLang, setProfileLang] = useState<typeof lang | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
 
   const refreshProfile = useCallback(() => {
@@ -142,6 +143,7 @@ export function ProfileProvider({ children }: ProviderProps) {
               ? current
               : (attempt.data as ProfileData)
           )
+          setProfileLang(lang)
         }
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -156,7 +158,9 @@ export function ProfileProvider({ children }: ProviderProps) {
   }, [lang, reloadKey])
 
   return (
-    <ProfileContext.Provider value={{ profile, loading, refreshProfile }}>
+    <ProfileContext.Provider
+      value={{ profile, loading, profileLang, refreshProfile }}
+    >
       {children}
     </ProfileContext.Provider>
   )
