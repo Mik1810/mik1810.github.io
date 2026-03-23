@@ -9,7 +9,22 @@ The release discipline is intentionally lightweight:
 
 ## [Unreleased]
 
-_No entries yet._
+### Changed
+- expanded `README.md` with an operational quickstart section (prerequisites, `.env.local`, install/run/validation commands)
+- added a compact status snapshot and an app/admin/tests/deploy operational map to improve onboarding clarity
+- added an `Architecture At A Glance` section with a Mermaid diagram and a concrete end-to-end request example
+- documented test strategy/scope with explicit commands and noted the planned dedicated UI/component test workflow
+
+### Fixed
+- corrected Mermaid syntax in the new README architecture diagram to ensure stable rendering in Markdown previewers
+
+### Added
+- updated TODO roadmap with:
+  - explicit frontend UI/component test item plus dedicated GitHub Action follow-up
+  - low-priority legal/privacy evaluation item for optional site-access logging table
+  - low-priority content refresh section (profile labels, highlighted GitHub repos, bio/hero copy)
+  - chart-improvement follow-up item for admin DB latency visualization UX
+- completed all checklist items under TODO section `10. README, quickstart e documentazione`
 
 ## [1.1.5] - 2026-03-23
 

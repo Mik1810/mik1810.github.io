@@ -78,6 +78,7 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
   - tag coerenti con le versioni
 - `✅ Fatto` applicato lo stesso pattern di router unico anche agli endpoint pubblici tramite `api/home`, mantenendo invariati i path HTTP esistenti (`/api/profile`, `/api/about`, ecc.)
 - `❌ Non fatto` pianificare upgrade coordinati dei principali stack di tooling (per esempio ESLint e Vite), verificando la compatibilità tra dipendenze prima del merge
+- `❌ Non fatto` valutare una tabella di logging accessi/connessioni al sito (solo dati minimi), con verifica preventiva legale/privacy e compliance GDPR prima di qualsiasi implementazione
 
 ### Priorità
 
@@ -221,6 +222,7 @@ Aggiungere una rete di sicurezza leggera sopra la CI già presente.
   - `/api/experiences`
   - `/api/skills`
 - `❌ Non fatto` valutare in una fase successiva test frontend/component-level o browser-level, se il progetto avrà bisogno di coprire anche il comportamento UI oltre ai boundary backend
+- `❌ Non fatto` introdurre una GitHub Action separata dalle altre pipeline per eseguire i test UI/component-level (frontend) in modo dedicato
 
 ### Priorità
 
@@ -316,11 +318,11 @@ Rendere la repo immediatamente comprensibile e avviabile anche da reviewer ester
 
 ### Interventi residui
 
-- `❌ Non fatto` aggiungere blocco quickstart (prerequisiti, .env, npm ci, run dev, test, build)
-- `❌ Non fatto` aggiungere tabella app/admin/tests/deploy
-- `❌ Non fatto` aggiungere status snapshot (Done/Partial/Open) e badge di stato veri (build, test, version, deploy)
-- `❌ Non fatto` aggiungere sezione "Architecture at a glance" con diagramma e richiesta end-to-end
-- `❌ Non fatto` rendere esplicita la strategia di test e mostrare un esempio reale di comando/scope
+- `✅ Fatto` aggiungere blocco quickstart (prerequisiti, .env, npm ci, run dev, test, build)
+- `✅ Fatto` aggiungere tabella app/admin/tests/deploy
+- `✅ Fatto` aggiungere status snapshot (Done/Partial/Open) e badge di stato veri (build, test, version, deploy)
+- `✅ Fatto` aggiungere sezione "Architecture at a glance" con diagramma e richiesta end-to-end
+- `✅ Fatto` rendere esplicita la strategia di test e mostrare un esempio reale di comando/scope
 
 ### Priorità
 
@@ -408,6 +410,7 @@ Visualizzare l'andamento della latenza database nel tempo direttamente nella adm
 - `✅ Fatto` aggiungere un grafico trend della latenza DB nella admin home
 - `✅ Fatto` introdurre polling periodico (target iniziale: ogni 5 secondi) per aggiornare i punti del grafico senza refresh pagina
 - `❌ Non fatto` valutare se mantenere nel grafico solo gli ultimi sample (finestra mobile) oppure accumulare tutti i sample dalla visita corrente della pagina `/admin`
+- `❌ Non fatto` rendere il grafico più funzionale lato UX/analisi (per esempio: range temporale selezionabile, media/min/max, evidenza picchi, reset storico sessione)
 
 ### Priorità
 
@@ -478,5 +481,27 @@ Bassa
 ### Effort
 
 Medio
+
+---
+
+## 17. Aggiornamento contenuti portfolio
+
+### Obiettivo
+
+Mantenere i contenuti del portfolio aggiornati rispetto al profilo professionale corrente e ai progetti recenti.
+
+### Interventi residui
+
+- `❌ Non fatto [Priorità bassa]` aggiornare alcune label/descrizioni profilo (esempio: sostituire `Web Developer` con `Full Stack Developer` dove opportuno)
+- `❌ Non fatto [Priorità bassa]` aggiungere/aggiornare repository GitHub in evidenza nella sezione progetti
+- `❌ Non fatto [Priorità bassa]` rivedere testi brevi bio/hero per allinearli alle competenze attuali
+
+### Priorità
+
+Bassa
+
+### Effort
+
+Basso
 
 

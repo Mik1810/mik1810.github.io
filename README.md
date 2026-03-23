@@ -18,6 +18,8 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
+  <img src="https://img.shields.io/badge/version-1.1.5-2563eb?style=for-the-badge" alt="Version 1.1.5" />
+  <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
 <p align="center">
@@ -35,6 +37,100 @@
 **Artifact version:** `1.1.5`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
+
+## Quickstart
+
+### Prerequisites
+
+- Node.js `>= 20`
+- npm `>= 10`
+- Supabase project (Auth + Postgres)
+- Resend API key (for `/api/contact`)
+
+### Environment setup
+
+Create `.env.local` in repo root:
+
+```bash
+SUPABASE_URL=...
+SUPABASE_SECRET_KEY=...
+DATABASE_URL=...
+RESEND_API_KEY=...
+CONTACT_FROM_EMAIL=onboarding@resend.dev
+CONTACT_TO_EMAIL=your@email.tld
+```
+
+Optional local debug flags:
+
+```bash
+DEV_API_WARMUP=true
+VITE_DEBUG_LOGS=true
+```
+
+### Install and run
+
+```bash
+npm ci
+npm run dev:fast
+```
+
+Alternative local runs:
+
+```bash
+npm run dev
+npm run dev:api
+npm run dev:vercel
+```
+
+### Validation commands
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:api
+npm run build
+```
+
+## Status Snapshot
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Backend hardening | Done | validation, env checks, rate limits, error handling |
+| Public homepage loading stability | Done | TODO point 15 formally closed |
+| Admin health/observability | Partial | DB latency chart done, chart policy/UX refinement still open |
+| UI/component automated tests | Open | API/repository tests available, UI test layer pending |
+| Distributed rate limiting | Open | current limiter is process-local |
+
+## Operational Map (App/Admin/Tests/Deploy)
+
+| Surface | Path / Command | Purpose |
+| --- | --- | --- |
+| Public app | `/home` | portfolio public UI |
+| Admin login | `/login` | admin authentication entrypoint |
+| Admin home | `/admin` | admin operational dashboard |
+| Admin tables | `/admin/tables` | schema-driven CRUD console |
+| API tests | `npm run test:api` | handlers + repository integration suites |
+| Quality gates | `npm run lint && npm run typecheck && npm run build` | pre-push technical baseline |
+| Deploy | Vercel + Supabase | serverless frontend/API + hosted Postgres/Auth |
+
+## Architecture At A Glance
+
+```mermaid
+flowchart LR
+    Browser["Browser / SPA"] --> Public["Public routes (/home)"]
+    Browser --> Admin["Admin routes (/login, /admin)"]
+    Browser --> ApiHome["API Home dispatcher (/api/home)"]
+    Browser --> ApiAdmin["API Admin dispatcher (/api/admin)"]
+    ApiHome --> Services["Service layer"]
+    ApiAdmin --> Services
+    Services --> Repos["Repository layer"]
+    Repos --> DB[("PostgreSQL via Drizzle")]
+    ApiAdmin --> Auth["Supabase Auth REST"]
+```
+
+### End-to-end request example
+
+`GET /api/projects?lang=it` -> `api/home.ts` dispatcher -> `public-routes/projects` handler -> `publicContentService` -> `projectsRepository` -> Drizzle query -> normalized JSON DTO -> React section unlock.
 
 ## Abstract
 
@@ -363,7 +459,34 @@ The repository currently contains two operational workflows:
 
 The CI pipeline is intentionally small, but it establishes a reproducible minimum verification floor before deployment.
 
-### 7.4 Release discipline
+### 7.4 Test strategy and scope
+
+Current automated coverage is backend-focused:
+
+- handler/API suites under `tests/api`
+- repository/data suites under `tests/repositories`
+- smoke checks on current API surface and session boundaries
+
+Main command:
+
+```bash
+npm run test:api
+```
+
+Targeted examples:
+
+```bash
+npx vitest run tests/api/smoke.test.ts
+npx vitest run tests/api/adminTableCrud.test.ts
+npx vitest run tests/repositories/projectsRepository.test.ts
+```
+
+Planned next step:
+
+- add frontend UI/component-level tests
+- run them in a dedicated GitHub Action separated from the current backend CI lane
+
+### 7.5 Release discipline
 
 Release tracking follows a lightweight process:
 
