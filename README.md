@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.2.10-2563eb?style=for-the-badge" alt="Version 1.2.10" />
+  <img src="https://img.shields.io/badge/version-1.2.11-2563eb?style=for-the-badge" alt="Version 1.2.11" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -35,7 +35,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.2.10`  
+**Artifact version:** `1.2.11`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 
@@ -107,6 +107,7 @@ npm run build
 | Public homepage loading stability | Done | TODO point 15 formally closed |
 | Admin health/observability | Partial | DB latency chart done, chart policy/UX refinement still open |
 | UI/component automated tests | Open | API/repository tests available, UI test layer pending |
+| Visual wow-factor polish | Open | UI effects/motion polish planned to improve first-impact for non-technical users |
 | Distributed rate limiting | Done | Redis-backed mode active in production (`RATE_LIMIT_MODE=redis`) with resilient in-memory fallback |
 
 ## Operational Map (App/Admin/Tests/Deploy)

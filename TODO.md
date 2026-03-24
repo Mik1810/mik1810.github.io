@@ -312,6 +312,7 @@ Rendere l’esperienza utente più curata e accessibile, con attenzione a dettag
 - `✅ Fatto` sistemare il lightbox dei progetti GitHub su mobile: controlli close/nav stabilizzati con target touch coerenti e layout meno soggetto a ridimensionamenti/spostamenti
 - `✅ Chiuso per scelta progettuale [Priorità bassissima]` effetto CSS cursore in homepage escluso dal perimetro attuale dopo valutazione UX (soluzione troppo invasiva rispetto al layout corrente)
 - `❌ Non fatto` migliorare la visibilità degli skeleton in tema light (contrasto troppo basso), verificando una resa percepibile anche con loading molto rapido
+- `❌ Non fatto` migliorare gli effetti grafici UI per aumentare l'impatto visivo complessivo (obiettivo: esperienza più "wow" anche per utenti non tecnici)
 
 ### Priorità
 
