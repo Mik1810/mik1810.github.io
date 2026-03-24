@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.2.4-2563eb?style=for-the-badge" alt="Version 1.2.4" />
+  <img src="https://img.shields.io/badge/version-1.2.6-2563eb?style=for-the-badge" alt="Version 1.2.6" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -28,13 +28,14 @@
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Drizzle%20ORM-0F172A?style=for-the-badge&logo=drizzle&logoColor=C5F74F" alt="Drizzle ORM" />
   <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
   <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
 </p>
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.2.4`  
+**Artifact version:** `1.2.6`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 

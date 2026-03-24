@@ -11,6 +11,17 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.6] - 2026-03-24
+
+### Added
+- backend warning logs for rate-limiter Redis fallback cases, emitted once per function instance:
+  - missing Redis config while `RATE_LIMIT_MODE=redis`
+  - runtime Redis error with fallback to in-memory limiter
+
+### Changed
+- Redis limiter error handling now preserves real `429 rate_limited` responses instead of treating them as fallback errors
+- README refreshed to include Redis in stack badges and align displayed version metadata to `1.2.6`
+
 ## [1.2.5] - 2026-03-24
 
 ### Added

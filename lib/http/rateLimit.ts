@@ -32,6 +32,8 @@ class RateLimitError extends HttpError {
 const buckets = new Map<string, RateLimitBucket>()
 const distributedLimiters = new Map<string, Ratelimit>()
 let redisClientCache: Redis | null | undefined
+let warnedMissingRedisConfig = false
+let warnedRedisRuntimeFallback = false
 
 const getClientIp = (req: ApiRequest) => {
   if (typeof req.ip === 'string' && req.ip.trim()) {
@@ -82,6 +84,19 @@ const parseRateLimitMode = (): RateLimitMode => {
   return rawMode === 'redis' ? 'redis' : 'memory'
 }
 
+const warnOnce = (kind: 'missing_config' | 'runtime_fallback', metadata?: unknown) => {
+  if (kind === 'missing_config') {
+    if (warnedMissingRedisConfig) return
+    warnedMissingRedisConfig = true
+    console.warn('[WARN] rate_limit.redis.disabled_missing_config', metadata || {})
+    return
+  }
+
+  if (warnedRedisRuntimeFallback) return
+  warnedRedisRuntimeFallback = true
+  console.warn('[WARN] rate_limit.redis.runtime_fallback_memory', metadata || {})
+}
+
 const getRedisClient = () => {
   if (redisClientCache !== undefined) {
     return redisClientCache
@@ -91,6 +106,11 @@ const getRedisClient = () => {
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim()
 
   if (!redisUrl || !redisToken) {
+    warnOnce('missing_config', {
+      hasRedisUrl: Boolean(redisUrl),
+      hasRedisToken: Boolean(redisToken),
+      rateLimitMode: parseRateLimitMode(),
+    })
     redisClientCache = null
     return redisClientCache
   }
@@ -202,14 +222,24 @@ export const enforceRateLimit = async (
   res: ApiResponse,
   options: RateLimitOptions
 ) => {
-  if (parseRateLimitMode() !== 'redis') {
+  const mode = parseRateLimitMode()
+  if (mode !== 'redis') {
     enforceMemoryRateLimit(req, res, options)
     return
   }
 
   try {
     await enforceDistributedRateLimit(req, res, options)
-  } catch {
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      throw error
+    }
+
+    warnOnce('runtime_fallback', {
+      keyPrefix: options.keyPrefix,
+      message: error instanceof Error ? error.message : 'unknown_error',
+      mode,
+    })
     // Resilient fallback: if the distributed backend is unavailable, keep protection active in-memory.
     enforceMemoryRateLimit(req, res, options)
   }

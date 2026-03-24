@@ -3925,3 +3925,12 @@ pm run test:api.
   - `npm run typecheck`
   - `npm run lint`
   - `npm run test:api`
+
+## 2026-03-24 01:30 CET - Redis fallback observability and release 1.2.6
+
+- Added warning logs in [rateLimit.ts](./lib/http/rateLimit.ts) for Redis limiter fallback paths, with once-per-instance guards:
+  - `rate_limit.redis.disabled_missing_config`
+  - `rate_limit.redis.runtime_fallback_memory`
+- Hardened Redis limiter error flow to preserve genuine `429` rate-limit responses instead of falling back to memory for expected limit-denied outcomes.
+- Updated [README.md](./README.md) with Redis technology badge and aligned version indicators to `1.2.6`.
+- Bumped artifact version to `1.2.6` and updated release notes.
