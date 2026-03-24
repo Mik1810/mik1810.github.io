@@ -16,7 +16,7 @@ export const handlePublicHealthRoute: ApiHandler = async (req, res) => {
   if (!enforceMethod(req, res, 'GET')) return
 
   try {
-    enforceRateLimit(req, res, RATE_LIMIT)
+    await enforceRateLimit(req, res, RATE_LIMIT)
 
     const database = await runDatabaseHealthCheck()
     const payload = createPublicHealthPayload(database)

@@ -372,8 +372,8 @@ Rendere il rate limiting e i controlli di sicurezza robusti anche in ambienti mu
 
 ### Interventi residui
 
-- `🟡 Partial` documentare i limiti del rate limit attuale (in-memory, non condiviso tra istanze)
-- `❌ Non fatto` valutare e implementare una soluzione di rate limiting distribuito (es. Redis, edge, o provider esterno)
+- `✅ Fatto` documentati i limiti del rate limiting process-local e il comportamento in ambienti multi-instance/serverless
+- `🟡 Partial` introdotta una modalita` distribuita opzionale Redis (`RATE_LIMIT_MODE=redis`), mantenendo fallback in-memory; resta da consolidare rollout operativo (env production, monitoraggio e policy fail-open/fail-closed)
 
 ### Priorità
 

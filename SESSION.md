@@ -3911,3 +3911,17 @@ pm run test:api.
 ### Stato
 
 - punto 15: sostanzialmente stabilizzato lato locale; restano rifiniture opzionali su endpoint bootstrap unico e uniformazione error-state UI
+
+## 2026-03-24 01:15 CET - Optional distributed rate limiting (Redis) rollout
+
+- Added optional distributed rate limiting in [rateLimit.ts](./lib/http/rateLimit.ts) using Upstash (`@upstash/ratelimit`, `@upstash/redis`) with default `memory` mode and `redis` opt-in.
+- Introduced resilient fallback behavior: when Redis is unavailable/misconfigured, limiter falls back to in-memory instead of failing request flow.
+- Updated all route handlers using `enforceRateLimit` to `await` the async limiter call.
+- Extended env/runtime documentation and snapshot support:
+  - added `RATE_LIMIT_MODE`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` to [.env.example](./.env.example)
+  - updated [env.ts](./lib/config/env.ts) parsing + admin environment snapshot exposure
+  - updated [README.md](./README.md) and [TODO.md](./TODO.md) for current distributed-rate-limiting status
+- Validated changes with full quality gates:
+  - `npm run typecheck`
+  - `npm run lint`
+  - `npm run test:api`

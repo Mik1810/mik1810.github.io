@@ -39,7 +39,7 @@ export const  handleAdminTableRoute: ApiHandler<TableBody> = async (req, res) =>
   if (!admin) return
 
   try {
-    enforceRateLimit(req, res, {
+    await enforceRateLimit(req, res, {
       keyPrefix: 'admin-table',
       limit: 120,
       windowMs: 60 * 1000,

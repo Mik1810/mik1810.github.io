@@ -36,7 +36,7 @@ export const handlePublicExperiencesRoute: ApiHandler = async (req, res) => {
 
   try {
     throwIfAborted(req.signal)
-    enforceRateLimit(req, res, RATE_LIMIT)
+    await enforceRateLimit(req, res, RATE_LIMIT)
 
     const { lang: rawLang } = parseQueryWithSchema(req, localeQuerySchema)
     lang = normalizeRepositoryLocale(rawLang)

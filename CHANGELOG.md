@@ -11,6 +11,26 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.5] - 2026-03-24
+
+### Added
+- optional distributed rate limiting support via Upstash Redis (`@upstash/ratelimit`, `@upstash/redis`)
+- new runtime configuration for rate limiting backend selection:
+  - `RATE_LIMIT_MODE=memory|redis`
+  - `UPSTASH_REDIS_REST_URL`
+  - `UPSTASH_REDIS_REST_TOKEN`
+
+### Changed
+- `enforceRateLimit` is now asynchronous and supports:
+  - process-local in-memory mode by default
+  - Redis-backed fixed-window mode when explicitly enabled
+  - resilient fallback to in-memory if Redis is unavailable or misconfigured
+- all public/admin routes that apply rate limiting now await limiter enforcement consistently
+- updated env/docs roadmap:
+  - `.env.example` includes rate-limiter env variables
+  - README status/runtime section now marks distributed rate limiting as partial
+  - TODO section 12 updated to reflect implemented optional Redis mode and remaining rollout tasks
+
 ## [1.2.4] - 2026-03-24
 
 ### Changed

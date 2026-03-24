@@ -14,6 +14,11 @@ const optionalTrimmedString = () =>
   z.preprocess(emptyStringToUndefined, z.string().trim().min(1).optional())
 const optionalUrlString = () =>
   z.preprocess(emptyStringToUndefined, z.string().trim().url().optional())
+const optionalRateLimitMode = () =>
+  z.preprocess(
+    emptyStringToUndefined,
+    z.enum(['memory', 'redis']).optional()
+  )
 const optionalBooleanString = () =>
   z.preprocess(
     emptyStringToUndefined,
@@ -25,6 +30,9 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().max(65535).optional(),
   DEV_API_WARMUP: optionalBooleanString(),
   DEV_API_DEBUG_LOGS: optionalBooleanString(),
+  RATE_LIMIT_MODE: optionalRateLimitMode(),
+  UPSTASH_REDIS_REST_URL: optionalUrlString(),
+  UPSTASH_REDIS_REST_TOKEN: optionalTrimmedString(),
   DB_POOL_MAX: z.coerce.number().int().positive().max(30).optional(),
   DB_STATEMENT_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).optional(),
   AUTH_SESSION_SECRET: optionalTrimmedString(),
@@ -58,6 +66,7 @@ export const appEnv = Object.freeze({
       : env.DEV_API_DEBUG_LOGS === '1' ||
         env.DEV_API_DEBUG_LOGS === 'true' ||
         env.DEV_API_DEBUG_LOGS === 'yes',
+  rateLimitMode: env.RATE_LIMIT_MODE ?? 'memory',
   dbPoolMax: env.DB_POOL_MAX ?? 4,
   dbStatementTimeoutMs: env.DB_STATEMENT_TIMEOUT_MS ?? 20000,
 })
@@ -91,6 +100,21 @@ export const getAdminEnvironmentSnapshot =
       key: 'DEV_API_DEBUG_LOGS',
       value: serializeEnvValue(appEnv.devApiDebugLogs ? 'true' : 'false'),
       isSecret: false,
+    },
+    {
+      key: 'RATE_LIMIT_MODE',
+      value: serializeEnvValue(appEnv.rateLimitMode),
+      isSecret: false,
+    },
+    {
+      key: 'UPSTASH_REDIS_REST_URL',
+      value: serializeEnvValue(env.UPSTASH_REDIS_REST_URL),
+      isSecret: false,
+    },
+    {
+      key: 'UPSTASH_REDIS_REST_TOKEN',
+      value: serializeEnvValue(env.UPSTASH_REDIS_REST_TOKEN),
+      isSecret: true,
     },
     {
       key: 'DB_POOL_MAX',

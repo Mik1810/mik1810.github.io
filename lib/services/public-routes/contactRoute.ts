@@ -15,7 +15,7 @@ export const handlePublicContactRoute: ApiHandler = async (req, res) => {
   if (!enforceMethod(req, res, 'POST')) return
 
   try {
-    enforceRateLimit(req, res, RATE_LIMIT)
+    await enforceRateLimit(req, res, RATE_LIMIT)
 
     const payload = parseBodyWithSchema(req, contactBodySchema)
 

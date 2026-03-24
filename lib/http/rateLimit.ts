@@ -1,5 +1,7 @@
 import { HttpError } from './apiUtils.js'
 import type { ApiResponse, ApiRequest } from '../types/http.js'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 interface RateLimitBucket {
   count: number
@@ -11,6 +13,8 @@ interface RateLimitOptions {
   limit: number
   windowMs: number
 }
+
+type RateLimitMode = 'memory' | 'redis'
 
 class RateLimitError extends HttpError {
   resetAt: number
@@ -26,6 +30,8 @@ class RateLimitError extends HttpError {
 }
 
 const buckets = new Map<string, RateLimitBucket>()
+const distributedLimiters = new Map<string, Ratelimit>()
+let redisClientCache: Redis | null | undefined
 
 const getClientIp = (req: ApiRequest) => {
   if (typeof req.ip === 'string' && req.ip.trim()) {
@@ -53,16 +59,73 @@ const cleanupExpiredBuckets = (now: number) => {
 
 const setRateLimitHeaders = (
   res: ApiResponse,
+  limit: number,
+  remaining: number,
+  resetAt: number
+) => {
+  res.setHeader('X-RateLimit-Limit', String(limit))
+  res.setHeader('X-RateLimit-Remaining', String(remaining))
+  res.setHeader('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)))
+}
+
+const setMemoryRateLimitHeaders = (
+  res: ApiResponse,
   options: RateLimitOptions,
   bucket: RateLimitBucket
 ) => {
   const remaining = Math.max(options.limit - bucket.count, 0)
-  res.setHeader('X-RateLimit-Limit', String(options.limit))
-  res.setHeader('X-RateLimit-Remaining', String(remaining))
-  res.setHeader('X-RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)))
+  setRateLimitHeaders(res, options.limit, remaining, bucket.resetAt)
 }
 
-export const enforceRateLimit = (
+const parseRateLimitMode = (): RateLimitMode => {
+  const rawMode = process.env.RATE_LIMIT_MODE?.trim().toLowerCase()
+  return rawMode === 'redis' ? 'redis' : 'memory'
+}
+
+const getRedisClient = () => {
+  if (redisClientCache !== undefined) {
+    return redisClientCache
+  }
+
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL?.trim()
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim()
+
+  if (!redisUrl || !redisToken) {
+    redisClientCache = null
+    return redisClientCache
+  }
+
+  redisClientCache = new Redis({
+    url: redisUrl,
+    token: redisToken,
+  })
+
+  return redisClientCache
+}
+
+const getDistributedLimiter = (options: RateLimitOptions) => {
+  const redis = getRedisClient()
+  if (!redis) {
+    return null
+  }
+
+  const windowSeconds = Math.max(1, Math.ceil(options.windowMs / 1000))
+  const limiterKey = `${options.keyPrefix}:${options.limit}:${windowSeconds}`
+  const existing = distributedLimiters.get(limiterKey)
+  if (existing) {
+    return existing
+  }
+
+  const limiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.fixedWindow(options.limit, `${windowSeconds} s`),
+    prefix: `rl:${options.keyPrefix}`,
+  })
+  distributedLimiters.set(limiterKey, limiter)
+  return limiter
+}
+
+const enforceMemoryRateLimit = (
   req: ApiRequest,
   res: ApiResponse,
   options: RateLimitOptions
@@ -79,7 +142,7 @@ export const enforceRateLimit = (
       resetAt: now + options.windowMs,
     }
     buckets.set(clientKey, bucket)
-    setRateLimitHeaders(res, options, bucket)
+    setMemoryRateLimitHeaders(res, options, bucket)
     return
   }
 
@@ -88,12 +151,67 @@ export const enforceRateLimit = (
       1,
       Math.ceil((current.resetAt - now) / 1000)
     )
-    setRateLimitHeaders(res, options, current)
+    setMemoryRateLimitHeaders(res, options, current)
     res.setHeader('Retry-After', String(retryAfterSeconds))
     throw new RateLimitError(options.limit, current.resetAt, retryAfterSeconds)
   }
 
   current.count += 1
-  setRateLimitHeaders(res, options, current)
+  setMemoryRateLimitHeaders(res, options, current)
+}
+
+const enforceDistributedRateLimit = async (
+  req: ApiRequest,
+  res: ApiResponse,
+  options: RateLimitOptions
+) => {
+  const limiter = getDistributedLimiter(options)
+  if (!limiter) {
+    enforceMemoryRateLimit(req, res, options)
+    return
+  }
+
+  const clientKey = getClientIp(req)
+  const now = Date.now()
+  const result = await limiter.limit(clientKey)
+  const resetAt =
+    typeof result.reset === 'number' && result.reset > 0
+      ? result.reset
+      : now + options.windowMs
+
+  setRateLimitHeaders(
+    res,
+    typeof result.limit === 'number' ? result.limit : options.limit,
+    typeof result.remaining === 'number'
+      ? Math.max(result.remaining, 0)
+      : result.success
+        ? Math.max(options.limit - 1, 0)
+        : 0,
+    resetAt
+  )
+
+  if (!result.success) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((resetAt - now) / 1000))
+    res.setHeader('Retry-After', String(retryAfterSeconds))
+    throw new RateLimitError(options.limit, resetAt, retryAfterSeconds)
+  }
+}
+
+export const enforceRateLimit = async (
+  req: ApiRequest,
+  res: ApiResponse,
+  options: RateLimitOptions
+) => {
+  if (parseRateLimitMode() !== 'redis') {
+    enforceMemoryRateLimit(req, res, options)
+    return
+  }
+
+  try {
+    await enforceDistributedRateLimit(req, res, options)
+  } catch {
+    // Resilient fallback: if the distributed backend is unavailable, keep protection active in-memory.
+    enforceMemoryRateLimit(req, res, options)
+  }
 }
 

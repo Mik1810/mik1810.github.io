@@ -22,7 +22,7 @@ export const handleAdminLoginRoute: ApiHandler<LoginBody> = async (req, res) => 
   logTiming('api.admin.login.start', { url: req.url })
 
   try {
-    enforceRateLimit(req, res, {
+    await enforceRateLimit(req, res, {
       keyPrefix: 'admin-login',
       limit: 5,
       windowMs: 60 * 1000,

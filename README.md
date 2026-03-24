@@ -106,7 +106,7 @@ npm run build
 | Public homepage loading stability | Done | TODO point 15 formally closed |
 | Admin health/observability | Partial | DB latency chart done, chart policy/UX refinement still open |
 | UI/component automated tests | Open | API/repository tests available, UI test layer pending |
-| Distributed rate limiting | Open | current limiter is process-local |
+| Distributed rate limiting | Partial | Redis-backed mode available (`RATE_LIMIT_MODE=redis`) with in-memory fallback |
 
 ## Operational Map (App/Admin/Tests/Deploy)
 
@@ -416,6 +416,9 @@ The runtime expects a local `.env.local` containing at least:
 | `SUPABASE_URL` | Supabase HTTP base URL used for auth REST calls |
 | `SUPABASE_SECRET_KEY` | secret/service credential used for admin auth requests |
 | `DATABASE_URL` | PostgreSQL DSN used by Drizzle, postgres, and DB tooling |
+| `RATE_LIMIT_MODE` | rate limiter backend selector: `memory` (default) or `redis` |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint (required only when `RATE_LIMIT_MODE=redis`) |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token (required only when `RATE_LIMIT_MODE=redis`) |
 | `RESEND_API_KEY` | Resend API key used by the contact endpoint |
 | `CONTACT_FROM_EMAIL` | sender address for contact submissions (`onboarding@resend.dev` for test mode) |
 | `CONTACT_TO_EMAIL` | destination inbox for contact submissions |
@@ -512,7 +515,7 @@ The current implementation incorporates several pragmatic performance decisions:
 - optimized local project screenshots now stored canonically as `.webp`;
 - lighter hero portrait and explicit head preload in [index.html](./index.html);
 - coordinated hero skeleton and image reveal to avoid cache-path flicker or partial JPEG paint;
-- process-local caching for public reads and process-local rate limiting for sensitive admin flows.
+- process-local caching for public reads and switchable rate limiting (`memory` default, optional Redis-backed distributed mode).
 
 These choices are intentionally conservative: they improve runtime behavior without introducing a second infrastructure tier or a dedicated asset pipeline service.
 
@@ -520,7 +523,7 @@ These choices are intentionally conservative: they improve runtime behavior with
 
 The artifact is structurally mature, but not complete. Current limits include:
 
-- cache and rate limiting remain process-local rather than distributed;
+- cache remains process-local and distributed rate limiting is optional (requires explicit Redis configuration);
 - the contact pipeline still uses the Resend test sender when no owned domain is available;
 - no full admin upload flow exists for persistent media management;
 - several roadmap items remain intentionally open, especially around coordinated tooling upgrades, content discoverability, final performance work, smoke tests, and admin upload UX.
