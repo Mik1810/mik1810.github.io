@@ -3934,3 +3934,11 @@ pm run test:api.
 - Hardened Redis limiter error flow to preserve genuine `429` rate-limit responses instead of falling back to memory for expected limit-denied outcomes.
 - Updated [README.md](./README.md) with Redis technology badge and aligned version indicators to `1.2.6`.
 - Bumped artifact version to `1.2.6` and updated release notes.
+
+## 2026-03-24 01:50 CET - Verifica login admin in produzione e release 1.2.7
+
+- Eseguita verifica non invasiva via API su produzione per il tema "login admin lento":
+  - `POST /api/admin/login` (success path): ~1.11s primo hit, poi ~0.75s e ~0.53s
+  - `GET /api/admin/session` autenticato: ~0.23s-0.25s stabile
+- Conclusione operativa: nessuna anomalia backend persistente rilevata; differenza sul primo hit coerente con warmup.
+- Aggiornato lo stato roadmap in [TODO.md](./TODO.md) (punto login admin) e allineata metadata release a `1.2.7`.

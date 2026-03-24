@@ -258,7 +258,7 @@ Chiudere gli ultimi punti deboli dell’admin e della gestione asset senza riapr
   - badge `PUBLIC`/`SECRET` allineati a sinistra e con larghezza a contenuto
   - variabili pubbliche mostrate in chiaro senza reveal
   - campo valore con larghezza uniforme, ellissi visiva e navigazione completa da tastiera
-- `❌ Non fatto` verificare perche` la pagina di login admin impiega troppo a caricarsi in alcuni casi
+- `✅ Fatto` verificato il path login admin in produzione con campioni API reali (`/api/admin/login` e `/api/admin/session`): nessuna anomalia persistente rilevata, solo primo hit piu` lento compatibile con warmup
 - `✅ Fatto` aggiungere uno skeleton/stato di loading esplicito nella pagina login admin, stabilizzando il layout iniziale ed evitando il salto visivo del footer durante il mount lazy
 - `❌ Non fatto` riprendere con calma il tema upload file in produzione, con percorso ideale:
   - endpoint admin protetto per upload

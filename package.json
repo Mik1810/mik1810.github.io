@@ -1,7 +1,7 @@
 {
   "name": "piccirilli_michael_portfolio",
   "private": true,
-  "version": "1.2.6",
+  "version": "1.2.7",
   "type": "module",
   "dependencies": {
     "@upstash/ratelimit": "^2.0.8",

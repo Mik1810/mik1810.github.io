@@ -11,6 +11,14 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.7] - 2026-03-24
+
+### Changed
+- updated roadmap status for admin login slowness investigation:
+  - production API verification performed on `/api/admin/login` and `/api/admin/session`
+  - no persistent backend anomaly detected; first-hit delta is consistent with warmup behavior
+- aligned release metadata to `1.2.7`
+
 ## [1.2.6] - 2026-03-24
 
 ### Added
