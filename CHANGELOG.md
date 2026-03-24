@@ -11,6 +11,15 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.9] - 2026-03-24
+
+### Changed
+- refined UI tag styling for better consistency/visibility:
+  - `about-interest-tag` visual refresh
+  - `project-tag` visual refresh
+- clarified `site-live` requirement as documentation-facing and kept it in `README.md` badges (green status badge), removing the unnecessary in-page hero variant
+- closed UI/UX roadmap block #9 for the current scope (remaining cursor-effect item explicitly excluded by design choice)
+
 ## [1.2.8] - 2026-03-24
 
 ### Added

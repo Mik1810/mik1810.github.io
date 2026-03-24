@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://michaelpiccirilli.vercel.app">
-    <img src="https://img.shields.io/badge/site-live-0f172a?style=for-the-badge&logo=vercel&logoColor=white" alt="Live site" />
+    <img src="https://img.shields.io/badge/site-live-16a34a?style=for-the-badge&logo=vercel&logoColor=white" alt="Live site" />
   </a>
   <a href="https://github.com/Mik1810/Piccirilli_Michael_Portfolio">
     <img src="https://img.shields.io/badge/repository-GitHub-181717?style=for-the-badge&logo=github" alt="GitHub repository" />
@@ -18,7 +18,7 @@
   <a href="./TODO.md">
     <img src="https://img.shields.io/badge/roadmap-open%20items-f59e0b?style=for-the-badge" alt="Open roadmap items" />
   </a>
-  <img src="https://img.shields.io/badge/version-1.2.8-2563eb?style=for-the-badge" alt="Version 1.2.8" />
+  <img src="https://img.shields.io/badge/version-1.2.9-2563eb?style=for-the-badge" alt="Version 1.2.9" />
   <img src="https://img.shields.io/badge/deploy-vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Deploy target Vercel" />
 </p>
 
@@ -35,7 +35,7 @@
 
 # Piccirilli Michael Portfolio
 
-**Artifact version:** `1.2.8`  
+**Artifact version:** `1.2.9`  
 **Classification:** single-actor multilingual portfolio CMS  
 **Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
 

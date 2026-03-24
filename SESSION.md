@@ -3957,3 +3957,12 @@ pm run test:api.
 - Validation executed:
   - `npm run lint`
   - `npm run typecheck`
+
+## 2026-03-24 02:25 CET - Chiusura blocco UI/UX #9 (release 1.2.9)
+
+- Rifinito lo stile dei tag pubblici per coerenza e leggibilità:
+  - [About.css](./src/components/css/About.css) (`about-interest-tag`)
+  - [ProjectsSection.css](./src/components/css/ProjectsSection.css) (`project-tag`)
+- Corretto il perimetro del task `site-live`: il badge verde resta nel [README.md](./README.md), evitando badge ridondanti nella UI Hero.
+- Aggiornato [TODO.md](./TODO.md): blocco `#9 UI/UX e accessibilità` chiuso per il perimetro corrente; effetto cursore classificato come escluso per scelta progettuale.
+- Allineata release metadata a `1.2.9` (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`).
