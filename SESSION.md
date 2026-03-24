@@ -3966,3 +3966,15 @@ pm run test:api.
 - Corretto il perimetro del task `site-live`: il badge verde resta nel [README.md](./README.md), evitando badge ridondanti nella UI Hero.
 - Aggiornato [TODO.md](./TODO.md): blocco `#9 UI/UX e accessibilità` chiuso per il perimetro corrente; effetto cursore classificato come escluso per scelta progettuale.
 - Allineata release metadata a `1.2.9` (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`).
+
+## 2026-03-24 02:40 CET - Hotfix UI badge scope (release 1.2.10)
+
+- Removed the unintended `Site live` badge from the public hero UI.
+- Reverted the associated hero/i18n additions:
+  - [HeroTyping.tsx](./src/components/jsx/HeroTyping.tsx)
+  - [HeroTyping.css](./src/components/css/HeroTyping.css)
+  - [staticI18n.json](./src/data/staticI18n.json)
+- Kept the green `site-live` badge only in [README.md](./README.md), as originally intended.
+- Validation executed:
+  - `npm run lint`
+  - `npm run typecheck`

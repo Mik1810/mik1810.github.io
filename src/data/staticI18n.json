@@ -12,8 +12,7 @@
     "hero": {
       "greeting": "Ciao, mi chiamo",
       "btnProjects": "I miei progetti",
-      "btnContact": "Contattami",
-      "siteLive": "Site live"
+      "btnContact": "Contattami"
     },
     "about": {
       "title": "Chi Sono",
@@ -87,8 +86,7 @@
     "hero": {
       "greeting": "Hi, I'm",
       "btnProjects": "My projects",
-      "btnContact": "Get in touch",
-      "siteLive": "Site live"
+      "btnContact": "Get in touch"
     },
     "about": {
       "title": "About Me",

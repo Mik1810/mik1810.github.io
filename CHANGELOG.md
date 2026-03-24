@@ -11,6 +11,12 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.10] - 2026-03-24
+
+### Fixed
+- removed the unintended in-page `Site live` hero badge from the public UI
+- restored the `site-live` requirement to its intended scope: documentation badge in `README.md` only
+
 ## [1.2.9] - 2026-03-24
 
 ### Changed

@@ -112,23 +112,6 @@ function HeroTypingAnimationText({
   t,
   fallbackRole,
 }: HeroTypingAnimationTextProps) {
-  const [isOnline, setIsOnline] = useState<boolean>(
-    typeof navigator === 'undefined' ? true : navigator.onLine
-  )
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const syncOnlineStatus = () => setIsOnline(window.navigator.onLine)
-    window.addEventListener('online', syncOnlineStatus)
-    window.addEventListener('offline', syncOnlineStatus)
-
-    return () => {
-      window.removeEventListener('online', syncOnlineStatus)
-      window.removeEventListener('offline', syncOnlineStatus)
-    }
-  }, [])
-
   const roleSource = useMemo(
     () => (roles.length > 0 ? roles : [fallbackRole || FALLBACK_HERO.roles.en]),
     [roles, fallbackRole]
@@ -228,14 +211,6 @@ function HeroTypingAnimationText({
           <span>{uniName}</span>
         </div>
       ) : null}
-      <div
-        className={`hero-site-live-badge ${isOnline ? 'is-online' : 'is-offline'}`}
-        role="status"
-        aria-live="polite"
-      >
-        <span className="hero-site-live-dot" aria-hidden="true" />
-        <span>{t('hero.siteLive')}</span>
-      </div>
       <div className="hero-typing-actions">
         <a href="#projects" className="btn btn-primary">
           {t('hero.btnProjects')}
