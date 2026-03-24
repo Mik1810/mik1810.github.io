@@ -1,5 +1,19 @@
 # SESSION
 
+## Aggiornamento release 1.2.11 (2026-03-24)
+
+- Rifinito il movimento del portrait hero:
+  - risolto conflitto tra animazione di entrata e floating continuo sul contenitore immagine
+  - resa del float più omogenea e lenta
+  - rimossa la rotazione dal float su richiesta UX
+  - ritoccati i colori del bordo/ring durante iterazione visuale
+- Aggiornato il contratto API in [docs/API_CONTRACT.md](./docs/API_CONTRACT.md):
+  - allineamento a routing reale con dispatcher unificati `api/home` e `api/admin`
+  - elenco endpoint public/admin attuali con shape risposta, auth, rate-limit ed errori
+- Aggiornato backlog operativo in [TODO.md](./TODO.md):
+  - aggiunte voci di valutazione refactor struttura componenti/CSS
+  - aggiunta voce su visibilità skeleton in tema light
+
 ## Aggiornamento release 1.2.4 (2026-03-24)
 
 - Rifinita la card admin `Latency trend` in [AdminHomeDatabaseCard.tsx](./src/components/jsx/admin-home/AdminHomeDatabaseCard.tsx):
@@ -3978,3 +3992,10 @@ pm run test:api.
 - Validation executed:
   - `npm run lint`
   - `npm run typecheck`
+
+## 2026-03-24 02:55 CET - Riapertura task effetto cursore (UI/UX #9)
+
+- Su richiesta esplicita, il task effetto visivo cursore in homepage e` stato riaperto in roadmap.
+- [TODO.md](./TODO.md) aggiornato:
+  - da `✅ Chiuso per scelta progettuale` a `❌ Non fatto [Priorità bassissima]`
+  - mantenuto come item opzionale per iterazione futura.

@@ -11,6 +11,21 @@ The release discipline is intentionally lightweight:
 
 _No entries yet._
 
+## [1.2.11] - 2026-03-24
+
+### Changed
+- refined hero portrait visual motion/effects:
+  - fixed floating animation continuity on the portrait container (entry + float coexistence)
+  - removed rotation from float and slowed/smoothed trajectory for more homogeneous movement
+  - tuned hero portrait ring/border colors after visual iteration
+- updated API contract documentation in `docs/API_CONTRACT.md` to match current routing and endpoint surface:
+  - public routes via unified `api/home` dispatch with stable public paths
+  - admin routes via unified `api/admin` dispatch
+  - added current endpoint list, response shapes, auth/rate-limit/error notes
+- updated roadmap entries in `TODO.md`:
+  - added technical refactor evaluation items (components/CSS structure, component split, hooks extraction)
+  - added light-theme skeleton visibility follow-up item
+
 ## [1.2.10] - 2026-03-24
 
 ### Fixed

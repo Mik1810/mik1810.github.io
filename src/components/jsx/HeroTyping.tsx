@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 
 import { useLanguage } from '../../context/useLanguage'
 import { useProfile } from '../../context/useProfile'
@@ -59,6 +60,25 @@ function HeroPortrait({
 }) {
   const [loadedPhoto, setLoadedPhoto] = useState<string | null>(null)
   const photoLoaded = loadedPhoto === photo
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 144 }, (_, index) => {
+        const duration = 1.9 + (index % 10) * 0.12
+        const phaseSeed = ((index * 73) % 101) / 101
+        const jitterSeed = ((index * 37) % 19) - 9
+
+        return {
+          id: index,
+          angle: index * (360 / 144) + jitterSeed * 0.18,
+          // Negative delay spreads particles across the full cycle on first paint.
+          delay: -(duration * phaseSeed),
+          duration,
+          size: 0.9 + (index % 6) * 0.72,
+          travelMult: 0.88 + (index % 9) * 0.07,
+        }
+      }),
+    []
+  )
 
   const handlePhotoRef = useCallback(
     (image: HTMLImageElement | null) => {
@@ -76,10 +96,29 @@ function HeroPortrait({
       className={`hero-typing-image photo-glow${photoLoaded ? ' is-loaded' : ' is-loading'}${contentReady ? ' is-content-ready' : ''}`}
       aria-hidden={ariaHidden}
     >
+      <div
+        className="hero-particle-field"
+        aria-hidden="true"
+      >
+        {particles.map((particle) => (
+          <span
+            key={particle.id}
+            className="hero-particle"
+            style={
+              {
+                '--p-angle': `${particle.angle}deg`,
+                '--p-delay': `${particle.delay}s`,
+                '--p-duration': `${particle.duration}s`,
+                '--p-size': `${particle.size}px`,
+                '--p-travel-mult': String(particle.travelMult),
+              } as CSSProperties
+            }
+          />
+        ))}
+      </div>
       {photo ? (
         <img
           ref={handlePhotoRef}
-          className="float-animation"
           src={photo}
           alt={alt}
           decoding="async"

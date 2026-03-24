@@ -1,121 +1,148 @@
 # API Contract
 
-Base URL:
-- Local: `http://localhost:3000`
+Questo documento descrive il contratto HTTP attuale esposto dall'app.
+
+## Base URL
+
+- Locale UI (Vite): `http://localhost:5173`
+- Locale API diretta: `http://localhost:3000`
 - Production: `https://<your-domain>`
 
-Language parameter:
-- Supported: `it`, `en`
-- Default fallback: `it`
+Nota routing:
+- In produzione Vercel usa rewrite verso handler unificati:
+  - `/api/(about|profile|projects|skills|experiences|health|contact)` -> `/api/home?route=...`
+  - `/api/admin/*` -> `/api/admin?route=...`
+- I path pubblici restano **stabili** (es. `/api/profile`, `/api/admin/login`, ecc.).
 
-Static labels (headings/buttons/nav/form labels) are local-only:
-- `src/data/staticI18n.json`
-- No `/api/ui` endpoint.
+## Localizzazione
 
-## GET `/api/profile?lang=it|en`
-Returns profile data used by Hero/Navbar/Footer/Contact.
+- Query param supportato: `lang=it|en`
+- Default/fallback server: `it`
+- Le etichette statiche UI (nav, bottoni, label) sono locali nel frontend:
+  - `src/data/staticI18n.json`
+  - non esiste endpoint `/api/ui`
 
-Example:
-```bash
-curl "http://localhost:3000/api/profile?lang=en"
-```
+## Autenticazione admin
 
-Response (example):
+- Login admin via cookie HttpOnly `admin_session`
+- Cookie impostato da `POST /api/admin/login`
+- Route admin protette rispondono `401` se non autenticato
+
+## Errori (shape comune)
+
 ```json
 {
-  "name": "Michael Piccirilli",
-  "photo": "/imgs/michael.jpg",
-  "email": "michaelpiccirilli3@gmail.com",
-  "cv": "/docs/Curriculum_Vitae_10_2025.pdf",
-  "greeting": "Hi, I'm",
-  "location": "L'Aquila, Italy",
+  "error": "Human readable message",
+  "code": "machine_code"
+}
+```
+
+Codici comuni:
+- `400` request/query/body invalidi
+- `401` non autenticato / credenziali non valide
+- `404` route non trovata
+- `405` metodo non consentito
+- `429` rate limited
+- `500+` errori interni/upstream
+
+## Rate limiting
+
+Alcune route applicano rate limit (memory o redis, in base a `RATE_LIMIT_MODE`).
+Header esposti:
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset`
+- `Retry-After` (solo quando limit superato)
+
+---
+
+## Public API
+
+### GET `/api/profile?lang=it|en`
+Ritorna i dati profilo per Hero/Navbar/Footer/Contact.
+
+Response (shape):
+```json
+{
+  "name": "...",
+  "photo": "...",
+  "email": "...",
+  "cv": "...",
+  "greeting": "...",
+  "location": "...",
+  "bio": "...",
   "university": {
-    "name": "University of L'Aquila",
-    "logo": "/imgs/univaq.gif"
+    "name": "...",
+    "logo": "..."
   },
-  "roles": [
-    "Master's Student in Computer Science",
-    "AI Enthusiast",
-    "Cybersecurity Enthusiast",
-    "Web Developer"
-  ],
+  "roles": ["..."],
   "socials": [
     {
-      "name": "GitHub",
-      "url": "https://github.com/Mik1810",
-      "icon": "github"
-    },
-    {
-      "name": "LinkedIn",
-      "url": "https://www.linkedin.com/in/michael-piccirilli-878a0821b/",
-      "icon": "linkedin"
+      "name": "...",
+      "url": "...",
+      "icon": "..."
     }
   ]
 }
 ```
 
-## GET `/api/about?lang=it|en`
-Returns interests for About section.
-
-Example:
-```bash
-curl "http://localhost:3000/api/about?lang=it"
-```
+### GET `/api/about?lang=it|en`
+Ritorna gli interessi sezione About.
 
 Response:
 ```json
 {
-  "interests": [
-    "Intelligenza Artificiale",
-    "Cybersecurity",
-    "Web Development",
-    "Algoritmi e Strutture Dati"
+  "interests": ["..."]
+}
+```
+
+### GET `/api/projects?lang=it|en`
+Ritorna progetti portfolio + progetti GitHub featured.
+
+Response (shape):
+```json
+{
+  "projects": [
+    {
+      "id": 1,
+      "slug": "...",
+      "title": "...",
+      "description": "...",
+      "tags": ["..."],
+      "live": "https://...",
+      "github": null
+    }
+  ],
+  "githubProjects": [
+    {
+      "id": 1,
+      "slug": "...",
+      "title": "...",
+      "description": "...",
+      "tags": ["..."],
+      "githubUrl": "https://...",
+      "liveUrl": "https://...",
+      "images": ["https://..."]
+    }
   ]
 }
 ```
 
-## GET `/api/projects?lang=it|en`
-Returns translated projects + tags + live links.
+### GET `/api/experiences?lang=it|en`
+Ritorna esperienze + education.
 
-Example:
-```bash
-curl "http://localhost:3000/api/projects?lang=en"
-```
-
-Response (example):
-```json
-[
-  {
-    "id": 1,
-    "slug": "flood-monitoring-management-system",
-    "title": "Flood Monitoring and Management System",
-    "description": "...",
-    "tags": ["CINI Challenge", "Disaster Prevention", "Team Project"],
-    "live": "https://icities25.unicas.it/"
-  }
-]
-```
-
-## GET `/api/experiences?lang=it|en`
-Returns both activities and education.
-
-Example:
-```bash
-curl "http://localhost:3000/api/experiences?lang=it"
-```
-
-Response (example):
+Response (shape):
 ```json
 {
   "experiences": [
     {
       "id": 1,
       "order_index": 1,
-      "logo": "/imgs/cyberchallenge.png",
-      "logo_bg": null,
-      "role": "CyberChallenge 2024",
-      "company": "Cybersecurity National Lab",
-      "period": "Giugno 2024",
+      "logo": "...",
+      "logo_bg": "...",
+      "role": "...",
+      "company": "...",
+      "period": "...",
       "description": "..."
     }
   ],
@@ -123,56 +150,136 @@ Response (example):
     {
       "id": 1,
       "order_index": 1,
-      "logo": "/imgs/univaq.gif",
-      "degree": "Laurea Magistrale in Informatica — Curriculum AICONDA",
-      "institution": "Università degli Studi dell'Aquila",
-      "period": "Ott 2024 – In corso",
+      "logo": "...",
+      "degree": "...",
+      "institution": "...",
+      "period": "...",
       "description": "..."
     }
   ]
 }
 ```
 
-## GET `/api/skills?lang=it|en`
-Returns tech stack and translated skill categories.
+### GET `/api/skills?lang=it|en`
+Ritorna stack tecnologico + categorie skill tradotte.
 
-Example:
-```bash
-curl "http://localhost:3000/api/skills?lang=en"
-```
-
-Response (example):
+Response (shape):
 ```json
 {
   "techStack": [
     {
-      "category": "Languages",
+      "category": "...",
       "items": [
         {
-          "name": "Python",
-          "devicon": "python/python-original",
-          "color": "#3776AB"
+          "name": "...",
+          "devicon": "...",
+          "color": "#RRGGBB"
         }
       ]
     }
   ],
   "categories": [
     {
-      "category": "Programming",
-      "skills": ["Web Development", "Programming Languages"]
+      "category": "...",
+      "skills": ["..."]
     }
   ]
 }
 ```
 
-## POST `/api/admin/login`
-Server-side auth login (no Supabase client in frontend).
+### GET `/api/health`
+Health pubblico minimale.
 
-Request:
-```bash
-curl -X POST "http://localhost:3000/api/admin/login" \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@example.com\",\"password\":\"secret\"}"
+Response (shape):
+```json
+{
+  "ok": true,
+  "service": "api",
+  "timestamp": "2026-03-24T00:00:00.000Z",
+  "app": {
+    "name": "...",
+    "version": "..."
+  },
+  "checks": {
+    "database": {
+      "ok": true,
+      "latencyMs": 42
+    }
+  }
+}
+```
+
+Status:
+- `200` se DB ok
+- `503` se DB non ok
+
+### POST `/api/contact`
+Invia un messaggio contatti (Resend).
+
+Request body:
+```json
+{
+  "name": "Mario Rossi",
+  "email": "mario@example.com",
+  "message": "Messaggio di almeno 10 caratteri",
+  "locale": "it",
+  "website": ""
+}
+```
+
+Note:
+- `website` è honeypot anti-bot (deve restare vuoto)
+- `locale` supporta `it|en` (default `it`)
+
+Success response:
+```json
+{
+  "ok": true
+}
+```
+
+Errori tipici:
+- `400` payload non valido
+- `429` rate limit
+- `502` `contact_delivery_failed`
+- `503` `contact_unavailable`
+- `504` `contact_timeout`
+
+---
+
+## Admin API
+
+### GET `/api/admin/session`
+Ritorna lo stato sessione admin.
+
+Response (unauthenticated):
+```json
+{
+  "authenticated": false,
+  "user": null
+}
+```
+
+Response (authenticated):
+```json
+{
+  "authenticated": true,
+  "user": {
+    "id": "uuid",
+    "email": "admin@example.com"
+  }
+}
+```
+
+### POST `/api/admin/login`
+Login admin server-side (cookie HttpOnly).
+
+Request body:
+```json
+{
+  "email": "admin@example.com",
+  "password": "secret"
+}
 ```
 
 Success response:
@@ -185,15 +292,219 @@ Success response:
 }
 ```
 
-Error responses:
-- `400`: missing `email` or `password`
-- `401`: invalid credentials
-- `405`: wrong method
-- `500`: server/internal error
+### POST `/api/admin/logout`
+Richiede sessione admin valida.
 
-## Common error shape
+Success response:
 ```json
 {
-  "error": "Database error"
+  "ok": true
 }
+```
+
+### GET `/api/admin/tables`
+Richiede sessione admin valida. Ritorna metadata tabelle admin.
+
+Response (shape):
+```json
+{
+  "tables": [
+    {
+      "name": "profile",
+      "label": "Profile",
+      "description": "...",
+      "group": "profile",
+      "groupLabel": "...",
+      "subgroup": "...",
+      "subgroupLabel": "...",
+      "primaryKeys": ["id"],
+      "defaultRow": {},
+      "fields": [
+        {
+          "name": "...",
+          "label": "...",
+          "editor": {
+            "kind": "text"
+          },
+          "editable": true,
+          "primaryKey": false,
+          "system": false,
+          "foreignKey": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+### `/api/admin/table` (CRUD)
+Richiede sessione admin valida.
+
+Query:
+- `table` (obbligatorio)
+- `limit` (opzionale, default `200`, clamp `1..1000`)
+
+#### GET `/api/admin/table?table=<name>&limit=200`
+Response:
+```json
+{
+  "rows": [
+    { "...": "..." }
+  ]
+}
+```
+
+#### POST `/api/admin/table?table=<name>`
+Body singolo record:
+```json
+{
+  "row": { "...": "..." }
+}
+```
+
+Body multi record:
+```json
+{
+  "rows": [
+    { "...": "..." },
+    { "...": "..." }
+  ]
+}
+```
+
+Response:
+- singolo -> `{ "row": { ... } }`
+- multiplo -> `{ "rows": [{ ... }] }`
+
+#### PATCH `/api/admin/table?table=<name>`
+Body:
+```json
+{
+  "keys": { "pk": "..." },
+  "row": { "field": "new value" }
+}
+```
+
+Response:
+```json
+{
+  "row": { "...": "..." }
+}
+```
+
+#### DELETE `/api/admin/table?table=<name>`
+Body:
+```json
+{
+  "keys": { "pk": "..." }
+}
+```
+
+Response:
+```json
+{
+  "ok": true
+}
+```
+
+Errori tipici admin/table:
+- `400` `table_not_allowed`, `missing_primary_keys`, payload non valido
+- `429` rate limit
+- `500` `database_error` o `internal_error`
+
+### GET `/api/admin/health`
+Richiede sessione admin valida. Health esteso (runtime + deploy + env snapshot).
+
+Response (shape):
+```json
+{
+  "ok": true,
+  "service": "api",
+  "timestamp": "2026-03-24T00:00:00.000Z",
+  "environment": "production",
+  "app": {
+    "name": "...",
+    "version": "...",
+    "uptimeSeconds": 123,
+    "startedAt": "2026-03-24T00:00:00.000Z"
+  },
+  "checks": {
+    "database": {
+      "ok": true,
+      "latencyMs": 31
+    }
+  },
+  "deployment": {
+    "provider": "vercel",
+    "region": "...",
+    "commitSha": "..."
+  },
+  "environmentVariables": [
+    {
+      "key": "DATABASE_URL",
+      "value": "...",
+      "isSecret": true
+    }
+  ]
+}
+```
+
+Status:
+- `200` se DB ok
+- `503` se DB non ok
+
+### GET `/api/admin/environment`
+Richiede sessione admin valida.
+
+Response:
+```json
+{
+  "environmentVariables": [
+    {
+      "key": "NODE_ENV",
+      "value": "production",
+      "isSecret": false
+    }
+  ]
+}
+```
+
+### GET `/api/admin/metrics/db-latency`
+Richiede sessione admin valida. Endpoint metrico per polling dashboard.
+
+Response:
+```json
+{
+  "ok": true,
+  "timestamp": "2026-03-24T00:00:00.000Z",
+  "database": {
+    "ok": true,
+    "latencyMs": 55
+  }
+}
+```
+
+Status:
+- `200` se DB ok
+- `503` se DB non ok
+
+---
+
+## Esempi rapidi curl
+
+```bash
+# Public
+curl "http://localhost:3000/api/profile?lang=it"
+curl "http://localhost:3000/api/health"
+
+# Contact
+curl -X POST "http://localhost:3000/api/contact" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Mario","email":"mario@example.com","message":"Ciao, test contatto valido","locale":"it","website":""}'
+
+# Admin login/session
+curl -i -X POST "http://localhost:3000/api/admin/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"secret"}'
+curl -i "http://localhost:3000/api/admin/session"
 ```

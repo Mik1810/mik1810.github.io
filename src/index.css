@@ -242,22 +242,24 @@ img {
 
 /* ===== Subtle float animation ===== */
 @keyframes subtle-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  25% { transform: translate3d(1.2px, -5px, 0) rotate(-0.32deg); }
+  50% { transform: translate3d(0, -12px, 0) rotate(0deg); }
+  75% { transform: translate3d(-1.2px, -5px, 0) rotate(0.32deg); }
 }
 
 .float-animation {
-  animation: subtle-float 5s ease-in-out infinite;
-}
-
-/* ===== Photo glow in dark mode ===== */
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
-  50% { box-shadow: 0 0 35px rgba(56, 189, 248, 0.25); }
+  animation: subtle-float 4.6s ease-in-out infinite;
 }
 
 [data-theme="dark"] .photo-glow img {
-  animation: glow-pulse 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.18));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-animation {
+    animation: none !important;
+  }
 }
 
 /* ===== Variant switcher bar ===== */

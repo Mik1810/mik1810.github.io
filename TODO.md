@@ -79,6 +79,9 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
 - `✅ Fatto` applicato lo stesso pattern di router unico anche agli endpoint pubblici tramite `api/home`, mantenendo invariati i path HTTP esistenti (`/api/profile`, `/api/about`, ecc.)
 - `❌ Non fatto` pianificare upgrade coordinati dei principali stack di tooling (per esempio ESLint e Vite), verificando la compatibilità tra dipendenze prima del merge
 - `❌ Non fatto` valutare una tabella di logging accessi/connessioni al sito (solo dati minimi), con verifica preventiva legale/privacy e compliance GDPR prima di qualsiasi implementazione
+- `❌ Non fatto` valutare un refactor della struttura cartelle componenti/CSS per migliorare coesione e manutenibilità
+- `❌ Non fatto` valutare refactor dei componenti troppo grandi, estraendo sottocomponenti dove utile
+- `❌ Non fatto` valutare l'estrazione degli hook locali dei componenti in una cartella condivisa `hooks` dove ha senso
 
 ### Priorità
 
@@ -307,7 +310,8 @@ Rendere l’esperienza utente più curata e accessibile, con attenzione a dettag
 - `✅ Fatto` migliorare lo stile dei tag (project-tag, about-interest-tag) per maggiore visibilità e coerenza visiva
 - `✅ Fatto` rendere il badge "site-live" verde nel `README.md` (badge di stato del sito live)
 - `✅ Fatto` sistemare il lightbox dei progetti GitHub su mobile: controlli close/nav stabilizzati con target touch coerenti e layout meno soggetto a ridimensionamenti/spostamenti
-- `✅ Chiuso per scelta progettuale [Priorità bassissima]` effetto CSS cursore in homepage escluso dal perimetro attuale per evitare rumore visivo e mantenere focus su accessibilità/leggibilità
+- `✅ Chiuso per scelta progettuale [Priorità bassissima]` effetto CSS cursore in homepage escluso dal perimetro attuale dopo valutazione UX (soluzione troppo invasiva rispetto al layout corrente)
+- `❌ Non fatto` migliorare la visibilità degli skeleton in tema light (contrasto troppo basso), verificando una resa percepibile anche con loading molto rapido
 
 ### Priorità
 
@@ -373,7 +377,7 @@ Rendere il rate limiting e i controlli di sicurezza robusti anche in ambienti mu
 ### Interventi residui
 
 - `✅ Fatto` documentati i limiti del rate limiting process-local e il comportamento in ambienti multi-instance/serverless
-- `✅ Fatto` introdotta modalita` distribuita Redis (`RATE_LIMIT_MODE=redis`) con fallback in-memory resiliente, env production configurate e verifica operativa effettuata su produzione
+- `✅ Fatto` introdotta modalità distribuita Redis (`RATE_LIMIT_MODE=redis`) con fallback in-memory resiliente, env production configurate e verifica operativa effettuata su produzione
 
 ### Priorità
 

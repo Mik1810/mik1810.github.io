@@ -273,6 +273,11 @@
 }
 
 .hero-typing-image {
+  --hero-edge-fade: rgba(8, 20, 38, 0.64);
+  --hero-ring-glow: rgba(191, 219, 254, 0.52);
+  --hero-particle-color: rgba(241, 248, 255, 0.98);
+  --hero-particle-start: 184px;
+  --hero-particle-drift: 36px;
   flex-shrink: 0;
   position: relative;
   display: flex;
@@ -281,6 +286,23 @@
   width: 360px;
   height: 360px;
   border-radius: 50%;
+  animation: hero-frame-float 8.4s linear infinite;
+  will-change: transform;
+}
+
+.hero-typing-container.hero-animate > .hero-typing-image {
+  animation-name: hero-entrance, hero-frame-float;
+  animation-duration: 0.8s, 8.4s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), linear;
+  animation-delay: 0.25s, 1.05s;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, both;
+}
+
+[data-theme="dark"] .hero-typing-image {
+  --hero-edge-fade: rgba(2, 6, 23, 0.72);
+  --hero-ring-glow: rgba(186, 230, 253, 0.64);
+  --hero-particle-color: rgba(255, 255, 255, 1);
 }
 
 .hero-typing-image::before {
@@ -288,34 +310,134 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
   background: radial-gradient(
     circle at 35% 30%,
-    rgba(255, 255, 255, 0.32),
-    rgba(255, 255, 255, 0.12) 48%,
-    rgba(255, 255, 255, 0.06) 100%
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.08) 48%,
+    rgba(255, 255, 255, 0.03) 100%
   );
-  border: 6px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(36, 72, 110, 0.62);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.14),
+    0 0 22px color-mix(in srgb, var(--hero-ring-glow) 28%, transparent),
+    0 0 48px color-mix(in srgb, var(--hero-ring-glow) 16%, transparent);
   transition: opacity 0.24s ease;
 }
 
-.hero-typing-image.is-loaded.is-content-ready::before {
+.hero-particle-field {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
   opacity: 0;
+  transition: opacity 0.24s ease;
+  overflow: visible;
+}
+
+.hero-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--p-size, 3px);
+  height: var(--p-size, 3px);
+  border-radius: 999px;
+  background: var(--hero-particle-color);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--hero-particle-color) 96%, transparent),
+    0 0 18px color-mix(in srgb, var(--hero-particle-color) 86%, transparent),
+    0 0 30px color-mix(in srgb, var(--hero-particle-color) 58%, transparent);
+  opacity: 0;
+  transform: rotate(var(--p-angle, 0deg))
+    translate3d(var(--hero-particle-start), 0, 0)
+    scale(1);
+  animation: hero-particle-burst var(--p-duration, 2.8s) linear infinite;
+  animation-delay: var(--p-delay, 0s);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.hero-typing-image.is-loaded.is-content-ready::before {
+  opacity: 0.4;
 }
 
 .hero-typing-image img {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 6px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 55px rgba(0, 0, 0, 0.34);
+  border: 5px solid rgba(58, 108, 158, 0.72);
+  box-shadow:
+    inset 0 0 42px var(--hero-edge-fade),
+    0 18px 44px rgba(0, 0, 0, 0.28),
+    0 0 14px color-mix(in srgb, var(--hero-ring-glow) 24%, transparent);
+  -webkit-mask-image: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 1) 75%,
+    rgba(0, 0, 0, 0.94) 88%,
+    rgba(0, 0, 0, 0.72) 96%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+  mask-image: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 1) 75%,
+    rgba(0, 0, 0, 0.94) 88%,
+    rgba(0, 0, 0, 0.72) 96%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
   opacity: 0;
   transition: opacity 0.24s ease;
 }
 
 .hero-typing-image.is-loaded.is-content-ready img {
   opacity: 1;
+}
+
+.hero-typing-image.is-loaded.is-content-ready .hero-particle-field {
+  opacity: 0.98;
+}
+
+@keyframes hero-particle-burst {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--p-angle, 0deg))
+      translate3d(var(--hero-particle-start), 0, 0)
+      scale(1.2);
+  }
+  18% {
+    opacity: 0.94;
+  }
+  76% {
+    opacity: 0.72;
+    transform: rotate(var(--p-angle, 0deg))
+      translate3d(
+        calc(
+          var(--hero-particle-start) +
+          (var(--hero-particle-drift) * var(--p-travel-mult, 1))
+        ),
+        0,
+        0
+      )
+      scale(0.72);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--p-angle, 0deg))
+      translate3d(
+        calc(
+          var(--hero-particle-start) +
+          ((var(--hero-particle-drift) + 24px) * var(--p-travel-mult, 1))
+        ),
+        0,
+        0
+      )
+      scale(0.28);
+  }
 }
 
 @media (max-width: 768px) {
@@ -348,6 +470,8 @@
   .hero-typing-image {
     width: 236px;
     height: 236px;
+    --hero-particle-start: 124px;
+    --hero-particle-drift: 24px;
   }
   .hero-skeleton-line-sm {
     margin-inline: auto;
@@ -409,5 +533,51 @@
   .hero-typing-image {
     width: 210px;
     height: 210px;
+    --hero-particle-start: 110px;
+    --hero-particle-drift: 19px;
+  }
+}
+
+@keyframes hero-frame-float {
+  0% {
+    transform: translate3d(0, -8px, 0);
+  }
+  12.5% {
+    transform: translate3d(1.2px, -11px, 0);
+  }
+  25% {
+    transform: translate3d(2.2px, -15px, 0);
+  }
+  37.5% {
+    transform: translate3d(1.4px, -20px, 0);
+  }
+  50% {
+    transform: translate3d(0, -24px, 0);
+  }
+  62.5% {
+    transform: translate3d(-1.4px, -20px, 0);
+  }
+  75% {
+    transform: translate3d(-2.2px, -15px, 0);
+  }
+  87.5% {
+    transform: translate3d(-1.2px, -11px, 0);
+  }
+  100% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-typing-image {
+    animation: none;
+  }
+
+  .hero-particle {
+    animation: none;
+  }
+
+  .hero-typing-image.is-loaded.is-content-ready .hero-particle-field {
+    opacity: 0.18;
   }
 }
