@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://michaelpiccirilli.vercel.app/sitemap.xml
+Sitemap: https://michaelpiccirilli.it/sitemap.xml

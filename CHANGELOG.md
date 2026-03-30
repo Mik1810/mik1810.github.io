@@ -9,7 +9,12 @@ The release discipline is intentionally lightweight:
 
 ## [Unreleased]
 
-_No entries yet._
+### Changed
+- prepared the project for the custom production domain `https://michaelpiccirilli.it`:
+  - updated runtime SEO metadata in `index.html` (`canonical`, Open Graph, Twitter card, JSON-LD)
+  - updated crawler discovery files `public/robots.txt` and `public/sitemap.xml`
+  - updated the live-site link in `README.md` to the new custom domain
+  - documented the operational rollout and pending DNS activation steps in `TODO.md`
 
 ## [1.2.12] - 2026-03-24
 

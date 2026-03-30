@@ -77,6 +77,18 @@ Ridurre il lavoro manuale di manutenzione e aumentare la visibilità operativa d
   - changelog minimo
   - tag coerenti con le versioni
 - `✅ Fatto` applicato lo stesso pattern di router unico anche agli endpoint pubblici tramite `api/home`, mantenendo invariati i path HTTP esistenti (`/api/profile`, `/api/about`, ecc.)
+- `🟡 Partial` attivare e collegare il dominio custom `michaelpiccirilli.it` al deploy Vercel:
+  - dominio acquistato su Register il `2026-03-30`
+  - stato attuale: dominio `.it` appena registrato e ancora in `inactive, dnsHold`, quindi DNS non ancora modificabili dal pannello
+  - configurazione target decisa:
+    - `michaelpiccirilli.it` dominio principale production
+    - `www.michaelpiccirilli.it` redirect `308` verso root domain
+  - passi operativi residui:
+    - attendere attivazione/stato `OK` del dominio lato Registro/Register
+    - configurare DNS Register con `A @ -> 76.76.21.21`
+    - configurare `CNAME www ->` target Vercel mostrato nel pannello Domains
+    - validare i domini in Vercel (`Refresh`)
+    - aggiornare branding/SEO/link runtime dal dominio `vercel.app` al dominio custom dove opportuno
 - `❌ Non fatto [Priorità alta]` pianificare upgrade coordinati dei principali stack di tooling (per esempio ESLint e Vite), verificando la compatibilità tra dipendenze prima del merge
 - `❌ Non fatto` valutare una tabella di logging accessi/connessioni al sito (solo dati minimi), con verifica preventiva legale/privacy e compliance GDPR prima di qualsiasi implementazione
 - `❌ Non fatto [Priorità alta]` valutare un refactor della struttura cartelle componenti/CSS (jsx + css) per migliorare coesione e manutenibilità
@@ -130,7 +142,14 @@ Rendere la sezione contatti più completa e più resistente, senza complicarla i
 - `✅ Fatto` migliorare stati di successo/errore lato UX
 - `✅ Fatto` introdurre un flusso di invio strutturato lato server con Resend, con endpoint dedicato, validazione, test API e fallback UI coerente
 - `✅ Fatto` aggiungere protezione minima anti-spam tramite rate limit e honeypot
-- `🟡 Partial` sostituire il sender di test `onboarding@resend.dev` con un sender verificato su dominio proprio, se in futuro si vorrà passare a una configurazione pienamente production-grade
+- `🟡 Partial` sostituire il sender di test `onboarding@resend.dev` con un sender verificato su dominio proprio:
+  - decisione presa: usare `contact@michaelpiccirilli.it` come mittente applicativo del contact form
+  - provider invio confermato: `Resend`
+  - dipendenza operativa corrente: attendere lo sblocco DNS del dominio `.it` su Register per verificare il dominio anche in Resend
+  - scelta architetturale attuale: usare Resend per l'invio email applicativo; la creazione di una vera inbox/casella email custom resta decisione separata e rinviata a dopo l'attivazione DNS
+  - opzione transitoria consigliata al rollout:
+    - `From`: `contact@michaelpiccirilli.it`
+    - `Reply-To`: mailbox reale già presidiata (per esempio `michaelpiccirilli3@gmail.com`) finché non verrà attivata un'eventuale casella custom
 - `✅ Fatto` estrarre il template email in un file dedicato, caricarlo a build-time, sostituire i campi dinamici in modo esplicito e rifinirne ulteriormente il layout
 
 ### Priorità
@@ -310,7 +329,11 @@ Rendere l’esperienza utente più curata e accessibile, con attenzione a dettag
 
 - `✅ Fatto` migliorare lo stile dei tag (project-tag, about-interest-tag) per maggiore visibilità e coerenza visiva
 - `✅ Fatto` rendere il badge "site-live" verde nel `README.md` (badge di stato del sito live)
-- `✅ Fatto` sistemare il lightbox dei progetti GitHub su mobile: controlli close/nav stabilizzati con target touch coerenti e layout meno soggetto a ridimensionamenti/spostamenti
+- `🟡 Partial` rifinire ulteriormente il lightbox dei progetti GitHub:
+  - i controlli close/nav sono stati già migliorati, ma il comportamento reale non è ancora del tutto stabile
+  - da verificare e chiudere:
+    - posizionamento coerente dei tasti nella lightbox, soprattutto su mobile
+    - gestione robusta delle immagini non caricabili/rotte con fallback esplicito invece di stage vuoto
 - `✅ Chiuso per scelta progettuale [Priorità bassissima]` effetto CSS cursore in homepage escluso dal perimetro attuale dopo valutazione UX (soluzione troppo invasiva rispetto al layout corrente)
 - `❌ Non fatto` migliorare la visibilità degli skeleton in tema light (contrasto troppo basso), verificando una resa percepibile anche con loading molto rapido
 - `❌ Non fatto` migliorare gli effetti grafici UI per aumentare l'impatto visivo complessivo (obiettivo: esperienza più "wow" anche per utenti non tecnici)

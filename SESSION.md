@@ -1,5 +1,23 @@
 # SESSION
 
+## Aggiornamento dominio custom (2026-03-30)
+
+- Avviata la migrazione documentale/runtime verso il dominio custom `michaelpiccirilli.it`.
+- Configurazione target definita:
+  - `michaelpiccirilli.it` come dominio principale production
+  - `www.michaelpiccirilli.it` come redirect `308` verso il root domain
+- Stato operativo corrente:
+  - dominio `.it` acquistato su Register
+  - dominio ancora in stato `inactive, dnsHold` lato Registro, quindi configurazione DNS Register non ancora disponibile al momento della sessione
+- Aggiornati i riferimenti runtime/SEO:
+  - [index.html](./index.html) ora punta a `https://michaelpiccirilli.it` per `canonical`, `og:url`, asset social preview e JSON-LD
+  - [public/robots.txt](./public/robots.txt) aggiornato con sitemap sul dominio custom
+  - [public/sitemap.xml](./public/sitemap.xml) aggiornato con `loc` sul dominio custom
+  - [README.md](./README.md) aggiornato sul badge `site-live`
+- Aggiornato [TODO.md](./TODO.md) con voce operativa dedicata alla chiusura del collegamento Register -> Vercel.
+- Validazione tecnica eseguita:
+  - `npm run typecheck` ✅
+
 ## Aggiornamento release 1.2.12 (2026-03-24)
 
 - Risolto il warning Vite/Vercel sui chunk oltre soglia (`>500 kB`) tramite `manualChunks` in [vite.config.js](./vite.config.js):

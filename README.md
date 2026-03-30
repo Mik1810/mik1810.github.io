@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://michaelpiccirilli.vercel.app">
+  <a href="https://michaelpiccirilli.it">
     <img src="https://img.shields.io/badge/site-live-16a34a?style=for-the-badge&logo=vercel&logoColor=white" alt="Live site" />
   </a>
   <a href="https://github.com/Mik1810/Piccirilli_Michael_Portfolio">
@@ -37,7 +37,9 @@
 
 **Artifact version:** `1.2.12`  
 **Classification:** single-actor multilingual portfolio CMS  
-**Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth
+**Canonical deployment target:** Vercel + Supabase PostgreSQL/Auth  
+**Primary public URL:** `https://michaelpiccirilli.it`  
+**Fallback platform URL:** `https://michaelpiccirilli.vercel.app`
 
 ## Quickstart
 

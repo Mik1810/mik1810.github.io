@@ -24,6 +24,7 @@ function GithubProjectLightbox({
   const showControls = images.length > 1
   const [initialImageSrc] = useState(imageSrc)
   const [layoutMode, setLayoutMode] = useState<'wide' | 'tall'>('wide')
+  const [hasImageError, setHasImageError] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -100,6 +101,10 @@ function GithubProjectLightbox({
   }, [onClose, onNext, onPrev, showControls])
 
   useEffect(() => {
+    setHasImageError(false)
+  }, [imageSrc])
+
+  useEffect(() => {
     const probe = new window.Image()
     const applyLayoutMode = () => {
       const ratio =
@@ -110,7 +115,9 @@ function GithubProjectLightbox({
     probe.src = initialImageSrc
 
     if (probe.complete) {
-      applyLayoutMode()
+      if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+        applyLayoutMode()
+      }
       return undefined
     }
 
@@ -203,13 +210,26 @@ function GithubProjectLightbox({
           )}
 
           <div className="github-project-lightbox-stage">
-            <img
-              src={imageSrc}
-              alt={`${project.title} screenshot ${activeIndex + 1}`}
-              className="github-project-lightbox-image"
-              decoding="async"
-              fetchPriority="high"
-            />
+            {hasImageError ? (
+              <div
+                className="github-project-lightbox-fallback"
+                role="status"
+                aria-live="polite"
+              >
+                <strong>{project.title}</strong>
+                <span>Screenshot unavailable</span>
+              </div>
+            ) : (
+              <img
+                src={imageSrc}
+                alt={`${project.title} screenshot ${activeIndex + 1}`}
+                className="github-project-lightbox-image"
+                decoding="async"
+                fetchPriority="high"
+                onLoad={() => setHasImageError(false)}
+                onError={() => setHasImageError(true)}
+              />
+            )}
           </div>
 
           {showControls && (
