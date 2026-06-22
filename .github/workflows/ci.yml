@@ -21,7 +21,7 @@ jobs:
     steps:
       # Download the repository contents into the runner workspace.
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Use the same major Node version we target on Vercel and cache npm packages.
       - name: Setup Node.js
